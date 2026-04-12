@@ -425,7 +425,8 @@ export default function CanvasPlanner() {
   const [pendingTextPos, setPendingTextPos] = useState<{ x: number; y: number } | null>(null);
   const [pendingTextValue, setPendingTextValue] = useState('');
   const [selectedDrawShapeId, setSelectedDrawShapeId] = useState<string | null>(null);
-  const [drawSidebarOpen, setDrawSidebarOpen] = useState(false);
+  const [catalogPanelOpen, setCatalogPanelOpen] = useState(false);
+  const [roomPanelOpen, setRoomPanelOpen] = useState(false);
 
   const isDrawMode = drawTool !== 'select';
 
@@ -462,6 +463,10 @@ export default function CanvasPlanner() {
       setRoomDepthCm(existingPlan.roomDepthCm);
       if (existingPlan.documentJson) {
         loadDocument(existingPlan.documentJson);
+        try {
+          const parsed = JSON.parse(existingPlan.documentJson);
+          if (parsed.drawnShapes) setDrawnShapes(parsed.drawnShapes);
+        } catch {}
       }
     }
   }, [existingPlan, loadDocument, setRoomDepthCm, setRoomWidthCm]);
@@ -553,6 +558,16 @@ export default function CanvasPlanner() {
     setZoom(newScale);
   }, [zoom, panOffset, setZoom, setPanOffset]);
 
+  const getPointerCm = useCallback(() => {
+    const stage = stageRef.current;
+    if (!stage) return null;
+    const pointer = stage.getPointerPosition();
+    if (!pointer) return null;
+    const xCm = (pointer.x / zoom - panOffset.x / zoom - roomOffsetX) / pxPerCm;
+    const yCm = (pointer.y / zoom - panOffset.y / zoom - roomOffsetY) / pxPerCm;
+    return { x: xCm, y: yCm };
+  }, [zoom, panOffset, roomOffsetX, roomOffsetY, pxPerCm]);
+
   const handleStageMouseDown = useCallback((e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => {
     if (e.evt instanceof MouseEvent && e.evt.button === 1 || spaceDown) {
       setIsPanning(true);
@@ -565,26 +580,37 @@ export default function CanvasPlanner() {
     }
 
     if (measureMode) {
-      const stage = stageRef.current;
-      if (!stage) return;
-      const pointer = stage.getPointerPosition();
-      if (!pointer) return;
-      const xCm = (pointer.x / zoom - panOffset.x / zoom - roomOffsetX) / pxPerCm;
-      const yCm = (pointer.y / zoom - panOffset.y / zoom - roomOffsetY) / pxPerCm;
+      const pt = getPointerCm();
+      if (!pt) return;
       if (measurePoints.length === 0) {
-        setMeasurePoints([{ x: xCm, y: yCm }]);
+        setMeasurePoints([pt]);
       } else if (measurePoints.length === 1) {
-        setMeasurePoints(prev => [...prev, { x: xCm, y: yCm }]);
+        setMeasurePoints(prev => [...prev, pt]);
       } else {
-        setMeasurePoints([{ x: xCm, y: yCm }]);
+        setMeasurePoints([pt]);
       }
+      return;
+    }
+
+    if (isDrawMode) {
+      const pt = getPointerCm();
+      if (!pt) return;
+      if (drawTool === 'draw-text') {
+        setPendingTextPos(pt);
+        setPendingTextValue('');
+        return;
+      }
+      setIsDrawing(true);
+      setDrawStart(pt);
+      setDrawCurrent(pt);
       return;
     }
 
     if (e.target === e.target.getStage()) {
       setSelectedItemIds(new Set());
+      setSelectedDrawShapeId(null);
     }
-  }, [setSelectedItemIds, spaceDown, measureMode, measurePoints, zoom, panOffset, roomOffsetX, roomOffsetY, pxPerCm]);
+  }, [setSelectedItemIds, spaceDown, measureMode, measurePoints, isDrawMode, drawTool, getPointerCm]);
 
   const handleStageMouseMove = useCallback((e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => {
     if (isPanning && lastPointerPos.current) {
@@ -598,12 +624,66 @@ export default function CanvasPlanner() {
       }));
       lastPointerPos.current = pos;
     }
-  }, [isPanning, setPanOffset]);
+    if (isDrawing && drawTool !== 'draw-text') {
+      const pt = getPointerCm();
+      if (pt) setDrawCurrent(pt);
+    }
+  }, [isPanning, setPanOffset, isDrawing, drawTool, getPointerCm]);
 
   const handleStageMouseUp = useCallback(() => {
     setIsPanning(false);
     lastPointerPos.current = null;
-  }, []);
+    if (isDrawing && drawStart && drawCurrent && drawTool !== 'select' && drawTool !== 'draw-text') {
+      const dx = drawCurrent.x - drawStart.x;
+      const dy = drawCurrent.y - drawStart.y;
+      if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
+        const shapeType = drawTool === 'draw-line' ? 'line' : drawTool === 'draw-rect' ? 'rect' : 'ellipse';
+        const newShape: DrawnShape = {
+          id: `ds-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          type: shapeType,
+          x1: drawStart.x,
+          y1: drawStart.y,
+          x2: drawCurrent.x,
+          y2: drawCurrent.y,
+          stroke: drawStroke,
+          fill: drawFill,
+          strokeWidth: drawStrokeWidth,
+        };
+        setDrawnShapes(prev => [...prev, newShape]);
+      }
+      setIsDrawing(false);
+      setDrawStart(null);
+      setDrawCurrent(null);
+    }
+  }, [isDrawing, drawStart, drawCurrent, drawTool, drawStroke, drawFill, drawStrokeWidth]);
+
+  const handleAddTextShape = useCallback(() => {
+    if (!pendingTextPos || !pendingTextValue.trim()) {
+      setPendingTextPos(null);
+      return;
+    }
+    const newShape: DrawnShape = {
+      id: `ds-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      type: 'text',
+      x1: pendingTextPos.x,
+      y1: pendingTextPos.y,
+      x2: pendingTextPos.x + 50,
+      y2: pendingTextPos.y + 10,
+      stroke: drawStroke,
+      fill: drawFill,
+      strokeWidth: drawStrokeWidth,
+      text: pendingTextValue,
+      fontSize: 14,
+    };
+    setDrawnShapes(prev => [...prev, newShape]);
+    setPendingTextPos(null);
+    setPendingTextValue('');
+  }, [pendingTextPos, pendingTextValue, drawStroke, drawFill, drawStrokeWidth]);
+
+  const handleDeleteDrawShape = useCallback((id: string) => {
+    setDrawnShapes(prev => prev.filter(s => s.id !== id));
+    if (selectedDrawShapeId === id) setSelectedDrawShapeId(null);
+  }, [selectedDrawShapeId]);
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     const target = e.target as HTMLElement;

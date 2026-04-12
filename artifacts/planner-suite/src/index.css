@@ -68,8 +68,7 @@
   }
 
   body {
-    background:
-      radial-gradient(circle at top, rgba(255, 255, 255, 0.98) 0%, rgba(245, 247, 250, 0.98) 36%, rgba(230, 236, 243, 0.94) 100%);
+    background: #070D12;
     color: var(--foreground);
     font-family: var(--font-sans);
     font-size: var(--type-body-size);
@@ -141,8 +140,7 @@
 
 @layer utilities {
   .bg-page {
-    background:
-      radial-gradient(circle at top, var(--planner-page-top) 0%, var(--planner-page-mid) 38%, var(--planner-page-bottom) 100%);
+    background: #070D12;
   }
 
   .bg-panel {

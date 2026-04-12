@@ -22,13 +22,13 @@ router.post(
       supaUser.user_metadata?.picture ??
       null;
 
-    const [existing] = await db
+    const [existingById] = await db
       .select()
       .from(usersTable)
       .where(eq(usersTable.id, userId))
       .limit(1);
 
-    if (existing) {
+    if (existingById) {
       const [updated] = await db
         .update(usersTable)
         .set({ email, displayName, avatarUrl })
@@ -36,11 +36,26 @@ router.post(
         .returning();
       res.json(updated);
     } else {
-      const [created] = await db
-        .insert(usersTable)
-        .values({ id: userId, email, displayName, avatarUrl, role: "user" })
-        .returning();
-      res.status(201).json(created);
+      const [existingByEmail] = await db
+        .select()
+        .from(usersTable)
+        .where(eq(usersTable.email, email))
+        .limit(1);
+
+      if (existingByEmail) {
+        const [migrated] = await db
+          .update(usersTable)
+          .set({ id: userId, displayName, avatarUrl })
+          .where(eq(usersTable.email, email))
+          .returning();
+        res.json(migrated);
+      } else {
+        const [created] = await db
+          .insert(usersTable)
+          .values({ id: userId, email, displayName, avatarUrl, role: "user" })
+          .returning();
+        res.status(201).json(created);
+      }
     }
   }),
 );

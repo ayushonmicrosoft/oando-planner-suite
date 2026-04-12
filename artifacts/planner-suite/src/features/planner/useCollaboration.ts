@@ -104,7 +104,9 @@ export function useCollaboration({ planId, editor, userName }: UseCollaborationO
         event.changes.keys.forEach((change, key) => {
           if (change.action === "add" || change.action === "update") {
             const value = shapesMap.get(key) as TLRecord | undefined;
-            if (value) toAdd.push(value);
+            if (value && value.typeName && !IGNORED_TYPES.has(value.typeName)) {
+              toAdd.push(value);
+            }
           } else if (change.action === "delete") {
             if (currentEditor.store.has(key as RecordId<TLRecord>)) {
               toRemove.push(key as RecordId<TLRecord>);

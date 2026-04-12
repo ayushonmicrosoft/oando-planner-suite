@@ -38,15 +38,22 @@ async function hydrateRoomFromDb(planId: string, room: CollabRoom) {
 
     if (rows.length > 0 && rows[0].documentJson) {
       const parsed = JSON.parse(rows[0].documentJson);
-      const shapes = parsed.tldrawShapes ?? parsed.items ?? parsed;
-      if (shapes && typeof shapes === "object" && !Array.isArray(shapes)) {
-        const shapesMap = room.doc.getMap("shapes");
-        room.doc.transact(() => {
-          for (const [key, val] of Object.entries(shapes)) {
-            shapesMap.set(key, val);
-          }
-        });
-        logger.info({ planId, shapeCount: Object.keys(shapes).length }, "Hydrated room from DB");
+      const candidates = parsed.tldrawShapes ?? parsed.items ?? parsed;
+      if (candidates && typeof candidates === "object" && !Array.isArray(candidates)) {
+        const validEntries = Object.entries(candidates).filter(
+          ([, v]) => v && typeof v === "object" && "typeName" in (v as Record<string, unknown>)
+        );
+        if (validEntries.length > 0) {
+          const shapesMap = room.doc.getMap("shapes");
+          room.doc.transact(() => {
+            for (const [key, val] of validEntries) {
+              shapesMap.set(key, val);
+            }
+          });
+          logger.info({ planId, shapeCount: validEntries.length }, "Hydrated room from DB");
+        } else {
+          logger.info({ planId }, "Skipped hydration – no valid tldraw records found");
+        }
       }
     }
   } catch (err) {

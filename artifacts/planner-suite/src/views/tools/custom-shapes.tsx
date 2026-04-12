@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { useUndoRedo } from "@/hooks/use-undo-redo";
-import { Save, Loader2, Undo2, Redo2, Trash2, Copy, XCircle, Grid3X3 } from "lucide-react";
+import { Save, Loader2, Undo2, Redo2, Trash2, Copy, XCircle, Shapes } from "lucide-react";
 
 interface ShapeDef {
   label: string;
@@ -415,18 +415,23 @@ export default function CustomShapes() {
 
   return (
     <div className="h-full flex flex-col bg-background">
-      <header className="h-14 border-b flex items-center justify-between px-4 shrink-0 bg-card">
+      <header className="h-14 border-b flex items-center justify-between px-5 shrink-0 bg-card">
         <div className="flex items-center gap-4">
-          <Grid3X3 className="w-5 h-5 text-primary" />
-          <Input
-            value={planName}
-            onChange={(e) => setPlanName(e.target.value)}
-            className="w-64 font-medium border-transparent hover:border-input focus:border-input bg-transparent"
-          />
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500/10 to-orange-500/5 flex items-center justify-center">
+            <Shapes className="w-4 h-4 text-primary" strokeWidth={1.8} />
+          </div>
+          <div className="flex flex-col">
+            <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-muted-foreground/50 leading-none">Drawing Tools</p>
+            <Input
+              value={planName}
+              onChange={(e) => setPlanName(e.target.value)}
+              className="w-56 h-7 font-semibold text-sm border-transparent hover:border-input focus:border-input bg-transparent px-0 tracking-[-0.01em]"
+            />
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground">{items.length} on canvas</span>
-          <Button size="sm" onClick={handleSave} disabled={createPlan.isPending || updatePlan.isPending}>
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-muted-foreground/50 tabular-nums">{items.length} on canvas</span>
+          <Button size="sm" onClick={handleSave} disabled={createPlan.isPending || updatePlan.isPending} className="shadow-sm">
             {(createPlan.isPending || updatePlan.isPending) ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
             Save Plan
           </Button>
@@ -435,13 +440,14 @@ export default function CustomShapes() {
 
       <div className="flex-1 flex overflow-hidden">
         <div className="w-56 border-r flex flex-col bg-card shrink-0">
-          <div className="p-2 border-b">
+          <div className="p-2.5 border-b">
+            <h3 className="font-medium text-[10px] uppercase tracking-[0.12em] text-muted-foreground/50 px-2 mb-1.5">Categories</h3>
             {CATS.map((c, i) => (
               <button
                 key={c.name}
                 onClick={() => setCatIdx(i)}
-                className={`block w-full text-left px-3 py-1.5 text-sm font-semibold rounded-md mb-0.5 transition-colors ${
-                  catIdx === i ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"
+                className={`block w-full text-left px-3 py-1.5 text-[13px] font-medium rounded-lg mb-0.5 transition-all ${
+                  catIdx === i ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground/60 hover:bg-muted/50 hover:text-foreground"
                 }`}
               >
                 {c.name}
@@ -449,59 +455,59 @@ export default function CustomShapes() {
             ))}
           </div>
           <ScrollArea className="flex-1">
-            <div className="p-2">
-              <div className="text-[10px] uppercase tracking-wider text-muted-foreground px-2 py-1">Click to place</div>
+            <div className="p-2.5">
+              <div className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground/40 px-2 py-1.5 font-medium">Click to place</div>
               {CATS[catIdx].shapes.map((def, i) => (
                 <button
                   key={i}
                   onClick={() => addShape(def)}
-                  className="flex items-center gap-2 w-full p-2 rounded-md text-sm text-left hover:bg-muted transition-colors"
+                  className="group flex items-center gap-2.5 w-full p-2 rounded-lg text-sm text-left hover:bg-muted/50 transition-all"
                 >
                   <span
-                    className="shrink-0"
+                    className="shrink-0 shadow-sm border border-black/5"
                     style={{
                       display: "inline-block",
                       width: Math.max(10, Math.min(def.w * 0.22, 26)),
                       height: Math.max(10, Math.min(def.h * 0.22, 26)),
                       background: def.fill,
-                      borderRadius: def.kind === "ellipse" ? "50%" : 2,
+                      borderRadius: def.kind === "ellipse" ? "50%" : 3,
                     }}
                   />
                   <span>
-                    <span className="block font-medium leading-tight">{def.label}</span>
-                    <span className="block text-[10px] text-muted-foreground">{def.w}x{def.h}px</span>
+                    <span className="block font-medium text-[13px] leading-tight">{def.label}</span>
+                    <span className="block text-[10px] text-muted-foreground/40">{def.w}x{def.h}px</span>
                   </span>
                 </button>
               ))}
             </div>
           </ScrollArea>
 
-          <div className="p-2 border-t space-y-1">
+          <div className="p-2.5 border-t space-y-1">
             {sel && (
               <>
-                <div className="text-xs text-muted-foreground px-2 py-1">{sel.defLabel} - {Math.round(sel.width)}x{Math.round(sel.height)}</div>
-                <Button variant="outline" size="sm" className="w-full justify-start gap-2" onClick={duplicateSelected}>
-                  <Copy className="w-3 h-3" /> Duplicate
+                <div className="text-[10px] text-muted-foreground/50 px-2 py-1 font-medium uppercase tracking-wider">{sel.defLabel} - {Math.round(sel.width)}x{Math.round(sel.height)}</div>
+                <Button variant="outline" size="sm" className="w-full justify-start gap-2.5 border-border/50 shadow-sm" onClick={duplicateSelected}>
+                  <Copy className="w-3.5 h-3.5" /> Duplicate
                 </Button>
-                <Button variant="outline" size="sm" className="w-full justify-start gap-2 text-destructive" onClick={deleteSelected}>
-                  <Trash2 className="w-3 h-3" /> Delete
+                <Button variant="outline" size="sm" className="w-full justify-start gap-2.5 text-destructive border-border/50 shadow-sm" onClick={deleteSelected}>
+                  <Trash2 className="w-3.5 h-3.5" /> Delete
                 </Button>
               </>
             )}
-            <Button variant="outline" size="sm" className="w-full justify-start gap-2" onClick={undo} disabled={!canUndo}>
-              <Undo2 className="w-3 h-3" /> Undo
+            <Button variant="outline" size="sm" className="w-full justify-start gap-2.5 border-border/50 shadow-sm" onClick={undo} disabled={!canUndo}>
+              <Undo2 className="w-3.5 h-3.5" /> Undo
             </Button>
-            <Button variant="outline" size="sm" className="w-full justify-start gap-2" onClick={redo} disabled={!canRedo}>
-              <Redo2 className="w-3 h-3" /> Redo
+            <Button variant="outline" size="sm" className="w-full justify-start gap-2.5 border-border/50 shadow-sm" onClick={redo} disabled={!canRedo}>
+              <Redo2 className="w-3.5 h-3.5" /> Redo
             </Button>
-            <Button variant="outline" size="sm" className="w-full justify-start gap-2" onClick={() => { resetItems([]); setSelectedId(null); }}>
-              <XCircle className="w-3 h-3" /> Clear All
+            <Button variant="outline" size="sm" className="w-full justify-start gap-2.5 border-border/50 shadow-sm" onClick={() => { resetItems([]); setSelectedId(null); }}>
+              <XCircle className="w-3.5 h-3.5" /> Clear All
             </Button>
           </div>
         </div>
 
-        <div className="flex-1 bg-muted/30 relative flex items-center justify-center p-4 overflow-auto">
-          <div className="shadow-lg border rounded-lg overflow-hidden bg-card">
+        <div className="flex-1 bg-muted/20 relative flex items-center justify-center p-6 overflow-auto">
+          <div className="shadow-xl shadow-black/[0.06] border border-border/60 rounded-xl overflow-hidden bg-card">
             <Stage
               ref={stageRef}
               width={W}
@@ -528,23 +534,29 @@ export default function CustomShapes() {
 
         <div className="w-56 border-l bg-card shrink-0 flex flex-col">
           <div className="p-3 border-b">
-            <h3 className="font-medium text-sm">Placed Items ({items.length})</h3>
+            <h3 className="font-medium text-[10px] uppercase tracking-[0.12em] text-muted-foreground/50">Placed Items ({items.length})</h3>
           </div>
           <ScrollArea className="flex-1">
-            <div className="p-3 space-y-1">
+            <div className="p-3 space-y-0.5">
               {items.length === 0 ? (
-                <div className="text-sm text-muted-foreground text-center p-4">No shapes placed</div>
+                <div className="text-sm text-muted-foreground/40 text-center p-6">No shapes placed</div>
               ) : (
                 items.map((it) => (
                   <div
                     key={it.id}
-                    className={`text-sm p-2 rounded border cursor-pointer transition-colors ${
-                      selectedId === it.id ? "border-primary bg-primary/5" : "border-transparent hover:bg-muted"
+                    className={`text-sm p-2.5 rounded-lg border cursor-pointer transition-all ${
+                      selectedId === it.id ? "border-primary/30 bg-primary/[0.04] shadow-sm" : "border-transparent hover:bg-muted/40"
                     }`}
                     onClick={() => setSelectedId(it.id)}
                   >
-                    <div className="font-medium">{it.defLabel}</div>
-                    <div className="text-xs text-muted-foreground font-mono mt-1">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="w-3 h-3 shrink-0"
+                        style={{ background: it.fill, borderRadius: it.kind === "ellipse" ? "50%" : 2 }}
+                      />
+                      <span className="font-medium text-[13px]">{it.defLabel}</span>
+                    </div>
+                    <div className="text-[11px] text-muted-foreground/40 font-mono mt-1 ml-5">
                       {Math.round(it.width)}x{Math.round(it.height)} R:{Math.round(it.rotation)}°
                     </div>
                   </div>

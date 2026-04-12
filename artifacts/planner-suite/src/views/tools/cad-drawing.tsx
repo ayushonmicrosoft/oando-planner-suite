@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useUndoRedo } from "@/hooks/use-undo-redo";
 import {
   Save, Loader2, MousePointer2, Minus, Square, CircleIcon, Type,
-  Ruler, Undo2, Redo2, Trash2, Copy, XCircle, Grid3X3
+  Ruler, Undo2, Redo2, Trash2, Copy, XCircle, Grid3X3, PencilRuler
 } from "lucide-react";
 
 type ToolId = "select" | "line" | "rect" | "circle" | "measure" | "text";
@@ -361,18 +361,23 @@ export default function CadDrawing() {
 
   return (
     <div className="h-full flex flex-col bg-background">
-      <header className="h-14 border-b flex items-center justify-between px-4 shrink-0 bg-card">
+      <header className="h-14 border-b flex items-center justify-between px-5 shrink-0 bg-card">
         <div className="flex items-center gap-4">
-          <Grid3X3 className="w-5 h-5 text-primary" />
-          <Input
-            value={planName}
-            onChange={(e) => setPlanName(e.target.value)}
-            className="w-64 font-medium border-transparent hover:border-input focus:border-input bg-transparent"
-          />
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500/10 to-cyan-500/5 flex items-center justify-center">
+            <PencilRuler className="w-4 h-4 text-primary" strokeWidth={1.8} />
+          </div>
+          <div className="flex flex-col">
+            <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-muted-foreground/50 leading-none">Drawing Tools</p>
+            <Input
+              value={planName}
+              onChange={(e) => setPlanName(e.target.value)}
+              className="w-56 h-7 font-semibold text-sm border-transparent hover:border-input focus:border-input bg-transparent px-0 tracking-[-0.01em]"
+            />
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground">{shapes.length} objects</span>
-          <Button size="sm" onClick={handleSave} disabled={createPlan.isPending || updatePlan.isPending}>
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-muted-foreground/50 tabular-nums">{shapes.length} objects</span>
+          <Button size="sm" onClick={handleSave} disabled={createPlan.isPending || updatePlan.isPending} className="shadow-sm">
             {(createPlan.isPending || updatePlan.isPending) ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
             Save Plan
           </Button>
@@ -382,46 +387,46 @@ export default function CadDrawing() {
       <div className="flex-1 flex overflow-hidden">
         <div className="w-56 border-r flex flex-col bg-card shrink-0">
           <div className="p-3 border-b">
-            <h3 className="font-medium text-xs uppercase tracking-wider text-muted-foreground mb-2">Drawing Tools</h3>
-            <div className="space-y-1">
+            <h3 className="font-medium text-[10px] uppercase tracking-[0.12em] text-muted-foreground/50 mb-2.5">Drawing Tools</h3>
+            <div className="space-y-0.5">
               {tools.map((t) => (
                 <Button
                   key={t.id}
                   variant={tool === t.id ? "default" : "ghost"}
                   size="sm"
-                  className="w-full justify-start gap-2"
+                  className={`w-full justify-start gap-2.5 h-8 ${tool === t.id ? "shadow-sm" : ""}`}
                   onClick={() => { setTool(t.id); if (t.id !== "select") setSelectedId(null); }}
                 >
                   {t.icon}
-                  {t.label}
-                  <span className="ml-auto text-[10px] opacity-60">({t.key})</span>
+                  <span className="text-[13px]">{t.label}</span>
+                  <span className="ml-auto text-[10px] opacity-40 font-mono">{t.key}</span>
                 </Button>
               ))}
             </div>
           </div>
 
           <div className="p-3 border-b space-y-3">
-            <h3 className="font-medium text-xs uppercase tracking-wider text-muted-foreground">Style</h3>
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground w-12">Stroke</span>
+            <h3 className="font-medium text-[10px] uppercase tracking-[0.12em] text-muted-foreground/50">Style</h3>
+            <div className="space-y-2.5">
+              <div className="flex items-center gap-2.5">
+                <span className="text-xs text-muted-foreground/60 w-12">Stroke</span>
                 <Input type="color" value={strokeColor} onChange={(e) => setStrokeColor(e.target.value)}
-                  className="w-8 h-8 p-0 border border-input rounded cursor-pointer" />
+                  className="w-8 h-8 p-0 border border-border/50 rounded-lg cursor-pointer shadow-sm" />
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground w-12">Fill</span>
+              <div className="flex items-center gap-2.5">
+                <span className="text-xs text-muted-foreground/60 w-12">Fill</span>
                 <Input type="color" value={fillColor === "transparent" ? "#ffffff" : fillColor}
                   onChange={(e) => setFillColor(e.target.value)}
-                  className="w-8 h-8 p-0 border border-input rounded cursor-pointer" />
-                <Button variant="ghost" size="sm" className="h-6 px-1 text-[10px]"
+                  className="w-8 h-8 p-0 border border-border/50 rounded-lg cursor-pointer shadow-sm" />
+                <Button variant="ghost" size="sm" className="h-6 px-1.5 text-[10px] text-muted-foreground/50 hover:text-foreground"
                   onClick={() => setFillColor("transparent")}>
                   None
                 </Button>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground w-12">Width</span>
+              <div className="flex items-center gap-2.5">
+                <span className="text-xs text-muted-foreground/60 w-12">Width</span>
                 <select value={strokeWidth} onChange={(e) => setStrokeWidth(+e.target.value)}
-                  className="flex h-8 rounded-md border border-input bg-transparent px-2 text-xs">
+                  className="flex h-8 rounded-lg border border-border/50 bg-transparent px-2 text-xs shadow-sm">
                   {[1, 2, 3, 5, 8].map((w) => <option key={w} value={w}>{w}px</option>)}
                 </select>
               </div>
@@ -429,49 +434,49 @@ export default function CadDrawing() {
           </div>
 
           <div className="p-3 border-b">
-            <label className="flex items-center gap-2 text-sm cursor-pointer">
+            <label className="flex items-center gap-2.5 text-[13px] cursor-pointer text-muted-foreground/60 hover:text-foreground transition-colors">
               <input type="checkbox" checked={showGrid} onChange={(e) => setShowGrid(e.target.checked)}
-                className="rounded border-input" />
-              <Grid3X3 className="w-3 h-3" />
+                className="rounded border-border/50" />
+              <Grid3X3 className="w-3.5 h-3.5" />
               Show Grid
             </label>
           </div>
 
           <div className="p-3 space-y-1">
-            <h3 className="font-medium text-xs uppercase tracking-wider text-muted-foreground mb-2">Actions</h3>
+            <h3 className="font-medium text-[10px] uppercase tracking-[0.12em] text-muted-foreground/50 mb-2.5">Actions</h3>
             {selectedId && tool === "select" && (
               <>
-                <Button variant="outline" size="sm" className="w-full justify-start gap-2" onClick={duplicateSelected}>
-                  <Copy className="w-3 h-3" /> Duplicate
+                <Button variant="outline" size="sm" className="w-full justify-start gap-2.5 border-border/50 shadow-sm" onClick={duplicateSelected}>
+                  <Copy className="w-3.5 h-3.5" /> Duplicate
                 </Button>
-                <Button variant="outline" size="sm" className="w-full justify-start gap-2 text-destructive" onClick={deleteSelected}>
-                  <Trash2 className="w-3 h-3" /> Delete
+                <Button variant="outline" size="sm" className="w-full justify-start gap-2.5 text-destructive border-border/50 shadow-sm" onClick={deleteSelected}>
+                  <Trash2 className="w-3.5 h-3.5" /> Delete
                 </Button>
               </>
             )}
-            <Button variant="outline" size="sm" className="w-full justify-start gap-2" onClick={undo} disabled={!canUndo}>
-              <Undo2 className="w-3 h-3" /> Undo
+            <Button variant="outline" size="sm" className="w-full justify-start gap-2.5 border-border/50 shadow-sm" onClick={undo} disabled={!canUndo}>
+              <Undo2 className="w-3.5 h-3.5" /> Undo
             </Button>
-            <Button variant="outline" size="sm" className="w-full justify-start gap-2" onClick={redo} disabled={!canRedo}>
-              <Redo2 className="w-3 h-3" /> Redo
+            <Button variant="outline" size="sm" className="w-full justify-start gap-2.5 border-border/50 shadow-sm" onClick={redo} disabled={!canRedo}>
+              <Redo2 className="w-3.5 h-3.5" /> Redo
             </Button>
-            <Button variant="outline" size="sm" className="w-full justify-start gap-2" onClick={() => { resetShapes([]); setSelectedId(null); setMeasureLine(null); }}>
-              <XCircle className="w-3 h-3" /> Clear All
+            <Button variant="outline" size="sm" className="w-full justify-start gap-2.5 border-border/50 shadow-sm" onClick={() => { resetShapes([]); setSelectedId(null); setMeasureLine(null); }}>
+              <XCircle className="w-3.5 h-3.5" /> Clear All
             </Button>
           </div>
 
           {measureLine && (
             <div className="p-3 border-t">
-              <Card className="p-3 bg-blue-50 border-blue-200">
-                <div className="text-xs font-medium text-blue-700">Measurement</div>
-                <div className="text-lg font-bold text-blue-900">{measDist.toFixed(1)} cm</div>
-              </Card>
+              <div className="rounded-xl bg-blue-500/[0.06] border border-blue-200/50 p-3">
+                <div className="text-[10px] font-medium uppercase tracking-wider text-blue-600/70">Measurement</div>
+                <div className="text-xl font-bold text-blue-700 mt-0.5 tabular-nums">{measDist.toFixed(1)} cm</div>
+              </div>
             </div>
           )}
         </div>
 
-        <div className="flex-1 bg-muted/30 relative flex items-center justify-center p-4 overflow-auto">
-          <div className="shadow-lg border rounded-lg overflow-hidden bg-card relative">
+        <div className="flex-1 bg-muted/20 relative flex items-center justify-center p-6 overflow-auto">
+          <div className="shadow-xl shadow-black/[0.06] border border-border/60 rounded-xl overflow-hidden bg-card relative">
             <Stage ref={stageRef} width={W} height={H}
               style={{ background: "#fff", cursor: tool === "select" ? "default" : "crosshair" }}
               onMouseDown={handleMouseDown} onMouseMove={handleMouseMove} onMouseUp={handleMouseUp}>
@@ -520,7 +525,7 @@ export default function CadDrawing() {
               </Layer>
             </Stage>
             {pendingText && (
-              <div className="absolute bg-card border rounded-lg shadow-lg p-3 space-y-2 z-10" style={{ left: pendingText.x, top: pendingText.y }}>
+              <div className="absolute bg-card border border-border/60 rounded-xl shadow-xl p-3 space-y-2 z-10" style={{ left: pendingText.x, top: pendingText.y }}>
                 <Input
                   ref={pendingTextRef}
                   value={pendingText.value}
@@ -531,7 +536,7 @@ export default function CadDrawing() {
                   autoFocus
                 />
                 <div className="flex gap-1">
-                  <Button size="sm" className="h-7 text-xs flex-1" onClick={confirmPendingText}>Add</Button>
+                  <Button size="sm" className="h-7 text-xs flex-1 shadow-sm" onClick={confirmPendingText}>Add</Button>
                   <Button size="sm" variant="outline" className="h-7 text-xs flex-1" onClick={cancelPendingText}>Cancel</Button>
                 </div>
               </div>
@@ -539,37 +544,37 @@ export default function CadDrawing() {
           </div>
         </div>
 
-        <div className="w-56 border-l bg-card shrink-0 flex flex-col">
+        <div className="w-56 border-l border-border/60 bg-card shrink-0 flex flex-col">
           {(() => {
             const sel = shapes.find((s) => s.id === selectedId);
             if (sel) return (
-              <div className="p-3 border-b space-y-2">
-                <h3 className="font-medium text-xs uppercase tracking-wider text-muted-foreground">Properties</h3>
-                <div className="text-sm font-medium capitalize">{sel.tool}</div>
+              <div className="p-3 border-b space-y-2.5">
+                <h3 className="font-medium text-[10px] uppercase tracking-[0.12em] text-muted-foreground/50">Properties</h3>
+                <div className="text-sm font-semibold capitalize">{sel.tool}</div>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <span className="text-[10px] text-muted-foreground">X</span>
+                    <span className="text-[10px] text-muted-foreground/60">X</span>
                     <Input type="number" value={Math.round(sel.x)} className="h-7 text-xs"
                       onChange={(e) => updateShape(sel.id, { x: +e.target.value })} />
                   </div>
                   <div>
-                    <span className="text-[10px] text-muted-foreground">Y</span>
+                    <span className="text-[10px] text-muted-foreground/60">Y</span>
                     <Input type="number" value={Math.round(sel.y)} className="h-7 text-xs"
                       onChange={(e) => updateShape(sel.id, { y: +e.target.value })} />
                   </div>
                   <div>
-                    <span className="text-[10px] text-muted-foreground">W</span>
+                    <span className="text-[10px] text-muted-foreground/60">W</span>
                     <Input type="number" value={Math.round(sel.width)} className="h-7 text-xs"
                       onChange={(e) => updateShape(sel.id, { width: Math.max(2, +e.target.value) })} />
                   </div>
                   <div>
-                    <span className="text-[10px] text-muted-foreground">H</span>
+                    <span className="text-[10px] text-muted-foreground/60">H</span>
                     <Input type="number" value={Math.round(sel.height)} className="h-7 text-xs"
                       onChange={(e) => updateShape(sel.id, { height: Math.max(2, +e.target.value) })} />
                   </div>
                 </div>
                 <div>
-                  <span className="text-[10px] text-muted-foreground">Rotation</span>
+                  <span className="text-[10px] text-muted-foreground/60">Rotation</span>
                   <Input type="number" value={Math.round(sel.rotation)} className="h-7 text-xs"
                     onChange={(e) => updateShape(sel.id, { rotation: +e.target.value })} />
                 </div>
@@ -578,23 +583,23 @@ export default function CadDrawing() {
             return null;
           })()}
           <div className="p-3 border-b">
-            <h3 className="font-medium text-sm">Objects ({shapes.length})</h3>
+            <h3 className="font-medium text-[10px] uppercase tracking-[0.12em] text-muted-foreground/50">Objects ({shapes.length})</h3>
           </div>
           <ScrollArea className="flex-1">
             <div className="p-3 space-y-1">
               {shapes.length === 0 ? (
-                <div className="text-sm text-muted-foreground text-center p-4">No objects yet</div>
+                <div className="text-sm text-muted-foreground/50 text-center p-4">No objects yet</div>
               ) : (
                 shapes.map((s) => (
                   <div
                     key={s.id}
-                    className={`text-sm p-2 rounded border cursor-pointer transition-colors ${
-                      selectedId === s.id ? "border-primary bg-primary/5" : "border-transparent hover:bg-muted"
+                    className={`text-sm p-2 rounded-lg border cursor-pointer transition-colors ${
+                      selectedId === s.id ? "border-primary/30 bg-primary/[0.04]" : "border-transparent hover:bg-muted/50"
                     }`}
                     onClick={() => { setTool("select"); setSelectedId(s.id); }}
                   >
-                    <div className="font-medium capitalize">{s.tool}</div>
-                    <div className="text-xs text-muted-foreground font-mono mt-1">
+                    <div className="font-medium capitalize text-[13px]">{s.tool}</div>
+                    <div className="text-[11px] text-muted-foreground/50 font-mono mt-0.5">
                       X:{Math.round(s.x)} Y:{Math.round(s.y)}
                     </div>
                   </div>

@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useUndoRedo } from "@/hooks/use-undo-redo";
 import {
   Save, Loader2, MousePointer2, Minus, Square, CircleIcon, Type,
-  Ruler, Undo2, Redo2, Trash2, XCircle, Upload, Grid3X3, RefreshCw, Crosshair
+  Ruler, Undo2, Redo2, Trash2, XCircle, Upload, Import, RefreshCw, Crosshair
 } from "lucide-react";
 
 interface Annotation {
@@ -369,34 +369,45 @@ export default function ImportScale() {
   if (!file) {
     return (
       <div className="h-full flex flex-col bg-background">
-        <header className="h-14 border-b flex items-center px-4 shrink-0 bg-card">
-          <Grid3X3 className="w-5 h-5 text-primary mr-3" />
-          <h1 className="font-semibold">Import & Scale</h1>
+        <header className="h-14 border-b flex items-center px-5 shrink-0 bg-card">
+          <div className="flex items-center gap-4">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-rose-500/10 to-pink-500/5 flex items-center justify-center">
+              <Import className="w-4 h-4 text-primary" strokeWidth={1.8} />
+            </div>
+            <div className="flex flex-col">
+              <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-muted-foreground/50 leading-none">Drawing Tools</p>
+              <h1 className="text-sm font-semibold tracking-[-0.01em]">Import & Scale</h1>
+            </div>
+          </div>
         </header>
-        <div className="flex-1 flex justify-center items-center bg-muted/30">
+        <div className="flex-1 flex justify-center items-center bg-muted/20">
           <div className="max-w-xl w-full p-8 text-center">
-            <h1 className="text-2xl font-bold mb-2">Import Your Floor Plan</h1>
-            <p className="text-muted-foreground mb-8">Upload a PNG or JPG image and draw scaled annotations on top.</p>
-            <Card
-              className="p-12 border-dashed border-2 cursor-pointer hover:border-primary transition-colors"
+            <h1 className="text-2xl font-semibold tracking-[-0.02em] mb-2">Import Your Floor Plan</h1>
+            <p className="text-sm text-muted-foreground/60 mb-8 leading-relaxed">Upload a PNG or JPG image and draw scaled annotations on top.</p>
+            <div
+              className="rounded-2xl border-2 border-dashed border-border/60 bg-card p-14 cursor-pointer hover:border-primary/30 hover:shadow-lg hover:shadow-black/5 transition-all group"
               onClick={() => fileInputRef.current?.click()}
             >
               <input ref={fileInputRef} type="file" accept="image/png,image/jpeg,image/jpg" className="hidden" onChange={handleFile} />
-              <Upload className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-              <div className="text-lg font-semibold mb-1">Drop your file here or click to browse</div>
-              <div className="text-sm text-muted-foreground">Supports: PNG, JPG</div>
-            </Card>
-            <div className="grid grid-cols-3 gap-4 mt-8">
+              <div className="w-16 h-16 rounded-2xl bg-muted/50 flex items-center justify-center mx-auto mb-5 group-hover:bg-primary/[0.08] transition-colors">
+                <Upload className="w-7 h-7 text-muted-foreground/40 group-hover:text-primary transition-colors" />
+              </div>
+              <div className="text-base font-semibold mb-1.5">Drop your file here or click to browse</div>
+              <div className="text-sm text-muted-foreground/40">Supports: PNG, JPG</div>
+            </div>
+            <div className="grid grid-cols-3 gap-3 mt-8">
               {[
-                { icon: <Ruler className="w-6 h-6" />, title: "Blueprint", desc: "Upload architectural drawings and trace at scale." },
-                { icon: <Grid3X3 className="w-6 h-6" />, title: "Site Plan", desc: "Import a site plan screenshot and annotate." },
-                { icon: <Upload className="w-6 h-6" />, title: "Photo / Sketch", desc: "Photograph a hand-drawn sketch and digitize it." },
+                { icon: <Ruler className="w-5 h-5" />, title: "Blueprint", desc: "Upload architectural drawings and trace at scale." },
+                { icon: <Import className="w-5 h-5" />, title: "Site Plan", desc: "Import a site plan screenshot and annotate." },
+                { icon: <Upload className="w-5 h-5" />, title: "Photo / Sketch", desc: "Photograph a hand-drawn sketch and digitize it." },
               ].map((c) => (
-                <Card key={c.title} className="p-4 text-left cursor-pointer hover:shadow-md transition-shadow" onClick={() => fileInputRef.current?.click()}>
-                  <div className="mb-2 text-primary">{c.icon}</div>
+                <div key={c.title} className="rounded-xl border border-border/50 bg-card p-4 text-left cursor-pointer hover:shadow-md hover:shadow-black/5 hover:border-primary/20 transition-all" onClick={() => fileInputRef.current?.click()}>
+                  <div className="w-9 h-9 rounded-lg bg-primary/[0.06] flex items-center justify-center mb-3">
+                    <div className="text-primary">{c.icon}</div>
+                  </div>
                   <div className="font-semibold text-sm mb-1">{c.title}</div>
-                  <div className="text-xs text-muted-foreground">{c.desc}</div>
-                </Card>
+                  <div className="text-xs text-muted-foreground/50 leading-relaxed">{c.desc}</div>
+                </div>
               ))}
             </div>
           </div>
@@ -407,19 +418,24 @@ export default function ImportScale() {
 
   return (
     <div className="h-full flex flex-col bg-background">
-      <header className="h-14 border-b flex items-center justify-between px-4 shrink-0 bg-card">
+      <header className="h-14 border-b flex items-center justify-between px-5 shrink-0 bg-card">
         <div className="flex items-center gap-4">
-          <Grid3X3 className="w-5 h-5 text-primary" />
-          <Input
-            value={planName}
-            onChange={(e) => setPlanName(e.target.value)}
-            className="w-64 font-medium border-transparent hover:border-input focus:border-input bg-transparent"
-          />
-          <span className="text-xs text-muted-foreground">{fileName}</span>
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-rose-500/10 to-pink-500/5 flex items-center justify-center">
+            <Import className="w-4 h-4 text-primary" strokeWidth={1.8} />
+          </div>
+          <div className="flex flex-col">
+            <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-muted-foreground/50 leading-none">Drawing Tools</p>
+            <Input
+              value={planName}
+              onChange={(e) => setPlanName(e.target.value)}
+              className="w-56 h-7 font-semibold text-sm border-transparent hover:border-input focus:border-input bg-transparent px-0 tracking-[-0.01em]"
+            />
+          </div>
+          <span className="text-[11px] text-muted-foreground/40 bg-muted/40 px-2 py-0.5 rounded-md">{fileName}</span>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground">{annotations.length} annotations</span>
-          <Button size="sm" onClick={handleSave} disabled={createPlan.isPending || updatePlan.isPending}>
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-muted-foreground/50 tabular-nums">{annotations.length} annotations</span>
+          <Button size="sm" onClick={handleSave} disabled={createPlan.isPending || updatePlan.isPending} className="shadow-sm">
             {(createPlan.isPending || updatePlan.isPending) ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
             Save Plan
           </Button>
@@ -429,39 +445,39 @@ export default function ImportScale() {
       <div className="flex-1 flex overflow-hidden">
         <div className="w-56 border-r flex flex-col bg-card shrink-0">
           <div className="p-3 border-b">
-            <h3 className="font-medium text-xs uppercase tracking-wider text-muted-foreground mb-2">Annotation Tools</h3>
-            <div className="space-y-1">
+            <h3 className="font-medium text-[10px] uppercase tracking-[0.12em] text-muted-foreground/50 mb-2.5">Annotation Tools</h3>
+            <div className="space-y-0.5">
               {overlayTools.map((t) => (
                 <Button
                   key={t.id}
                   variant={overlayTool === t.id ? "default" : "ghost"}
                   size="sm"
-                  className="w-full justify-start gap-2"
+                  className={`w-full justify-start gap-2.5 h-8 ${overlayTool === t.id ? "shadow-sm" : ""}`}
                   onClick={() => setOverlayTool(t.id)}
                 >
                   {t.icon}
-                  {t.label}
-                  {t.key && <span className="ml-auto text-[10px] opacity-60">({t.key})</span>}
+                  <span className="text-[13px]">{t.label}</span>
+                  {t.key && <span className="ml-auto text-[10px] opacity-40 font-mono">{t.key}</span>}
                 </Button>
               ))}
             </div>
           </div>
 
           <div className="p-3 border-b space-y-3">
-            <h3 className="font-medium text-xs uppercase tracking-wider text-muted-foreground">Style</h3>
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground w-12">Color</span>
+            <h3 className="font-medium text-[10px] uppercase tracking-[0.12em] text-muted-foreground/50">Style</h3>
+            <div className="flex items-center gap-2.5">
+              <span className="text-xs text-muted-foreground/60 w-12">Color</span>
               <Input type="color" value={drawColor} onChange={(e) => setDrawColor(e.target.value)}
-                className="w-8 h-8 p-0 border border-input rounded cursor-pointer" />
+                className="w-8 h-8 p-0 border border-border/50 rounded-lg cursor-pointer shadow-sm" />
             </div>
           </div>
 
           <div className="p-3 border-b space-y-3">
-            <h3 className="font-medium text-xs uppercase tracking-wider text-muted-foreground">Scale Settings</h3>
+            <h3 className="font-medium text-[10px] uppercase tracking-[0.12em] text-muted-foreground/50">Scale Settings</h3>
             <div>
-              <span className="text-xs text-muted-foreground">Units</span>
+              <span className="text-[10px] text-muted-foreground/50 uppercase tracking-wider">Units</span>
               <select value={unit} onChange={(e) => setUnit(e.target.value as "ft" | "m" | "cm")}
-                className="flex h-8 w-full rounded-md border border-input bg-transparent px-2 text-sm mt-1">
+                className="flex h-8 w-full rounded-lg border border-border/50 bg-transparent px-2 text-sm mt-1 shadow-sm">
                 <option value="ft">Feet</option>
                 <option value="m">Meters</option>
                 <option value="cm">Centimeters</option>
@@ -469,10 +485,10 @@ export default function ImportScale() {
             </div>
             {calibLine ? (
               <div className="space-y-2">
-                <Card className="p-2 bg-amber-50 border-amber-200">
-                  <div className="text-xs text-amber-700">Reference line drawn: {calibLinePx.toFixed(0)} px</div>
-                  <div className="text-xs text-amber-600 mt-1">Enter the known real-world distance:</div>
-                </Card>
+                <div className="rounded-xl bg-amber-500/[0.06] border border-amber-200/50 p-2.5">
+                  <div className="text-[10px] font-medium text-amber-700">Reference line: {calibLinePx.toFixed(0)} px</div>
+                  <div className="text-[10px] text-amber-600/70 mt-0.5">Enter the known real-world distance:</div>
+                </div>
                 <div className="flex gap-1">
                   <Input
                     type="number"
@@ -482,7 +498,7 @@ export default function ImportScale() {
                     className="h-8 text-sm flex-1"
                     autoFocus
                   />
-                  <Button size="sm" className="h-8" onClick={applyCalibration} disabled={!calibDistance || parseFloat(calibDistance) <= 0}>
+                  <Button size="sm" className="h-8 shadow-sm" onClick={applyCalibration} disabled={!calibDistance || parseFloat(calibDistance) <= 0}>
                     Apply
                   </Button>
                 </div>
@@ -490,61 +506,61 @@ export default function ImportScale() {
             ) : (
               <>
                 <div>
-                  <span className="text-xs text-muted-foreground">Scale (px per {unit})</span>
+                  <span className="text-[10px] text-muted-foreground/50 uppercase tracking-wider">Scale (px per {unit})</span>
                   <Input type="number" value={scale} onChange={(e) => setScale(Math.max(0.01, +e.target.value))} className="h-8 text-sm mt-1" min={0.01} />
                 </div>
                 <Button
                   size="sm"
                   variant="outline"
-                  className="w-full"
+                  className="w-full border-border/50 shadow-sm"
                   onClick={() => setOverlayTool("calibrate")}
                 >
-                  <Crosshair className="w-3 h-3 mr-2" />
+                  <Crosshair className="w-3.5 h-3.5 mr-2" />
                   Draw Reference Line
                 </Button>
               </>
             )}
             {calibrated && (
-              <Card className="p-2 bg-green-50 border-green-200">
-                <div className="text-xs text-green-700">Calibrated: {scale.toFixed(2)} px/{unit}</div>
-                <div className="text-xs text-green-600">1 pixel = {(1/scale).toFixed(4)} {unit}</div>
-              </Card>
+              <div className="rounded-xl bg-green-500/[0.06] border border-green-200/50 p-2.5">
+                <div className="text-[10px] font-medium text-green-700">Calibrated: {scale.toFixed(2)} px/{unit}</div>
+                <div className="text-[10px] text-green-600/70">1 pixel = {(1/scale).toFixed(4)} {unit}</div>
+              </div>
             )}
           </div>
 
           {measureLine && measDist && (
             <div className="p-3 border-b">
-              <Card className="p-2 bg-blue-50 border-blue-200">
-                <div className="text-xs font-medium text-blue-700">Measured</div>
-                <div className="text-lg font-bold text-blue-900">{measDist} {unit}</div>
-              </Card>
+              <div className="rounded-xl bg-blue-500/[0.06] border border-blue-200/50 p-2.5">
+                <div className="text-[10px] font-medium uppercase tracking-wider text-blue-600/70">Measured</div>
+                <div className="text-xl font-bold text-blue-700 mt-0.5 tabular-nums">{measDist} {unit}</div>
+              </div>
             </div>
           )}
 
           <div className="p-3 space-y-1">
-            <h3 className="font-medium text-xs uppercase tracking-wider text-muted-foreground mb-2">Actions</h3>
+            <h3 className="font-medium text-[10px] uppercase tracking-[0.12em] text-muted-foreground/50 mb-2.5">Actions</h3>
             {selectedId && (
-              <Button variant="outline" size="sm" className="w-full justify-start gap-2 text-destructive" onClick={deleteSelected}>
-                <Trash2 className="w-3 h-3" /> Delete
+              <Button variant="outline" size="sm" className="w-full justify-start gap-2.5 text-destructive border-border/50 shadow-sm" onClick={deleteSelected}>
+                <Trash2 className="w-3.5 h-3.5" /> Delete
               </Button>
             )}
-            <Button variant="outline" size="sm" className="w-full justify-start gap-2" onClick={undo} disabled={!canUndo}>
-              <Undo2 className="w-3 h-3" /> Undo
+            <Button variant="outline" size="sm" className="w-full justify-start gap-2.5 border-border/50 shadow-sm" onClick={undo} disabled={!canUndo}>
+              <Undo2 className="w-3.5 h-3.5" /> Undo
             </Button>
-            <Button variant="outline" size="sm" className="w-full justify-start gap-2" onClick={redo} disabled={!canRedo}>
-              <Redo2 className="w-3 h-3" /> Redo
+            <Button variant="outline" size="sm" className="w-full justify-start gap-2.5 border-border/50 shadow-sm" onClick={redo} disabled={!canRedo}>
+              <Redo2 className="w-3.5 h-3.5" /> Redo
             </Button>
-            <Button variant="outline" size="sm" className="w-full justify-start gap-2" onClick={() => { resetAnnotations([]); setSelectedId(null); setMeasureLine(null); }}>
-              <XCircle className="w-3 h-3" /> Clear
+            <Button variant="outline" size="sm" className="w-full justify-start gap-2.5 border-border/50 shadow-sm" onClick={() => { resetAnnotations([]); setSelectedId(null); setMeasureLine(null); }}>
+              <XCircle className="w-3.5 h-3.5" /> Clear
             </Button>
-            <Button variant="outline" size="sm" className="w-full justify-start gap-2" onClick={() => { setFile(null); setFileName(""); setCalibrated(false); resetAnnotations([]); setMeasureLine(null); setCalibLine(null); }}>
-              <RefreshCw className="w-3 h-3" /> Replace File
+            <Button variant="outline" size="sm" className="w-full justify-start gap-2.5 border-border/50 shadow-sm" onClick={() => { setFile(null); setFileName(""); setCalibrated(false); resetAnnotations([]); setMeasureLine(null); setCalibLine(null); }}>
+              <RefreshCw className="w-3.5 h-3.5" /> Replace File
             </Button>
           </div>
         </div>
 
-        <div className="flex-1 bg-muted/30 relative flex items-center justify-center p-4 overflow-auto">
-          <div className="shadow-lg border rounded-lg overflow-hidden bg-card relative">
+        <div className="flex-1 bg-muted/20 relative flex items-center justify-center p-6 overflow-auto">
+          <div className="shadow-xl shadow-black/[0.06] border border-border/60 rounded-xl overflow-hidden bg-card relative">
             <Stage ref={stageRef} width={imgSize.w} height={imgSize.h}
               style={{ background: "#fff", cursor: overlayTool === "select" ? "default" : "crosshair" }}
               onMouseDown={handleStageMouseDown} onMouseMove={handleStageMouseMove} onMouseUp={handleStageMouseUp}>
@@ -595,7 +611,7 @@ export default function ImportScale() {
               </Layer>
             </Stage>
             {pendingText && (
-              <div className="absolute bg-card border rounded-lg shadow-lg p-3 space-y-2 z-10" style={{ left: pendingText.x, top: pendingText.y }}>
+              <div className="absolute bg-card border border-border/60 rounded-xl shadow-xl p-3 space-y-2 z-10" style={{ left: pendingText.x, top: pendingText.y }}>
                 <Input
                   ref={pendingTextRef}
                   value={pendingText.value}
@@ -606,7 +622,7 @@ export default function ImportScale() {
                   autoFocus
                 />
                 <div className="flex gap-1">
-                  <Button size="sm" className="h-7 text-xs flex-1" onClick={confirmPendingText}>Add</Button>
+                  <Button size="sm" className="h-7 text-xs flex-1 shadow-sm" onClick={confirmPendingText}>Add</Button>
                   <Button size="sm" variant="outline" className="h-7 text-xs flex-1" onClick={cancelPendingText}>Cancel</Button>
                 </div>
               </div>
@@ -616,23 +632,23 @@ export default function ImportScale() {
 
         <div className="w-56 border-l bg-card shrink-0 flex flex-col">
           <div className="p-3 border-b">
-            <h3 className="font-medium text-sm">Annotations ({annotations.length})</h3>
+            <h3 className="font-medium text-[10px] uppercase tracking-[0.12em] text-muted-foreground/50">Annotations ({annotations.length})</h3>
           </div>
           <ScrollArea className="flex-1">
-            <div className="p-3 space-y-1">
+            <div className="p-3 space-y-0.5">
               {annotations.length === 0 ? (
-                <div className="text-sm text-muted-foreground text-center p-4">No annotations yet</div>
+                <div className="text-sm text-muted-foreground/40 text-center p-6">No annotations yet</div>
               ) : (
                 annotations.map((ann) => (
                   <div
                     key={ann.id}
-                    className={`text-sm p-2 rounded border cursor-pointer transition-colors ${
-                      selectedId === ann.id ? "border-primary bg-primary/5" : "border-transparent hover:bg-muted"
+                    className={`text-sm p-2.5 rounded-lg border cursor-pointer transition-all ${
+                      selectedId === ann.id ? "border-primary/30 bg-primary/[0.04] shadow-sm" : "border-transparent hover:bg-muted/40"
                     }`}
                     onClick={() => { setOverlayTool("select"); setSelectedId(ann.id); }}
                   >
-                    <div className="font-medium capitalize">{ann.tool}</div>
-                    <div className="text-xs text-muted-foreground font-mono mt-1">
+                    <div className="font-medium capitalize text-[13px]">{ann.tool}</div>
+                    <div className="text-[11px] text-muted-foreground/40 font-mono mt-1">
                       X:{Math.round(ann.x)} Y:{Math.round(ann.y)}
                     </div>
                   </div>

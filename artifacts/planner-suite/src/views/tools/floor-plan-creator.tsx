@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { useUndoRedo } from "@/hooks/use-undo-redo";
-import { Save, Loader2, Undo2, Redo2, Trash2, Copy, XCircle, Grid3X3 } from "lucide-react";
+import { Save, Loader2, Undo2, Redo2, Trash2, Copy, XCircle, LayoutGrid } from "lucide-react";
 
 interface RoomPreset {
   label: string;
@@ -234,23 +234,35 @@ export default function FloorPlanCreator() {
 
   return (
     <div className="h-full flex flex-col bg-background">
-      <header className="h-14 border-b flex items-center justify-between px-4 shrink-0 bg-card">
+      <header className="h-14 border-b flex items-center justify-between px-5 shrink-0 bg-card">
         <div className="flex items-center gap-4">
-          <Grid3X3 className="w-5 h-5 text-primary" />
-          <Input
-            value={planName}
-            onChange={(e) => setPlanName(e.target.value)}
-            className="w-64 font-medium border-transparent hover:border-input focus:border-input bg-transparent"
-          />
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500/10 to-purple-500/5 flex items-center justify-center">
+            <LayoutGrid className="w-4 h-4 text-primary" strokeWidth={1.8} />
+          </div>
+          <div className="flex flex-col">
+            <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-muted-foreground/50 leading-none">Drawing Tools</p>
+            <Input
+              value={planName}
+              onChange={(e) => setPlanName(e.target.value)}
+              className="w-56 h-7 font-semibold text-sm border-transparent hover:border-input focus:border-input bg-transparent px-0 tracking-[-0.01em]"
+            />
+          </div>
         </div>
-        <div className="flex items-center gap-3">
-          <span className="text-xs text-muted-foreground">Rooms: {rooms.length}</span>
-          <span className="text-xs text-muted-foreground">Total: {totalSqFt} sq ft</span>
-          <label className="flex items-center gap-1.5 text-xs cursor-pointer text-muted-foreground">
-            <input type="checkbox" checked={showDims} onChange={(e) => setShowDims(e.target.checked)} className="rounded" />
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground/50">
+              <span className="tabular-nums">{rooms.length}</span> rooms
+            </div>
+            <div className="w-px h-4 bg-border/50" />
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground/50">
+              <span className="tabular-nums font-medium text-foreground/70">{totalSqFt}</span> sq ft
+            </div>
+          </div>
+          <label className="flex items-center gap-1.5 text-xs cursor-pointer text-muted-foreground/60 hover:text-foreground transition-colors">
+            <input type="checkbox" checked={showDims} onChange={(e) => setShowDims(e.target.checked)} className="rounded border-border/50" />
             Dimensions
           </label>
-          <Button size="sm" onClick={handleSave} disabled={createPlan.isPending || updatePlan.isPending}>
+          <Button size="sm" onClick={handleSave} disabled={createPlan.isPending || updatePlan.isPending} className="shadow-sm">
             {(createPlan.isPending || updatePlan.isPending) ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
             Save Plan
           </Button>
@@ -260,17 +272,20 @@ export default function FloorPlanCreator() {
       <div className="flex-1 flex overflow-hidden">
         <div className="w-60 border-r flex flex-col bg-card shrink-0">
           <div className="p-3 border-b">
-            <h3 className="font-medium text-xs uppercase tracking-wider text-muted-foreground mb-2">Add Room</h3>
+            <h3 className="font-medium text-[10px] uppercase tracking-[0.12em] text-muted-foreground/50 mb-2.5">Add Room</h3>
             <ScrollArea className="h-[280px]">
-              <div className="space-y-1 pr-2">
+              <div className="space-y-0.5 pr-2">
                 {PRESETS.map((p, i) => (
                   <button
                     key={i}
                     onClick={() => addRoom(p)}
-                    className="flex items-center gap-2 w-full p-2 rounded-md text-sm text-left hover:bg-muted transition-colors"
+                    className="group flex items-center gap-2.5 w-full p-2 rounded-lg text-sm text-left hover:bg-muted/60 transition-all"
                   >
-                    <span className="w-4 h-4 rounded-sm border shrink-0" style={{ background: p.fill }} />
-                    <span className="font-medium">{p.label}</span>
+                    <span className="w-5 h-5 rounded-md border border-border/30 shrink-0 shadow-sm" style={{ background: p.fill }} />
+                    <div className="min-w-0">
+                      <span className="font-medium text-[13px] block leading-tight">{p.label}</span>
+                      <span className="text-[10px] text-muted-foreground/40">{p.w/GRID}&apos; x {p.h/GRID}&apos;</span>
+                    </div>
                   </button>
                 ))}
               </div>
@@ -278,31 +293,31 @@ export default function FloorPlanCreator() {
           </div>
 
           <div className="p-3 space-y-1">
-            <h3 className="font-medium text-xs uppercase tracking-wider text-muted-foreground mb-2">Actions</h3>
+            <h3 className="font-medium text-[10px] uppercase tracking-[0.12em] text-muted-foreground/50 mb-2.5">Actions</h3>
             {sel && (
               <>
-                <Button variant="outline" size="sm" className="w-full justify-start gap-2" onClick={duplicateSelected}>
-                  <Copy className="w-3 h-3" /> Duplicate
+                <Button variant="outline" size="sm" className="w-full justify-start gap-2.5 border-border/50 shadow-sm" onClick={duplicateSelected}>
+                  <Copy className="w-3.5 h-3.5" /> Duplicate
                 </Button>
-                <Button variant="outline" size="sm" className="w-full justify-start gap-2 text-destructive" onClick={deleteSelected}>
-                  <Trash2 className="w-3 h-3" /> Delete
+                <Button variant="outline" size="sm" className="w-full justify-start gap-2.5 text-destructive border-border/50 shadow-sm" onClick={deleteSelected}>
+                  <Trash2 className="w-3.5 h-3.5" /> Delete
                 </Button>
               </>
             )}
-            <Button variant="outline" size="sm" className="w-full justify-start gap-2" onClick={undo} disabled={!canUndo}>
-              <Undo2 className="w-3 h-3" /> Undo
+            <Button variant="outline" size="sm" className="w-full justify-start gap-2.5 border-border/50 shadow-sm" onClick={undo} disabled={!canUndo}>
+              <Undo2 className="w-3.5 h-3.5" /> Undo
             </Button>
-            <Button variant="outline" size="sm" className="w-full justify-start gap-2" onClick={redo} disabled={!canRedo}>
-              <Redo2 className="w-3 h-3" /> Redo
+            <Button variant="outline" size="sm" className="w-full justify-start gap-2.5 border-border/50 shadow-sm" onClick={redo} disabled={!canRedo}>
+              <Redo2 className="w-3.5 h-3.5" /> Redo
             </Button>
-            <Button variant="outline" size="sm" className="w-full justify-start gap-2" onClick={() => { resetRooms([]); setSelectedId(null); }}>
-              <XCircle className="w-3 h-3" /> Clear All
+            <Button variant="outline" size="sm" className="w-full justify-start gap-2.5 border-border/50 shadow-sm" onClick={() => { resetRooms([]); setSelectedId(null); }}>
+              <XCircle className="w-3.5 h-3.5" /> Clear All
             </Button>
           </div>
         </div>
 
-        <div className="flex-1 bg-muted/30 relative flex items-center justify-center p-4 overflow-auto">
-          <div className="shadow-lg border rounded-lg overflow-hidden bg-card">
+        <div className="flex-1 bg-muted/20 relative flex items-center justify-center p-6 overflow-auto">
+          <div className="shadow-xl shadow-black/[0.06] border border-border/60 rounded-xl overflow-hidden bg-card">
             <Stage ref={stageRef} width={W} height={H} style={{ background: "#fff" }}
               onMouseDown={deselectAll} onTouchStart={deselectAll}>
               <Layer>{gridLines}</Layer>
@@ -320,56 +335,62 @@ export default function FloorPlanCreator() {
         <div className="w-56 border-l bg-card shrink-0 flex flex-col">
           {sel && (
             <div className="p-3 border-b space-y-3">
-              <h3 className="font-medium text-xs uppercase tracking-wider text-muted-foreground">Room Properties</h3>
-              <div className="space-y-2">
+              <h3 className="font-medium text-[10px] uppercase tracking-[0.12em] text-muted-foreground/50">Room Properties</h3>
+              <div className="space-y-2.5">
                 <div>
-                  <span className="text-xs text-muted-foreground">Label</span>
-                  <Input value={sel.label} onChange={(e) => updateRoom(sel.id, { label: e.target.value })} className="h-8 text-sm" />
+                  <span className="text-[10px] text-muted-foreground/50 uppercase tracking-wider">Label</span>
+                  <Input value={sel.label} onChange={(e) => updateRoom(sel.id, { label: e.target.value })} className="h-8 text-sm mt-1" />
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <span className="text-xs text-muted-foreground">Width (ft)</span>
+                    <span className="text-[10px] text-muted-foreground/50 uppercase tracking-wider">Width (ft)</span>
                     <Input type="number" value={Math.round(sel.width / GRID)}
                       onChange={(e) => updateRoom(sel.id, { width: Math.max(GRID, +e.target.value * GRID) })}
-                      className="h-8 text-sm" />
+                      className="h-8 text-sm mt-1" />
                   </div>
                   <div>
-                    <span className="text-xs text-muted-foreground">Height (ft)</span>
+                    <span className="text-[10px] text-muted-foreground/50 uppercase tracking-wider">Height (ft)</span>
                     <Input type="number" value={Math.round(sel.height / GRID)}
                       onChange={(e) => updateRoom(sel.id, { height: Math.max(GRID, +e.target.value * GRID) })}
-                      className="h-8 text-sm" />
+                      className="h-8 text-sm mt-1" />
                   </div>
                 </div>
-                <div className="text-xs text-muted-foreground">
-                  {Math.round(sel.width / GRID) * Math.round(sel.height / GRID)} sq ft
+                <div className="rounded-lg bg-primary/[0.04] border border-primary/10 px-3 py-2">
+                  <span className="text-[10px] text-muted-foreground/50 uppercase tracking-wider">Area</span>
+                  <div className="text-base font-semibold tabular-nums mt-0.5">
+                    {Math.round(sel.width / GRID) * Math.round(sel.height / GRID)} sq ft
+                  </div>
                 </div>
                 <div>
-                  <span className="text-xs text-muted-foreground">Color</span>
+                  <span className="text-[10px] text-muted-foreground/50 uppercase tracking-wider">Color</span>
                   <Input type="color" value={sel.fill} onChange={(e) => updateRoom(sel.id, { fill: e.target.value })}
-                    className="w-full h-8 p-0 border border-input rounded-md cursor-pointer" />
+                    className="w-full h-8 p-0 border border-border/50 rounded-lg cursor-pointer mt-1 shadow-sm" />
                 </div>
               </div>
             </div>
           )}
           <div className="p-3 border-b">
-            <h3 className="font-medium text-sm">Rooms ({rooms.length})</h3>
+            <h3 className="font-medium text-[10px] uppercase tracking-[0.12em] text-muted-foreground/50">Rooms ({rooms.length})</h3>
           </div>
           <ScrollArea className="flex-1">
-            <div className="p-3 space-y-1">
+            <div className="p-3 space-y-0.5">
               {rooms.length === 0 ? (
-                <div className="text-sm text-muted-foreground text-center p-4">No rooms added</div>
+                <div className="text-sm text-muted-foreground/40 text-center p-6">No rooms added</div>
               ) : (
                 rooms.map((r) => (
                   <div
                     key={r.id}
-                    className={`text-sm p-2 rounded border cursor-pointer transition-colors ${
-                      selectedId === r.id ? "border-primary bg-primary/5" : "border-transparent hover:bg-muted"
+                    className={`text-sm p-2.5 rounded-lg border cursor-pointer transition-all ${
+                      selectedId === r.id ? "border-primary/30 bg-primary/[0.04] shadow-sm" : "border-transparent hover:bg-muted/40"
                     }`}
                     onClick={() => setSelectedId(r.id)}
                   >
-                    <div className="font-medium">{r.label}</div>
-                    <div className="text-xs text-muted-foreground font-mono mt-1">
-                      {Math.round(r.width / GRID)}' x {Math.round(r.height / GRID)}' ({Math.round(r.width / GRID) * Math.round(r.height / GRID)} sq ft)
+                    <div className="flex items-center gap-2">
+                      <span className="w-3 h-3 rounded-sm shrink-0" style={{ background: r.fill }} />
+                      <span className="font-medium text-[13px]">{r.label}</span>
+                    </div>
+                    <div className="text-[11px] text-muted-foreground/40 font-mono mt-1 ml-5">
+                      {Math.round(r.width / GRID)}&apos; x {Math.round(r.height / GRID)}&apos; ({Math.round(r.width / GRID) * Math.round(r.height / GRID)} sq ft)
                     </div>
                   </div>
                 ))

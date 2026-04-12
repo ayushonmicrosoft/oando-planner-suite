@@ -1,1 +1,0 @@
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,15020,e=>{"use strict";var i=e.i(56323),t=e.i(38176);e.s(["default",0,function(){return(0,i.jsx)("div",{className:"min-h-screen flex items-center justify-center bg-muted/30",children:(0,i.jsx)(t.SignIn,{routing:"path",path:"/sign-in",signUpUrl:"/sign-up"})})}])}]);

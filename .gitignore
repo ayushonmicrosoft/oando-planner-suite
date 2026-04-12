@@ -58,3 +58,4 @@ replit.md
 uv.lock
 main.py
 pyproject.toml
+artifacts/planner-suite/.next/

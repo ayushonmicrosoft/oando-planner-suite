@@ -453,7 +453,7 @@ export default function CadDrawing() {
               </div>
               <div className="flex items-center gap-2.5">
                 <span className="text-xs text-muted-foreground/60 w-12">Width</span>
-                <select value={strokeWidth} onChange={(e) => setStrokeWidth(+e.target.value)}
+                <select aria-label="Stroke width" value={strokeWidth} onChange={(e) => setStrokeWidth(+e.target.value)}
                   className="flex h-8 rounded-lg border border-border/50 bg-transparent px-2 text-xs shadow-sm">
                   {[1, 2, 3, 5, 8].map((w) => <option key={w} value={w}>{w}px</option>)}
                 </select>

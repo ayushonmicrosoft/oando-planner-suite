@@ -1,6 +1,7 @@
 import express, { type Express, type Request, type Response, type NextFunction } from "express";
 import cors from "cors";
 import pinoHttp from "pino-http";
+import rateLimit from "express-rate-limit";
 import { toNodeHandler } from "better-auth/node";
 import router from "./routes";
 import { logger } from "./lib/logger";
@@ -9,6 +10,22 @@ import { seedDatabase } from "./lib/seed";
 import { errorHandler } from "./middlewares/error-handler";
 
 const app: Express = express();
+
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 300,
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+  message: { error: "Too many requests, please try again later" },
+});
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 30,
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+  message: { error: "Too many authentication attempts, please try again later" },
+});
 
 app.use(
   pinoHttp({
@@ -32,6 +49,7 @@ app.use(
 
 app.use(cors({ credentials: true, origin: true }));
 
+app.use("/api/auth", authLimiter);
 app.all("/api/auth/{*splat}", toNodeHandler(auth));
 
 app.use("/api/webhooks/razorpay", express.json({
@@ -50,7 +68,7 @@ app.use((_req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
-app.use("/api", router);
+app.use("/api", apiLimiter, router);
 
 app.use(errorHandler);
 

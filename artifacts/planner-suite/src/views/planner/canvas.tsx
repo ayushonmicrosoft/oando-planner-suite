@@ -1081,19 +1081,23 @@ export default function CanvasPlanner() {
                 <h4 className="font-semibold text-sm flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-primary" /> AI Tools
                 </h4>
-                <button onClick={() => setAiPanelOpen(false)} className="text-muted-foreground hover:text-foreground">
+                <button aria-label="Close AI panel" onClick={() => setAiPanelOpen(false)} className="text-muted-foreground hover:text-foreground">
                   <X className="h-4 w-4" />
                 </button>
               </div>
 
-              <div className="flex border-b">
+              <div className="flex border-b" role="tablist">
                 <button
+                  role="tab"
+                  aria-selected={aiTab === 'advisor'}
                   className={`flex-1 px-3 py-2 text-xs font-medium transition-colors flex items-center justify-center gap-1.5 ${aiTab === 'advisor' ? 'border-b-2 border-primary text-primary' : 'text-muted-foreground hover:text-foreground'}`}
                   onClick={() => setAiTab('advisor')}
                 >
                   <Sparkles className="w-3 h-3" /> Advisor
                 </button>
                 <button
+                  role="tab"
+                  aria-selected={aiTab === 'auto-layout'}
                   className={`flex-1 px-3 py-2 text-xs font-medium transition-colors flex items-center justify-center gap-1.5 ${aiTab === 'auto-layout' ? 'border-b-2 border-primary text-primary' : 'text-muted-foreground hover:text-foreground'}`}
                   onClick={() => setAiTab('auto-layout')}
                 >
@@ -1190,6 +1194,7 @@ export default function CanvasPlanner() {
                     <div className="space-y-1.5">
                       <Label className="text-xs">Room Type</Label>
                       <select
+                        aria-label="Room type"
                         value={autoLayoutRoomType}
                         onChange={(e) => setAutoLayoutRoomType(e.target.value as AutoLayoutRequestRoomType)}
                         className="w-full h-8 rounded-md border bg-background px-2.5 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
@@ -1574,7 +1579,7 @@ export default function CanvasPlanner() {
             <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 bg-red-500/90 text-white text-xs font-medium px-3 py-1.5 rounded-full shadow-lg flex items-center gap-2">
               <Crosshair className="w-3.5 h-3.5" />
               {measurePoints.length === 0 ? 'Click first point' : measurePoints.length === 1 ? 'Click second point' : 'Click to start new measurement'}
-              <button onClick={() => { setMeasureMode(false); setMeasurePoints([]); }} className="ml-1 hover:bg-white/20 rounded-full p-0.5">
+              <button aria-label="Exit measurement mode" onClick={() => { setMeasureMode(false); setMeasurePoints([]); }} className="ml-1 hover:bg-white/20 rounded-full p-0.5">
                 <X className="w-3 h-3" />
               </button>
             </div>
@@ -1587,7 +1592,7 @@ export default function CanvasPlanner() {
                   <BarChart3 className="w-3.5 h-3.5 text-primary" />
                   Furniture Summary
                 </h4>
-                <button onClick={() => setSummaryPanelOpen(false)} className="text-muted-foreground hover:text-foreground">
+                <button aria-label="Close furniture summary" onClick={() => setSummaryPanelOpen(false)} className="text-muted-foreground hover:text-foreground">
                   <X className="w-3.5 h-3.5" />
                 </button>
               </div>
@@ -1739,13 +1744,13 @@ export default function CanvasPlanner() {
                     <div className="space-y-1">
                       <Label className="text-[10px]">Color</Label>
                       <div className="flex gap-2 items-center">
-                        <input type="color" value={selectedItem.color} onChange={e => updateItem(selectedItem.instanceId, { color: e.target.value })} className="w-8 h-7 rounded border cursor-pointer" />
+                        <input type="color" aria-label="Item color" value={selectedItem.color} onChange={e => updateItem(selectedItem.instanceId, { color: e.target.value })} className="w-8 h-7 rounded border cursor-pointer" />
                         <Input className="h-7 text-xs flex-1" value={selectedItem.color} onChange={e => updateItem(selectedItem.instanceId, { color: e.target.value })} />
                       </div>
                     </div>
                     <div className="space-y-1">
                       <Label className="text-[10px]">Opacity</Label>
-                      <input type="range" min={0.1} max={1} step={0.1} value={selectedItem.opacity} onChange={e => updateItem(selectedItem.instanceId, { opacity: Number(e.target.value) })} className="w-full" />
+                      <input type="range" aria-label="Item opacity" min={0.1} max={1} step={0.1} value={selectedItem.opacity} onChange={e => updateItem(selectedItem.instanceId, { opacity: Number(e.target.value) })} className="w-full" />
                     </div>
                     <div className="flex gap-1 flex-wrap">
                       <Button variant="outline" size="sm" className="h-7 text-[10px] gap-1" onClick={() => toggleLock(selectedItem.instanceId)}>

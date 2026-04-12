@@ -503,7 +503,7 @@ export default function ImportScale() {
             <h3 className="font-medium text-[10px] uppercase tracking-[0.12em] text-muted-foreground/50">Scale Settings</h3>
             <div>
               <span className="text-[10px] text-muted-foreground/50 uppercase tracking-wider">Units</span>
-              <select value={unit} onChange={(e) => setUnit(e.target.value as "ft" | "m" | "cm")}
+              <select aria-label="Measurement units" value={unit} onChange={(e) => setUnit(e.target.value as "ft" | "m" | "cm")}
                 className="flex h-8 w-full rounded-lg border border-border/50 bg-transparent px-2 text-sm mt-1 shadow-sm">
                 <option value="ft">Feet</option>
                 <option value="m">Meters</option>

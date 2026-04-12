@@ -42,36 +42,207 @@ __turbopack_context__.s([
     "default",
     ()=>RootLayout,
     "metadata",
-    ()=>metadata
+    ()=>metadata,
+    "viewport",
+    ()=>viewport
 ]);
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$2$2e$3_react$2d$dom$40$19$2e$2$2e$5_react$40$19$2e$2$2e$5_$5f$react$40$19$2e$2$2e$5$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/.pnpm/next@16.2.3_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/next/dist/server/route-modules/app-page/vendored/rsc/react-jsx-dev-runtime.js [app-rsc] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$artifacts$2f$planner$2d$suite$2f$src$2f$app$2f$providers$2e$tsx__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/artifacts/planner-suite/src/app/providers.tsx [app-rsc] (ecmascript)");
 ;
 ;
 ;
+const SITE_URL = "https://oando.co.in";
+const SITE_NAME = "One&Only";
+const viewport = {
+    width: "device-width",
+    initialScale: 1,
+    themeColor: "#0B1324"
+};
 const metadata = {
-    title: "One&Only | Work. Space. Performance.",
-    description: "Plan, design, and visualize your workspace with our comprehensive suite of planning tools."
+    title: {
+        default: "One&Only | Office Planner & Workspace Design Tool India",
+        template: "%s | One&Only"
+    },
+    description: "Plan, design, and visualize your office space with One&Only — India's leading office furniture planning software. 2D canvas, blueprint wizard, CAD drawing, floor plans, and 3D viewer in one suite.",
+    keywords: [
+        "office planner",
+        "workspace design tool",
+        "office furniture planning software",
+        "office layout tool India",
+        "office space planner",
+        "floor plan creator",
+        "office interior design tool",
+        "workspace planning software India",
+        "2D office planner",
+        "3D office viewer",
+        "office furniture layout",
+        "commercial space planning"
+    ],
+    authors: [
+        {
+            name: "One&Only Office Furniture Pvt. Ltd.",
+            url: SITE_URL
+        }
+    ],
+    creator: "One&Only Office Furniture Pvt. Ltd.",
+    publisher: "One&Only Office Furniture Pvt. Ltd.",
+    metadataBase: new URL(SITE_URL),
+    alternates: {
+        canonical: "/"
+    },
+    openGraph: {
+        type: "website",
+        locale: "en_IN",
+        url: SITE_URL,
+        siteName: SITE_NAME,
+        title: "One&Only | Office Planner & Workspace Design Tool India",
+        description: "Plan, design, and visualize your office space with One&Only — India's leading office furniture planning software. 2D canvas, blueprint wizard, CAD drawing, floor plans, and 3D viewer.",
+        images: [
+            {
+                url: "/opengraph.jpg",
+                width: 1200,
+                height: 630,
+                alt: "One&Only Office Planner — Workspace Design Tool"
+            }
+        ]
+    },
+    twitter: {
+        card: "summary_large_image",
+        title: "One&Only | Office Planner & Workspace Design Tool India",
+        description: "Plan, design, and visualize your office space with One&Only — India's leading office furniture planning software.",
+        images: [
+            "/opengraph.jpg"
+        ]
+    },
+    robots: {
+        index: true,
+        follow: true,
+        googleBot: {
+            index: true,
+            follow: true,
+            "max-video-preview": -1,
+            "max-image-preview": "large",
+            "max-snippet": -1
+        }
+    },
+    icons: {
+        icon: "/favicon.svg"
+    },
+    category: "Technology"
+};
+const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+        {
+            "@type": "WebSite",
+            "@id": `${SITE_URL}/#website`,
+            url: SITE_URL,
+            name: SITE_NAME,
+            description: "India's leading office furniture planning software — plan, design, and visualize your workspace.",
+            publisher: {
+                "@id": `${SITE_URL}/#organization`
+            },
+            inLanguage: "en-IN"
+        },
+        {
+            "@type": "Organization",
+            "@id": `${SITE_URL}/#organization`,
+            name: "One&Only Office Furniture Pvt. Ltd.",
+            url: SITE_URL,
+            logo: {
+                "@type": "ImageObject",
+                url: `${SITE_URL}/logo-v2-white.webp`,
+                width: 200,
+                height: 50
+            },
+            sameAs: [],
+            contactPoint: {
+                "@type": "ContactPoint",
+                contactType: "customer service",
+                availableLanguage: [
+                    "English",
+                    "Hindi"
+                ],
+                areaServed: "IN"
+            },
+            address: {
+                "@type": "PostalAddress",
+                addressCountry: "IN"
+            }
+        },
+        {
+            "@type": "SoftwareApplication",
+            "@id": `${SITE_URL}/#application`,
+            name: "One&Only Office Planner",
+            applicationCategory: "DesignApplication",
+            operatingSystem: "Web",
+            url: SITE_URL,
+            description: "Office planner and workspace design tool with 2D canvas, blueprint wizard, CAD drawing, floor plan creator, site plan designer, and 3D viewer.",
+            offers: {
+                "@type": "Offer",
+                price: "0",
+                priceCurrency: "INR",
+                availability: "https://schema.org/InStock",
+                description: "Free to start, no credit card required"
+            },
+            featureList: [
+                "2D Canvas Planner",
+                "Blueprint Wizard",
+                "CAD Drawing",
+                "Floor Plan Creator",
+                "Custom Shapes",
+                "Site Plan Designer",
+                "Import & Scale",
+                "3D Viewer"
+            ],
+            aggregateRating: {
+                "@type": "AggregateRating",
+                ratingValue: "4.8",
+                ratingCount: "120",
+                bestRating: "5",
+                worstRating: "1"
+            }
+        }
+    ]
 };
 function RootLayout({ children }) {
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$2$2e$3_react$2d$dom$40$19$2e$2$2e$5_react$40$19$2e$2$2e$5_$5f$react$40$19$2e$2$2e$5$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("html", {
         lang: "en",
-        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$2$2e$3_react$2d$dom$40$19$2e$2$2e$5_react$40$19$2e$2$2e$5_$5f$react$40$19$2e$2$2e$5$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("body", {
-            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$2$2e$3_react$2d$dom$40$19$2e$2$2e$5_react$40$19$2e$2$2e$5_$5f$react$40$19$2e$2$2e$5$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$artifacts$2f$planner$2d$suite$2f$src$2f$app$2f$providers$2e$tsx__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["Providers"], {
-                children: children
+        dir: "ltr",
+        children: [
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$2$2e$3_react$2d$dom$40$19$2e$2$2e$5_react$40$19$2e$2$2e$5_$5f$react$40$19$2e$2$2e$5$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("head", {
+                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$2$2e$3_react$2d$dom$40$19$2e$2$2e$5_react$40$19$2e$2$2e$5_$5f$react$40$19$2e$2$2e$5$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("script", {
+                    type: "application/ld+json",
+                    dangerouslySetInnerHTML: {
+                        __html: JSON.stringify(jsonLd)
+                    }
+                }, void 0, false, {
+                    fileName: "[project]/artifacts/planner-suite/src/app/layout.tsx",
+                    lineNumber: 164,
+                    columnNumber: 9
+                }, this)
             }, void 0, false, {
                 fileName: "[project]/artifacts/planner-suite/src/app/layout.tsx",
-                lineNumber: 18,
-                columnNumber: 9
+                lineNumber: 163,
+                columnNumber: 7
+            }, this),
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$2$2e$3_react$2d$dom$40$19$2e$2$2e$5_react$40$19$2e$2$2e$5_$5f$react$40$19$2e$2$2e$5$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("body", {
+                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$2$2e$3_react$2d$dom$40$19$2e$2$2e$5_react$40$19$2e$2$2e$5_$5f$react$40$19$2e$2$2e$5$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$artifacts$2f$planner$2d$suite$2f$src$2f$app$2f$providers$2e$tsx__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["Providers"], {
+                    children: children
+                }, void 0, false, {
+                    fileName: "[project]/artifacts/planner-suite/src/app/layout.tsx",
+                    lineNumber: 170,
+                    columnNumber: 9
+                }, this)
+            }, void 0, false, {
+                fileName: "[project]/artifacts/planner-suite/src/app/layout.tsx",
+                lineNumber: 169,
+                columnNumber: 7
             }, this)
-        }, void 0, false, {
-            fileName: "[project]/artifacts/planner-suite/src/app/layout.tsx",
-            lineNumber: 17,
-            columnNumber: 7
-        }, this)
-    }, void 0, false, {
+        ]
+    }, void 0, true, {
         fileName: "[project]/artifacts/planner-suite/src/app/layout.tsx",
-        lineNumber: 16,
+        lineNumber: 162,
         columnNumber: 5
     }, this);
 }

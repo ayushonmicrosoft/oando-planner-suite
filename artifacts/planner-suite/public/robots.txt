@@ -1,0 +1,33 @@
+User-agent: *
+Allow: /
+Disallow: /sign-in
+Disallow: /sign-up
+Disallow: /auth/
+Disallow: /planners
+Disallow: /planner/
+Disallow: /plans
+Disallow: /catalog
+Disallow: /templates
+Disallow: /tools/
+Disallow: /viewer/
+
+User-agent: Googlebot
+Allow: /
+Disallow: /sign-in
+Disallow: /sign-up
+Disallow: /auth/
+Disallow: /planners
+Disallow: /planner/
+Disallow: /plans
+Disallow: /catalog
+Disallow: /templates
+Disallow: /tools/
+Disallow: /viewer/
+
+User-agent: GPTBot
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+Sitemap: https://oando.co.in/sitemap.xml

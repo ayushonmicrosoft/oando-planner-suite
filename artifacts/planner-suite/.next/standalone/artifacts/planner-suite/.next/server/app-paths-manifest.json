@@ -1,0 +1,20 @@
+{
+  "/(protected)/catalog/page": "app/(protected)/catalog/page.js",
+  "/(protected)/planner/blueprint/page": "app/(protected)/planner/blueprint/page.js",
+  "/(protected)/planner/canvas/page": "app/(protected)/planner/canvas/page.js",
+  "/(protected)/planner/studio/page": "app/(protected)/planner/studio/page.js",
+  "/(protected)/planners/page": "app/(protected)/planners/page.js",
+  "/(protected)/plans/page": "app/(protected)/plans/page.js",
+  "/(protected)/templates/page": "app/(protected)/templates/page.js",
+  "/(protected)/tools/cad/page": "app/(protected)/tools/cad/page.js",
+  "/(protected)/tools/floor-plan/page": "app/(protected)/tools/floor-plan/page.js",
+  "/(protected)/tools/import/page": "app/(protected)/tools/import/page.js",
+  "/(protected)/tools/shapes/page": "app/(protected)/tools/shapes/page.js",
+  "/(protected)/tools/site-plan/page": "app/(protected)/tools/site-plan/page.js",
+  "/(protected)/viewer/3d/page": "app/(protected)/viewer/3d/page.js",
+  "/_global-error/page": "app/_global-error/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/page": "app/page.js",
+  "/sign-in/[[...sign-in]]/page": "app/sign-in/[[...sign-in]]/page.js",
+  "/sign-up/[[...sign-up]]/page": "app/sign-up/[[...sign-up]]/page.js"
+}

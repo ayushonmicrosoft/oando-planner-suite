@@ -1,6 +1,8 @@
 "use client";
 
-import CanvasPlanner from "@/views/planner/canvas";
+import dynamic from "next/dynamic";
+
+const CanvasPlanner = dynamic(() => import("@/views/planner/canvas"), { ssr: false });
 
 export default function CanvasPage() {
   return <CanvasPlanner />;

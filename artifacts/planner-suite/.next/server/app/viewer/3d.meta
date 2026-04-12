@@ -1,0 +1,17 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/(protected)/layout,_N_T_/(protected)/viewer/layout,_N_T_/(protected)/viewer/3d/layout,_N_T_/(protected)/viewer/3d/page,_N_T_/viewer/3d"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/!KHByb3RlY3RlZCk/viewer/3d/__PAGE__",
+    "/!KHByb3RlY3RlZCk/viewer/3d",
+    "/!KHByb3RlY3RlZCk/viewer",
+    "/!KHByb3RlY3RlZCk",
+    "/_index",
+    "/_head"
+  ]
+}

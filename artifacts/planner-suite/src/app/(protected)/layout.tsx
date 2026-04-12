@@ -1,7 +1,13 @@
-"use client";
+import type { Metadata } from "next";
+import { ProtectedLayoutClient } from "./layout-client";
 
-import { AppLayout } from "@/components/layout";
+export const metadata: Metadata = {
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
-  return <AppLayout>{children}</AppLayout>;
+  return <ProtectedLayoutClient>{children}</ProtectedLayoutClient>;
 }

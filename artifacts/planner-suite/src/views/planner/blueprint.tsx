@@ -6,6 +6,8 @@ import {
   useListCategories, 
   useListCatalogItems, 
   useCreatePlan,
+  useUpdatePlan,
+  useGetPlan,
   useGetAiAdvice
 } from '@workspace/api-client-react';
 import { Button } from '@/components/ui/button';
@@ -59,7 +61,13 @@ export default function BlueprintPlanner() {
   const location = usePathname();
   const router = useRouter();
   const { toast } = useToast();
-  const [step, setStep] = useState<Step>('setup');
+
+  const searchParams = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
+  const rawId = searchParams.get('id');
+  const planIdFromUrl = rawId && !isNaN(Number(rawId)) && Number(rawId) > 0 ? Number(rawId) : null;
+  const hasExistingPlan = !!planIdFromUrl;
+
+  const [step, setStep] = useState<Step>(hasExistingPlan ? 'categories' : 'setup');
 
   const [planName, setPlanName] = useState('New Blueprint');
   const [roomWidthCm, setRoomWidthCm] = useState(600);
@@ -78,6 +86,40 @@ export default function BlueprintPlanner() {
   const createPlan = useCreatePlan();
   const getAiAdvice = useGetAiAdvice();
   const [aiAdvice, setAiAdvice] = useState<string | null>(null);
+
+  const { data: existingPlan } = useGetPlan(planIdFromUrl || 0, { query: { queryKey: [`getPlan`, planIdFromUrl], enabled: !!planIdFromUrl } });
+
+  useEffect(() => {
+    if (existingPlan) {
+      setPlanName(existingPlan.name);
+      setRoomWidthCm(existingPlan.roomWidthCm);
+      setRoomDepthCm(existingPlan.roomDepthCm);
+      if (existingPlan.documentJson) {
+        try {
+          const raw = typeof existingPlan.documentJson === 'string'
+            ? JSON.parse(existingPlan.documentJson)
+            : existingPlan.documentJson;
+          if (raw.roomType) setRoomType(raw.roomType);
+          if (raw.selectedCategories) setSelectedCategories(raw.selectedCategories);
+          if (raw.boq && catalogItems) {
+            const restored = raw.boq
+              .map((entry: any) => {
+                const item = catalogItems.find((c: any) => c.id === entry.itemId);
+                return item ? { item, count: entry.count } : null;
+              })
+              .filter(Boolean);
+            setPlacedItems(restored);
+          } else {
+            setPlacedItems([]);
+          }
+        } catch {
+          setPlacedItems([]);
+        }
+      } else {
+        setPlacedItems([]);
+      }
+    }
+  }, [existingPlan, catalogItems]);
 
   const filteredItems = catalogItems?.filter(item => 
     selectedCategories.length === 0 || selectedCategories.includes(item.category)
@@ -201,6 +243,8 @@ export default function BlueprintPlanner() {
     toast({ title: 'PDF export ready', description: 'Use the print dialog to save as PDF.' });
   };
 
+  const updatePlan = useUpdatePlan();
+
   const handleSave = (redirectToQuote = false) => {
     const documentData = {
       roomType,
@@ -208,25 +252,39 @@ export default function BlueprintPlanner() {
       boq: placedItems.map(p => ({ itemId: p.item.id, count: p.count }))
     };
 
-    createPlan.mutate({
-      data: {
-        name: planName,
-        plannerType: 'blueprint',
-        roomWidthCm,
-        roomDepthCm,
-        documentJson: JSON.stringify(documentData)
-      }
-    }, {
-      onSuccess: (data) => {
-        if (redirectToQuote) {
-          toast({ title: "Blueprint saved — opening quote builder" });
-          router.push(`/plans/${data.id}/quote`);
-        } else {
-          toast({ title: "Blueprint saved successfully" });
-          router.push('/plans');
+    const payload = {
+      name: planName,
+      plannerType: 'blueprint' as any,
+      roomWidthCm,
+      roomDepthCm,
+      documentJson: JSON.stringify(documentData)
+    };
+
+    if (planIdFromUrl) {
+      updatePlan.mutate({ id: planIdFromUrl, data: payload }, {
+        onSuccess: () => {
+          if (redirectToQuote) {
+            toast({ title: "Blueprint saved — opening quote builder" });
+            router.push(`/plans/${planIdFromUrl}/quote`);
+          } else {
+            toast({ title: "Blueprint updated successfully" });
+            router.push('/plans');
+          }
         }
-      }
-    });
+      });
+    } else {
+      createPlan.mutate({ data: payload }, {
+        onSuccess: (data) => {
+          if (redirectToQuote) {
+            toast({ title: "Blueprint saved — opening quote builder" });
+            router.push(`/plans/${data.id}/quote`);
+          } else {
+            toast({ title: "Blueprint saved successfully" });
+            router.push('/plans');
+          }
+        }
+      });
+    }
   };
 
   const steps = [
@@ -551,11 +609,11 @@ export default function BlueprintPlanner() {
               variant="outline"
               size="sm"
               onClick={() => {
-                if (step === 'categories') setStep('setup');
+                if (step === 'categories') { if (!hasExistingPlan) setStep('setup'); }
                 if (step === 'arrange') setStep('categories');
                 if (step === 'review') setStep('arrange');
               }}
-              disabled={step === 'setup'}
+              disabled={step === 'setup' || (step === 'categories' && hasExistingPlan)}
             >
               Back
             </Button>
@@ -569,12 +627,12 @@ export default function BlueprintPlanner() {
                   <Download className="w-3.5 h-3.5" />
                   <span className="hidden sm:inline">PDF</span>
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => handleSave(true)} disabled={createPlan.isPending} className="gap-1.5">
+                <Button variant="outline" size="sm" onClick={() => handleSave(true)} disabled={createPlan.isPending || updatePlan.isPending} className="gap-1.5">
                   <FileSpreadsheet className="w-3.5 h-3.5" />
                   <span className="hidden sm:inline">Save & Quote</span>
                 </Button>
-                <Button size="sm" onClick={() => handleSave(false)} disabled={createPlan.isPending}>
-                  {createPlan.isPending ? <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> : null}
+                <Button size="sm" onClick={() => handleSave(false)} disabled={createPlan.isPending || updatePlan.isPending}>
+                  {(createPlan.isPending || updatePlan.isPending) ? <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> : null}
                   Save Blueprint
                 </Button>
               </div>

@@ -60,6 +60,94 @@ export function getColorForCategory(cat: string) {
   return CATEGORY_COLORS[cat] || { bg: 'bg-slate-500/[0.08]', icon: 'text-slate-400', accent: 'border-slate-500/20', gradient: 'from-slate-500/10 to-slate-400/5' };
 }
 
+function getCategorySvgShape(category: string, w: number, h: number, gradId: string, color: string | null | undefined, catColor: ReturnType<typeof getColorForCategory>) {
+  const fillUrl = `url(#${gradId})`;
+  const strokeColor = color || "currentColor";
+  const strokeOp = color ? 0.3 : 0.15;
+  const pad = 10;
+
+  switch (category) {
+    case 'seating':
+      return (
+        <>
+          <rect x={pad} y={pad + h * 0.15} width={w} height={h * 0.65} rx={4} fill={fillUrl} stroke={strokeColor} strokeWidth={1.5} strokeOpacity={strokeOp} />
+          <rect x={pad + 2} y={pad} width={w - 4} height={h * 0.2} rx={3} fill={fillUrl} stroke={strokeColor} strokeWidth={1} strokeOpacity={strokeOp * 0.7} />
+          <rect x={pad} y={pad + h * 0.7} width={w * 0.15} height={h * 0.3} rx={2} fill={fillUrl} stroke={strokeColor} strokeWidth={0.8} strokeOpacity={strokeOp * 0.5} />
+          <rect x={pad + w * 0.85} y={pad + h * 0.7} width={w * 0.15} height={h * 0.3} rx={2} fill={fillUrl} stroke={strokeColor} strokeWidth={0.8} strokeOpacity={strokeOp * 0.5} />
+          <circle cx={pad + w * 0.35} cy={pad + h * 0.55} r={w * 0.04} fill={strokeColor} fillOpacity={0.15} />
+          <circle cx={pad + w * 0.65} cy={pad + h * 0.55} r={w * 0.04} fill={strokeColor} fillOpacity={0.15} />
+        </>
+      );
+    case 'soft-seating':
+      return (
+        <>
+          <rect x={pad + w * 0.05} y={pad + h * 0.25} width={w * 0.9} height={h * 0.55} rx={h * 0.15} fill={fillUrl} stroke={strokeColor} strokeWidth={1.5} strokeOpacity={strokeOp} />
+          <rect x={pad} y={pad + h * 0.1} width={w * 0.12} height={h * 0.7} rx={w * 0.06} fill={fillUrl} stroke={strokeColor} strokeWidth={1} strokeOpacity={strokeOp * 0.8} />
+          <rect x={pad + w * 0.88} y={pad + h * 0.1} width={w * 0.12} height={h * 0.7} rx={w * 0.06} fill={fillUrl} stroke={strokeColor} strokeWidth={1} strokeOpacity={strokeOp * 0.8} />
+          <rect x={pad + w * 0.1} y={pad} width={w * 0.8} height={h * 0.3} rx={6} fill={fillUrl} stroke={strokeColor} strokeWidth={0.8} strokeOpacity={strokeOp * 0.5} />
+          <line x1={pad + w * 0.35} y1={pad + h * 0.3} x2={pad + w * 0.35} y2={pad + h * 0.75} stroke={strokeColor} strokeWidth={0.5} strokeOpacity={0.1} />
+          <line x1={pad + w * 0.65} y1={pad + h * 0.3} x2={pad + w * 0.65} y2={pad + h * 0.75} stroke={strokeColor} strokeWidth={0.5} strokeOpacity={0.1} />
+        </>
+      );
+    case 'workstations':
+      return (
+        <>
+          <rect x={pad} y={pad + h * 0.1} width={w} height={h * 0.5} rx={3} fill={fillUrl} stroke={strokeColor} strokeWidth={1.5} strokeOpacity={strokeOp} />
+          <rect x={pad + w * 0.35} y={pad + h * 0.6} width={w * 0.3} height={h * 0.35} rx={2} fill={fillUrl} stroke={strokeColor} strokeWidth={0.8} strokeOpacity={strokeOp * 0.6} />
+          <rect x={pad + w * 0.15} y={pad + h * 0.2} width={w * 0.5} height={h * 0.25} rx={2} fill={strokeColor} fillOpacity={0.06} stroke={strokeColor} strokeWidth={0.5} strokeOpacity={0.1} />
+          <rect x={pad + w * 0.7} y={pad + h * 0.18} width={w * 0.2} height={h * 0.12} rx={1} fill={strokeColor} fillOpacity={0.08} />
+          <circle cx={pad + w * 0.5} cy={pad + h * 0.95} r={w * 0.05} fill={strokeColor} fillOpacity={0.1} />
+        </>
+      );
+    case 'tables':
+      return (
+        <>
+          <rect x={pad + w * 0.05} y={pad + h * 0.15} width={w * 0.9} height={h * 0.5} rx={4} fill={fillUrl} stroke={strokeColor} strokeWidth={1.5} strokeOpacity={strokeOp} />
+          <rect x={pad + w * 0.08} y={pad + h * 0.65} width={w * 0.06} height={h * 0.3} rx={1} fill={fillUrl} stroke={strokeColor} strokeWidth={0.8} strokeOpacity={strokeOp * 0.5} />
+          <rect x={pad + w * 0.86} y={pad + h * 0.65} width={w * 0.06} height={h * 0.3} rx={1} fill={fillUrl} stroke={strokeColor} strokeWidth={0.8} strokeOpacity={strokeOp * 0.5} />
+          <rect x={pad + w * 0.15} y={pad + h * 0.25} width={w * 0.3} height={h * 0.08} rx={1} fill={strokeColor} fillOpacity={0.06} />
+          <rect x={pad + w * 0.55} y={pad + h * 0.25} width={w * 0.3} height={h * 0.08} rx={1} fill={strokeColor} fillOpacity={0.06} />
+        </>
+      );
+    case 'storage':
+      return (
+        <>
+          <rect x={pad} y={pad} width={w} height={h} rx={3} fill={fillUrl} stroke={strokeColor} strokeWidth={1.5} strokeOpacity={strokeOp} />
+          <line x1={pad + 3} y1={pad + h * 0.33} x2={pad + w - 3} y2={pad + h * 0.33} stroke={strokeColor} strokeWidth={0.8} strokeOpacity={0.12} />
+          <line x1={pad + 3} y1={pad + h * 0.66} x2={pad + w - 3} y2={pad + h * 0.66} stroke={strokeColor} strokeWidth={0.8} strokeOpacity={0.12} />
+          <circle cx={pad + w * 0.85} cy={pad + h * 0.17} r={w * 0.03} fill={strokeColor} fillOpacity={0.2} />
+          <circle cx={pad + w * 0.85} cy={pad + h * 0.5} r={w * 0.03} fill={strokeColor} fillOpacity={0.2} />
+          <circle cx={pad + w * 0.85} cy={pad + h * 0.83} r={w * 0.03} fill={strokeColor} fillOpacity={0.2} />
+        </>
+      );
+    case 'accessories':
+      return (
+        <>
+          <rect x={pad + w * 0.35} y={pad + h * 0.6} width={w * 0.3} height={h * 0.35} rx={2} fill={fillUrl} stroke={strokeColor} strokeWidth={1} strokeOpacity={strokeOp} />
+          <ellipse cx={pad + w * 0.5} cy={pad + h * 0.35} rx={w * 0.3} ry={h * 0.25} fill={fillUrl} stroke={strokeColor} strokeWidth={1.5} strokeOpacity={strokeOp} />
+          <line x1={pad + w * 0.5} y1={pad + h * 0.6} x2={pad + w * 0.5} y2={pad + h * 0.95} stroke={strokeColor} strokeWidth={1} strokeOpacity={0.15} />
+        </>
+      );
+    case 'education':
+      return (
+        <>
+          <rect x={pad + w * 0.1} y={pad + h * 0.3} width={w * 0.8} height={h * 0.45} rx={3} fill={fillUrl} stroke={strokeColor} strokeWidth={1.5} strokeOpacity={strokeOp} />
+          <rect x={pad + w * 0.35} y={pad + h * 0.75} width={w * 0.3} height={h * 0.2} rx={2} fill={fillUrl} stroke={strokeColor} strokeWidth={0.8} strokeOpacity={strokeOp * 0.5} />
+          <rect x={pad + w * 0.2} y={pad + h * 0.1} width={w * 0.6} height={h * 0.22} rx={2} fill={strokeColor} fillOpacity={0.06} stroke={strokeColor} strokeWidth={0.5} strokeOpacity={0.1} />
+          <line x1={pad + w * 0.25} y1={pad + h * 0.42} x2={pad + w * 0.75} y2={pad + h * 0.42} stroke={strokeColor} strokeWidth={0.5} strokeOpacity={0.08} />
+          <line x1={pad + w * 0.25} y1={pad + h * 0.52} x2={pad + w * 0.65} y2={pad + h * 0.52} stroke={strokeColor} strokeWidth={0.5} strokeOpacity={0.08} />
+        </>
+      );
+    default:
+      return (
+        <>
+          <rect x={pad} y={pad} width={w} height={h} rx={4} fill={fillUrl} stroke={strokeColor} strokeWidth={1.5} strokeOpacity={strokeOp} />
+          <rect x={pad + 4} y={pad + 4} width={w - 8} height={h - 8} rx={2} fill="none" stroke={strokeColor} strokeWidth={0.5} strokeOpacity={0.1} strokeDasharray="4 3" />
+        </>
+      );
+  }
+}
+
 export function FurnitureVisual({ category, name, color, widthCm, depthCm, size = 'md' }: { category: string; name: string; color?: string | null; widthCm: number; depthCm: number; size?: 'sm' | 'md' | 'lg' }) {
   const Icon = CATEGORY_ICONS[category] || LayoutDashboard;
   const catColor = getColorForCategory(category);
@@ -88,22 +176,7 @@ export function FurnitureVisual({ category, name, color, widthCm, depthCm, size 
                 <stop offset="100%" stopColor={color || "currentColor"} stopOpacity={color ? 0.8 : 0.18} />
               </linearGradient>
             </defs>
-            <rect
-              x={10} y={10} width={w} height={h} rx={size === 'lg' ? 6 : 4}
-              fill={`url(#${gradId})`}
-              className={color ? "" : catColor.icon}
-              stroke={color || "currentColor"}
-              strokeWidth={1.5}
-              strokeOpacity={color ? 0.3 : 0.15}
-            />
-            <rect
-              x={14} y={14} width={w - 8} height={h - 8} rx={size === 'lg' ? 4 : 2}
-              fill="none"
-              stroke={color || "currentColor"}
-              strokeWidth={0.5}
-              strokeOpacity={0.1}
-              strokeDasharray="4 3"
-            />
+            {getCategorySvgShape(category, w, h, gradId, color, catColor)}
           </svg>
         </div>
         <Icon className={`${cfg.iconSize} ${catColor.icon} opacity-50`} strokeWidth={1.5} />

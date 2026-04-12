@@ -21,8 +21,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
   const mainNavItems = [
     { href: '/', icon: LayoutDashboard, label: 'Dashboard' },
-    { href: '/planner/studio', icon: DraftingCompass, label: 'Live Planner' },
-    { href: '/planners', icon: Layers3, label: 'All Planners' },
+    { href: '/planners', icon: Layers3, label: 'Planner Hub' },
     { href: '/planner/canvas', icon: Grid3X3, label: '2D Canvas' },
     { href: '/planner/blueprint', icon: FileSignature, label: 'Blueprint Wizard' },
     { href: '/viewer/3d', icon: Box, label: '3D Viewer' },

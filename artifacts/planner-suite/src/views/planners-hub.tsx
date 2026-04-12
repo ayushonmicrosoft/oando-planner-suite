@@ -54,10 +54,10 @@ const TOOLS = [
 ];
 
 const START_OPTIONS = [
-  { label: "Empty Floor Plan", icon: LayoutGrid, href: "/tools/floor-plan", desc: "Start by defining rooms" },
-  { label: "Canvas Planner", icon: PenTool, href: "/planner/canvas", desc: "Jump into furniture layout" },
-  { label: "Import Blueprint", icon: Import, href: "/tools/import", desc: "Upload an existing plan" },
-  { label: "CAD Drawing", icon: PencilRuler, href: "/tools/cad", desc: "Precision vector drawing" },
+  { label: "Empty Floor Plan", icon: LayoutGrid, href: "/tools/floor-plan", desc: "Start by defining rooms", plannerType: "floorplan" },
+  { label: "Canvas Planner", icon: PenTool, href: "/planner/canvas", desc: "Jump into furniture layout", plannerType: "canvas" },
+  { label: "Import Blueprint", icon: Import, href: "/tools/import", desc: "Upload an existing plan", plannerType: "blueprint" },
+  { label: "CAD Drawing", icon: PencilRuler, href: "/tools/cad", desc: "Precision vector drawing", plannerType: "cad" },
 ];
 
 const stagger: Variants = { hidden: {}, visible: { transition: { staggerChildren: 0.05 } } };
@@ -167,14 +167,14 @@ export default function PlannersHub() {
     router.push(`${href}?id=${id}`);
   };
 
-  const handleStartNew = (href: string) => {
+  const handleStartNew = (href: string, plannerType: string) => {
     if (!newPlanName.trim()) {
       router.push(href);
       setShowNewPlan(false);
       return;
     }
     createPlan.mutate(
-      { data: { name: newPlanName.trim(), roomWidthCm: 900, roomDepthCm: 650, plannerType: "floorplan" as any, documentJson: JSON.stringify({ version: 3, rooms: [], structure: [], furniture: [], annotations: [], site: [], importLayer: null }) } },
+      { data: { name: newPlanName.trim(), roomWidthCm: 900, roomDepthCm: 650, plannerType: plannerType as any, documentJson: JSON.stringify({ version: 3, rooms: [], structure: [], furniture: [], annotations: [], site: [], importLayer: null }) } },
       {
         onSuccess: (data) => {
           queryClient.invalidateQueries({ queryKey: getListPlansQueryKey() });
@@ -270,7 +270,7 @@ export default function PlannersHub() {
                 return (
                   <button
                     key={opt.label}
-                    onClick={() => handleStartNew(opt.href)}
+                    onClick={() => handleStartNew(opt.href, opt.plannerType)}
                     disabled={createPlan.isPending}
                     className="group flex flex-col items-start gap-2 p-4 rounded-xl border bg-card hover:border-primary/20 hover:shadow-md hover:shadow-black/5 transition-all text-left disabled:opacity-50"
                   >

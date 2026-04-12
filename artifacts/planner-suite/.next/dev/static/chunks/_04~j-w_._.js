@@ -34,20 +34,50 @@ var _s = __turbopack_context__.k.signature();
 function useAuth() {
     _s();
     const [user, setUser] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$2$2e$3_react$2d$dom$40$19$2e$2$2e$5_react$40$19$2e$2$2e$5_$5f$react$40$19$2e$2$2e$5$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
+    const [profile, setProfile] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$2$2e$3_react$2d$dom$40$19$2e$2$2e$5_react$40$19$2e$2$2e$5_$5f$react$40$19$2e$2$2e$5$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
     const [isLoaded, setIsLoaded] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$2$2e$3_react$2d$dom$40$19$2e$2$2e$5_react$40$19$2e$2$2e$5_$5f$react$40$19$2e$2$2e$5$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
     const supabase = (0, __TURBOPACK__imported__module__$5b$project$5d2f$artifacts$2f$planner$2d$suite$2f$src$2f$lib$2f$supabase$2f$client$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["createClient"])();
+    const syncAndFetchProfile = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$2$2e$3_react$2d$dom$40$19$2e$2$2e$5_react$40$19$2e$2$2e$5_$5f$react$40$19$2e$2$2e$5$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useCallback"])({
+        "useAuth.useCallback[syncAndFetchProfile]": async (session)=>{
+            if (!session) {
+                setProfile(null);
+                return;
+            }
+            try {
+                const apiBase = ("TURBOPACK compile-time truthy", 1) ? `${window.location.origin}/api` : "TURBOPACK unreachable";
+                await fetch(`${apiBase}/users/sync`, {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${session.access_token}`,
+                        "Content-Type": "application/json"
+                    }
+                });
+                const res = await fetch(`${apiBase}/users/me`, {
+                    headers: {
+                        "Authorization": `Bearer ${session.access_token}`
+                    }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    setProfile(data);
+                }
+            } catch  {}
+        }
+    }["useAuth.useCallback[syncAndFetchProfile]"], []);
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$2$2e$3_react$2d$dom$40$19$2e$2$2e$5_react$40$19$2e$2$2e$5_$5f$react$40$19$2e$2$2e$5$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "useAuth.useEffect": ()=>{
-            supabase.auth.getUser().then({
-                "useAuth.useEffect": ({ data: { user } })=>{
-                    setUser(user);
+            supabase.auth.getSession().then({
+                "useAuth.useEffect": ({ data: { session } })=>{
+                    setUser(session?.user ?? null);
                     setIsLoaded(true);
+                    syncAndFetchProfile(session);
                 }
             }["useAuth.useEffect"]);
             const { data: { subscription } } = supabase.auth.onAuthStateChange({
                 "useAuth.useEffect": (_event, session)=>{
                     setUser(session?.user ?? null);
                     setIsLoaded(true);
+                    syncAndFetchProfile(session);
                 }
             }["useAuth.useEffect"]);
             return ({
@@ -58,6 +88,7 @@ function useAuth() {
     const signOut = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$2$2e$3_react$2d$dom$40$19$2e$2$2e$5_react$40$19$2e$2$2e$5_$5f$react$40$19$2e$2$2e$5$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useCallback"])({
         "useAuth.useCallback[signOut]": async ()=>{
             await supabase.auth.signOut();
+            setProfile(null);
             window.location.href = "/";
         }
     }["useAuth.useCallback[signOut]"], []);
@@ -74,13 +105,16 @@ function useAuth() {
     }["useAuth.useCallback[signInWithProvider]"], []);
     return {
         user,
+        profile,
+        role: profile?.role ?? "user",
+        isAdmin: profile?.role === "admin",
         isLoaded,
         isSignedIn: !!user,
         signOut,
         signInWithProvider
     };
 }
-_s(useAuth, "fbXaBpgbyRsqh3PgeE39oxLnteI=");
+_s(useAuth, "op86mtBxr1u1jYllpxIljH/7S/g=");
 if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelpers !== null) {
     __turbopack_context__.k.registerExports(__turbopack_context__.m, globalThis.$RefreshHelpers$);
 }

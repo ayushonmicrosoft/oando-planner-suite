@@ -14,8 +14,13 @@ import {
   Save, Loader2, MousePointer2, Minus, Square, CircleIcon, Type,
   Ruler, Undo2, Redo2, Trash2, XCircle, Upload, Import, RefreshCw, Crosshair
 } from "lucide-react";
-import { PlannerStepNav } from "@/components/planner-step-nav";
-import { migrateDocument, mergeLayerIntoDocument, type UnifiedDocument } from "@/lib/unified-plan";
+import { PlannerBreadcrumb } from "@/components/planner/PlannerBreadcrumb";
+import {
+  migrateDocument,
+  createEmptyDocument,
+  type UnifiedDocument,
+  getCompletedSteps,
+} from "@/lib/unified-document";
 
 interface Annotation {
   id: string;
@@ -152,7 +157,7 @@ export default function ImportScale() {
   const [drawCurrent, setDrawCurrent] = useState<{ x: number; y: number } | null>(null);
   const [measureLine, setMeasureLine] = useState<{ x1: number; y1: number; x2: number; y2: number } | null>(null);
   const [planName, setPlanName] = useState("New Import");
-  const [unifiedDoc, setUnifiedDoc] = useState<UnifiedDocument>({ version: 2 });
+  const [unifiedDoc, setUnifiedDoc] = useState<UnifiedDocument>(createEmptyDocument());
   const stageRef = useRef<Konva.Stage>(null);
 
   const [calibLine, setCalibLine] = useState<{ x1: number; y1: number; x2: number; y2: number } | null>(null);
@@ -169,43 +174,23 @@ export default function ImportScale() {
     if (existingPlan) {
       setPlanName(existingPlan.name);
       if (existingPlan.documentJson) {
-        try {
-          const raw = typeof existingPlan.documentJson === "string"
-            ? JSON.parse(existingPlan.documentJson)
-            : existingPlan.documentJson;
-          const doc = migrateDocument(raw);
-          setUnifiedDoc(doc);
-          const il = doc.importLayer;
-          if (il) {
-            if (il.annotations) resetAnnotations(il.annotations as unknown as Annotation[]);
-            if (il.scale) setScale(il.scale);
-            if (il.unit) setUnit(il.unit);
-            if (il.calibrated) setCalibrated(il.calibrated);
-            if (il.imageDataUrl && !file) {
-              const dataUrl = il.imageDataUrl;
-              setFile(dataUrl);
-              setFileName(il.fileName || "imported");
-              loadImageFromDataUrl(dataUrl).then(({ img, w, h }) => {
-                setImgEl(img);
-                setImgSize({ w, h });
-              });
-            }
-          } else {
-            if ((raw as any).annotations) resetAnnotations((raw as any).annotations);
-            if ((raw as any).scale) setScale((raw as any).scale);
-            if ((raw as any).unit) setUnit((raw as any).unit);
-            if ((raw as any).calibrated) setCalibrated((raw as any).calibrated);
-            if ((raw as any).imageDataUrl && !file) {
-              const dataUrl = (raw as any).imageDataUrl as string;
-              setFile(dataUrl);
-              setFileName((raw as any).fileName || "imported");
-              loadImageFromDataUrl(dataUrl).then(({ img, w, h }) => {
-                setImgEl(img);
-                setImgSize({ w, h });
-              });
-            }
+        const doc = migrateDocument(existingPlan.documentJson);
+        setUnifiedDoc(doc);
+        if (doc.importLayer) {
+          resetAnnotations(doc.importLayer.annotations as unknown as Annotation[]);
+          setScale(doc.importLayer.scale);
+          setUnit(doc.importLayer.unit);
+          setCalibrated(doc.importLayer.calibrated);
+          if (doc.importLayer.imageDataUrl && !file) {
+            const dataUrl = doc.importLayer.imageDataUrl;
+            setFile(dataUrl);
+            setFileName(doc.importLayer.fileName || "imported");
+            loadImageFromDataUrl(dataUrl).then(({ img, w, h }) => {
+              setImgEl(img);
+              setImgSize({ w, h });
+            });
           }
-        } catch { /* ignore parse errors */ }
+        }
       }
     }
   }, [existingPlan, resetAnnotations]);
@@ -343,17 +328,18 @@ export default function ImportScale() {
   }, [handleKeyDown]);
 
   const handleSave = () => {
-    const importLayerData = {
-      annotations,
-      scale,
-      unit,
-      calibrated,
-      imageDataUrl: file,
-      fileName,
+    const updatedDoc: UnifiedDocument = {
+      ...unifiedDoc,
+      importLayer: {
+        annotations: annotations as any,
+        scale,
+        unit,
+        calibrated,
+        imageDataUrl: file || undefined,
+        fileName: fileName || undefined,
+      },
     };
-    const merged = mergeLayerIntoDocument(unifiedDoc, "importLayer", importLayerData, "rooms");
-    setUnifiedDoc(merged);
-    const documentJson = JSON.stringify(merged);
+    const documentJson = JSON.stringify(updatedDoc);
     const payload = {
       name: planName,
       roomWidthCm: imgSize.w,
@@ -391,10 +377,18 @@ export default function ImportScale() {
     { id: "calibrate", label: "Calibrate", icon: <Crosshair className="w-4 h-4" /> },
   ];
 
+  const completedSteps = getCompletedSteps(unifiedDoc);
+
   if (!file) {
     return (
       <div className="h-full flex flex-col bg-background">
-        <PlannerStepNav planId={planId} planName={planName} currentStep="rooms" document={unifiedDoc} />
+        <PlannerBreadcrumb
+          items={[{ label: "Import & Scale" }]}
+          planId={planId}
+          planName={planName}
+          completedSteps={completedSteps}
+          icon={<Import className="w-3 h-3" />}
+        />
         <header className="h-14 border-b flex items-center px-5 shrink-0 bg-card">
           <div className="flex items-center gap-4">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-rose-500/10 to-pink-500/5 flex items-center justify-center">
@@ -444,7 +438,13 @@ export default function ImportScale() {
 
   return (
     <div className="h-full flex flex-col bg-background">
-      <PlannerStepNav planId={planId} planName={planName} currentStep="rooms" document={unifiedDoc} />
+      <PlannerBreadcrumb
+        items={[{ label: "Import & Scale" }]}
+        planId={planId}
+        planName={planName}
+        completedSteps={completedSteps}
+        icon={<Import className="w-3 h-3" />}
+      />
       <header className="h-14 border-b flex items-center justify-between px-5 shrink-0 bg-card">
         <div className="flex items-center gap-4">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-rose-500/10 to-pink-500/5 flex items-center justify-center">

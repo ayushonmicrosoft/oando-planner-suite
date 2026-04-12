@@ -1,9 +1,9 @@
 "use client";
 
 import { Rect, Line, Circle, Group, Text } from "react-konva";
-import type { RoomLayer, StructureLayer, SiteLayer, AnnotationLayer } from "@/lib/unified-plan";
+import type { UnifiedRoomItem, UnifiedStructureItem, UnifiedSiteItem, UnifiedAnnotation } from "@/lib/unified-document";
 
-function RoomBackground({ rooms, opacity = 0.25 }: { rooms: RoomLayer[]; opacity?: number }) {
+function RoomBackground({ rooms, opacity = 0.25 }: { rooms: UnifiedRoomItem[]; opacity?: number }) {
   return (
     <>
       {rooms.map((r) => (
@@ -31,7 +31,7 @@ function RoomBackground({ rooms, opacity = 0.25 }: { rooms: RoomLayer[]; opacity
   );
 }
 
-function StructureBackground({ items, opacity = 0.3 }: { items: StructureLayer[]; opacity?: number }) {
+function StructureBackground({ items, opacity = 0.3 }: { items: UnifiedStructureItem[]; opacity?: number }) {
   return (
     <>
       {items.map((item) => (
@@ -73,7 +73,7 @@ function StructureBackground({ items, opacity = 0.3 }: { items: StructureLayer[]
   );
 }
 
-function AnnotationBackground({ items, opacity = 0.2 }: { items: AnnotationLayer[]; opacity?: number }) {
+function AnnotationBackground({ items, opacity = 0.2 }: { items: UnifiedAnnotation[]; opacity?: number }) {
   return (
     <>
       {items.map((a) => (
@@ -93,7 +93,7 @@ function AnnotationBackground({ items, opacity = 0.2 }: { items: AnnotationLayer
   );
 }
 
-function SiteBackground({ items, opacity = 0.2 }: { items: SiteLayer[]; opacity?: number }) {
+function SiteBackground({ items, opacity = 0.2 }: { items: UnifiedSiteItem[]; opacity?: number }) {
   return (
     <>
       {items.map((item) => (
@@ -118,10 +118,10 @@ export function PlanBackgroundLayers({
   annotations,
   site,
 }: {
-  rooms?: RoomLayer[];
-  structure?: StructureLayer[];
-  annotations?: AnnotationLayer[];
-  site?: SiteLayer[];
+  rooms?: UnifiedRoomItem[];
+  structure?: UnifiedStructureItem[];
+  annotations?: UnifiedAnnotation[];
+  site?: UnifiedSiteItem[];
 }) {
   return (
     <>

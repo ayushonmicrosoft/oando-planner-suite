@@ -11,9 +11,14 @@ import { useAutoSave } from "@/hooks/useAutoSave";
 import { useSearchParams } from "next/navigation";
 import { useGetPlan, getGetPlanQueryKey } from "@workspace/api-client-react";
 import { RotateCw, Copy, Trash2, Undo2, XCircle, Map } from "lucide-react";
-import { PlannerStepNav } from "@/components/planner-step-nav";
+import { PlannerBreadcrumb } from "@/components/planner/PlannerBreadcrumb";
 import { PlanBackgroundLayers } from "@/components/plan-background-layers";
-import { migrateDocument, type UnifiedDocument } from "@/lib/unified-plan";
+import {
+  migrateDocument,
+  createEmptyDocument,
+  type UnifiedDocument,
+  getCompletedSteps,
+} from "@/lib/unified-document";
 
 interface SiteDef { label: string; w: number; h: number; fill: string; kind: "rect" | "ellipse"; }
 interface SiteItem { id: string; label: string; kind: "rect" | "ellipse"; x: number; y: number; width: number; height: number; fill: string; rotation: number; }
@@ -92,7 +97,7 @@ export default function SitePlan() {
   const [currentPlanId, setCurrentPlanId] = useState<number | null>(null);
   const [currentPlanName, setCurrentPlanName] = useState("");
   const [initialLoaded, setInitialLoaded] = useState(false);
-  const [unifiedDoc, setUnifiedDoc] = useState<UnifiedDocument>({ version: 2 });
+  const [unifiedDoc, setUnifiedDoc] = useState<UnifiedDocument>(createEmptyDocument());
   const stageRef = useRef<Konva.Stage>(null);
 
   const searchParams = useSearchParams();
@@ -100,10 +105,35 @@ export default function SitePlan() {
   const planIdParam = params.get("planId") || params.get("id");
   const planId = Number(planIdParam) || 0;
   const { data: loadedPlan } = useGetPlan(planId, { query: { queryKey: getGetPlanQueryKey(planId), enabled: !!planIdParam && !initialLoaded } });
-  useEffect(() => { if (loadedPlan && !initialLoaded) { try { const raw = typeof loadedPlan.documentJson === "string" ? JSON.parse(loadedPlan.documentJson) : loadedPlan.documentJson; const doc = migrateDocument(raw); setUnifiedDoc(doc); if (doc.site) setItems(doc.site as unknown as SiteItem[]); else if ((raw as any)?.items) setItems((raw as any).items); } catch {} setCurrentPlanId(loadedPlan.id); setCurrentPlanName(loadedPlan.name); setInitialLoaded(true); } }, [loadedPlan, initialLoaded]);
+  useEffect(() => {
+    if (loadedPlan && !initialLoaded) {
+      const doc = migrateDocument(loadedPlan.documentJson || "{}");
+      setUnifiedDoc(doc);
+      if (doc.site.length > 0) {
+        setItems(doc.site as SiteItem[]);
+      } else {
+        try {
+          const raw = typeof loadedPlan.documentJson === "string" ? JSON.parse(loadedPlan.documentJson) : loadedPlan.documentJson;
+          if (raw?.items) setItems(raw.items);
+        } catch {}
+      }
+      setCurrentPlanId(loadedPlan.id);
+      setCurrentPlanName(loadedPlan.name);
+      setInitialLoaded(true);
+    }
+  }, [loadedPlan, initialLoaded]);
 
-  const getCanvasState = useCallback(() => ({ items }), [items]);
-  const loadCanvasState = useCallback((state: Record<string, unknown>) => { if (Array.isArray(state.items)) setItems(state.items as SiteItem[]); }, []);
+  const getCanvasState = useCallback(() => {
+    const updatedDoc = { ...unifiedDoc, site: items };
+    return updatedDoc;
+  }, [items, unifiedDoc]);
+  const loadCanvasState = useCallback((state: Record<string, unknown>) => {
+    if (Array.isArray(state.site)) {
+      setItems(state.site as SiteItem[]);
+    } else if (Array.isArray(state.items)) {
+      setItems(state.items as SiteItem[]);
+    }
+  }, []);
   const autoSave = useAutoSave("site-plan", getCanvasState, loadCanvasState, () => items.length > 0, !!planIdParam && !initialLoaded);
 
   const addItem = (def: SiteDef) => { const id = `sp_${_uid++}`; setItems((p) => [...p, { id, label: def.label, kind: def.kind, x: W / 2 - def.w / 2 + (Math.random() - 0.5) * 40, y: H / 2 - def.h / 2 + (Math.random() - 0.5) * 40, width: def.w, height: def.h, fill: def.fill, rotation: 0 }]); setSelectedId(id); };
@@ -129,9 +159,17 @@ export default function SitePlan() {
 
   const sel = items.find((i) => i.id === selectedId);
 
+  const completedSteps = getCompletedSteps(unifiedDoc);
+
   return (
     <div className="h-full flex flex-col bg-background">
-      <PlannerStepNav planId={currentPlanId} planName={currentPlanName || "Site Plan"} currentStep="rooms" document={unifiedDoc} />
+      <PlannerBreadcrumb
+        items={[{ label: "Site Plan" }]}
+        planId={currentPlanId}
+        planName={currentPlanName || "Site Plan"}
+        completedSteps={completedSteps}
+        icon={<Map className="w-3 h-3" />}
+      />
       <header className="h-14 border-b flex items-center justify-between px-5 shrink-0 bg-card">
         <div className="flex items-center gap-4">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500/10 to-green-500/5 flex items-center justify-center">

@@ -28,9 +28,9 @@ import {
   PenTool
 } from 'lucide-react';
 import { PlannerBreadcrumb } from '@/components/planner/PlannerBreadcrumb';
-import { PlannerStepNav } from '@/components/planner-step-nav';
 import { PlanBackgroundLayers } from '@/components/plan-background-layers';
 import { getFurnitureShapeDef, getCategoryIcon } from '@/lib/furniture-shapes';
+import { getCompletedSteps } from '@/lib/unified-document';
 
 const GRID_CM = 10;
 const MIN_ZOOM = 0.25;
@@ -342,7 +342,8 @@ export default function CanvasPlanner() {
     rotateItem, deleteItems, duplicateItems, clearAll,
     bringToFront, sendToBack, toggleLock,
     undo, redo,
-    unifiedDoc, loadDocument, getDocumentJson,
+    loadDocument, getDocumentJson,
+    unifiedDoc,
     snapToGrid,
     zoom, setZoom,
     panOffset, setPanOffset,
@@ -761,12 +762,13 @@ export default function CanvasPlanner() {
 
   return (
     <div className="h-full flex flex-col bg-background">
-      <PlannerStepNav planId={planId} planName={planName} currentStep="furniture" document={unifiedDoc} />
       <PlannerBreadcrumb
         items={[
-          { label: 'Plans', href: '/plans' },
           { label: 'Canvas Planner' },
         ]}
+        planId={planId}
+        planName={planName}
+        completedSteps={getCompletedSteps(unifiedDoc)}
         icon={<PenTool className="w-3.5 h-3.5 text-primary" />}
       />
 

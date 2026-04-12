@@ -10,26 +10,21 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { useUndoRedo } from "@/hooks/use-undo-redo";
 import { Save, Loader2, Undo2, Redo2, Trash2, Copy, XCircle, LayoutGrid } from "lucide-react";
-import { PlannerStepNav } from "@/components/planner-step-nav";
-import { PlanBackgroundLayers } from "@/components/plan-background-layers";
-import { migrateDocument, mergeLayerIntoDocument, type UnifiedDocument } from "@/lib/unified-plan";
+import { PlannerBreadcrumb } from "@/components/planner/PlannerBreadcrumb";
+import {
+  migrateDocument,
+  createEmptyDocument,
+  type UnifiedDocument,
+  type UnifiedRoomItem,
+  type UnifiedStructureItem,
+  getCompletedSteps,
+} from "@/lib/unified-document";
 
 interface RoomPreset {
   label: string;
   w: number;
   h: number;
   fill: string;
-}
-
-interface RoomItem {
-  id: string;
-  label: string;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  fill: string;
-  rotation: number;
 }
 
 const PRESETS: RoomPreset[] = [
@@ -55,11 +50,11 @@ let _uid = Date.now();
 function RoomShape({
   item, isSelected, showDims, onSelect, onChange,
 }: {
-  item: RoomItem;
+  item: UnifiedRoomItem;
   isSelected: boolean;
   showDims: boolean;
   onSelect: () => void;
-  onChange: (a: Partial<RoomItem>) => void;
+  onChange: (a: Partial<UnifiedRoomItem>) => void;
 }) {
   const shapeRef = useRef<Konva.Rect>(null);
   const trRef = useRef<Konva.Transformer>(null);
@@ -127,17 +122,39 @@ function RoomShape({
   );
 }
 
+function BackgroundStructureLayer({ items }: { items: UnifiedStructureItem[] }) {
+  if (items.length === 0) return null;
+  return (
+    <>
+      {items.map((item) => (
+        <Rect
+          key={item.id}
+          x={item.x}
+          y={item.y}
+          width={item.width}
+          height={item.height}
+          fill={item.fill}
+          rotation={item.rotation}
+          opacity={0.3}
+          listening={false}
+          cornerRadius={item.kind === "ellipse" ? Math.min(item.width, item.height) / 2 : 2}
+        />
+      ))}
+    </>
+  );
+}
+
 export default function FloorPlanCreator() {
   const searchParams = new URLSearchParams(window.location.search);
   const initialPlanId = searchParams.get("id") ? Number(searchParams.get("id")) : null;
   const [currentPlanId, setCurrentPlanId] = useState<number | null>(initialPlanId);
   const planId = currentPlanId;
 
-  const { current: rooms, set: setRooms, undo, redo, canUndo, canRedo, reset: resetRooms } = useUndoRedo<RoomItem[]>([]);
+  const { current: rooms, set: setRooms, undo, redo, canUndo, canRedo, reset: resetRooms } = useUndoRedo<UnifiedRoomItem[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [showDims, setShowDims] = useState(true);
   const [planName, setPlanName] = useState("New Floor Plan");
-  const [unifiedDoc, setUnifiedDoc] = useState<UnifiedDocument>({ version: 2 });
+  const [unifiedDoc, setUnifiedDoc] = useState<UnifiedDocument>(createEmptyDocument());
   const stageRef = useRef<Konva.Stage>(null);
 
   const { data: existingPlan } = useGetPlan(planId || 0, { query: { queryKey: getGetPlanQueryKey(planId || 0), enabled: !!planId } });
@@ -149,14 +166,9 @@ export default function FloorPlanCreator() {
     if (existingPlan) {
       setPlanName(existingPlan.name);
       if (existingPlan.documentJson) {
-        try {
-          const raw = typeof existingPlan.documentJson === "string"
-            ? JSON.parse(existingPlan.documentJson)
-            : existingPlan.documentJson;
-          const doc = migrateDocument(raw);
-          setUnifiedDoc(doc);
-          if (doc.rooms) resetRooms(doc.rooms);
-        } catch { /* ignore parse errors */ }
+        const doc = migrateDocument(existingPlan.documentJson);
+        setUnifiedDoc(doc);
+        resetRooms(doc.rooms);
       }
     }
   }, [existingPlan, resetRooms]);
@@ -169,7 +181,7 @@ export default function FloorPlanCreator() {
     setSelectedId(id);
   };
 
-  const updateRoom = (id: string, a: Partial<RoomItem>) => setRooms((p) => p.map((r) => (r.id === id ? { ...r, ...a } : r)));
+  const updateRoom = (id: string, a: Partial<UnifiedRoomItem>) => setRooms((p) => p.map((r) => (r.id === id ? { ...r, ...a } : r)));
 
   const deleteSelected = useCallback(() => {
     setRooms((p) => p.filter((r) => r.id !== selectedId));
@@ -206,9 +218,12 @@ export default function FloorPlanCreator() {
   }, [handleKeyDown]);
 
   const handleSave = () => {
-    const merged = mergeLayerIntoDocument(unifiedDoc, "rooms", rooms, "rooms");
-    setUnifiedDoc(merged);
-    const documentJson = JSON.stringify(merged);
+    const updatedDoc: UnifiedDocument = {
+      ...unifiedDoc,
+      rooms,
+      currentStep: "rooms",
+    };
+    const documentJson = JSON.stringify(updatedDoc);
     const payload = {
       name: planName,
       roomWidthCm: W,
@@ -239,17 +254,24 @@ export default function FloorPlanCreator() {
     gridLines.push(<Line key={`h${y}`} points={[0, y, W, y]} stroke={y % 100 === 0 ? "#d4d4d4" : "#eee"} strokeWidth={y % 100 === 0 ? 0.6 : 0.3} listening={false} />);
 
   const sel = rooms.find((r) => r.id === selectedId);
+  const completedSteps = getCompletedSteps({ ...unifiedDoc, rooms });
 
   return (
     <div className="h-full flex flex-col bg-background">
-      <PlannerStepNav planId={planId} planName={planName} currentStep="rooms" document={unifiedDoc} />
+      <PlannerBreadcrumb
+        items={[{ label: "Floor Plan Creator" }]}
+        planId={planId}
+        planName={planName}
+        completedSteps={completedSteps}
+        icon={<LayoutGrid className="w-3 h-3" />}
+      />
       <header className="h-14 border-b flex items-center justify-between px-5 shrink-0 bg-card">
         <div className="flex items-center gap-4">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500/10 to-purple-500/5 flex items-center justify-center">
             <LayoutGrid className="w-4 h-4 text-primary" strokeWidth={1.8} />
           </div>
           <div className="flex flex-col">
-            <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-muted-foreground/50 leading-none">Drawing Tools</p>
+            <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-muted-foreground/50 leading-none">Step 1 — Define Rooms</p>
             <Input
               value={planName}
               onChange={(e) => setPlanName(e.target.value)}
@@ -331,7 +353,7 @@ export default function FloorPlanCreator() {
               onMouseDown={deselectAll} onTouchStart={deselectAll}>
               <Layer>{gridLines}</Layer>
               <Layer>
-                <PlanBackgroundLayers structure={unifiedDoc.structure} annotations={unifiedDoc.annotations} site={unifiedDoc.site} />
+                <BackgroundStructureLayer items={unifiedDoc.structure} />
               </Layer>
               <Layer>
                 {rooms.map((r) => (

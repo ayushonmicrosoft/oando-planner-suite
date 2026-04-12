@@ -14,9 +14,14 @@ import {
   Save, Loader2, MousePointer2, Minus, Square, CircleIcon, Type,
   Ruler, Undo2, Redo2, Trash2, Copy, XCircle, Grid3X3, PencilRuler
 } from "lucide-react";
-import { PlannerStepNav } from "@/components/planner-step-nav";
+import { PlannerBreadcrumb } from "@/components/planner/PlannerBreadcrumb";
 import { PlanBackgroundLayers } from "@/components/plan-background-layers";
-import { migrateDocument, mergeLayerIntoDocument, type UnifiedDocument } from "@/lib/unified-plan";
+import {
+  migrateDocument,
+  createEmptyDocument,
+  type UnifiedDocument,
+  getCompletedSteps,
+} from "@/lib/unified-document";
 
 type ToolId = "select" | "line" | "rect" | "circle" | "measure" | "text";
 
@@ -174,8 +179,8 @@ export default function CadDrawing() {
   const [drawCurrent, setDrawCurrent] = useState<{ x: number; y: number } | null>(null);
   const [measureLine, setMeasureLine] = useState<{ x1: number; y1: number; x2: number; y2: number } | null>(null);
   const [planName, setPlanName] = useState("New CAD Drawing");
-  const [unifiedDoc, setUnifiedDoc] = useState<UnifiedDocument>({ version: 2 });
   const [pendingText, setPendingText] = useState<{ x: number; y: number; value: string } | null>(null);
+  const [unifiedDoc, setUnifiedDoc] = useState<UnifiedDocument>(createEmptyDocument());
   const stageRef = useRef<Konva.Stage>(null);
   const pendingTextRef = useRef<HTMLInputElement>(null);
 
@@ -188,15 +193,18 @@ export default function CadDrawing() {
     if (existingPlan) {
       setPlanName(existingPlan.name);
       if (existingPlan.documentJson) {
-        try {
-          const raw = typeof existingPlan.documentJson === "string"
-            ? JSON.parse(existingPlan.documentJson)
-            : existingPlan.documentJson;
-          const doc = migrateDocument(raw);
-          setUnifiedDoc(doc);
-          if (doc.annotations) resetShapes(doc.annotations as unknown as DrawnShape[]);
-          else if ((raw as any).shapes) resetShapes((raw as any).shapes);
-        } catch { /* ignore parse errors */ }
+        const doc = migrateDocument(existingPlan.documentJson);
+        setUnifiedDoc(doc);
+        if (doc.annotations.length > 0) {
+          resetShapes(doc.annotations as unknown as DrawnShape[]);
+        } else {
+          try {
+            const raw = typeof existingPlan.documentJson === "string"
+              ? JSON.parse(existingPlan.documentJson)
+              : existingPlan.documentJson;
+            if (raw.shapes) resetShapes(raw.shapes);
+          } catch {}
+        }
       }
     }
   }, [existingPlan, resetShapes]);
@@ -320,9 +328,11 @@ export default function CadDrawing() {
   const updateShape = (id: string, a: Partial<DrawnShape>) => setShapes((p) => p.map((s) => (s.id === id ? { ...s, ...a } : s)));
 
   const handleSave = () => {
-    const merged = mergeLayerIntoDocument(unifiedDoc, "annotations", shapes);
-    setUnifiedDoc(merged);
-    const documentJson = JSON.stringify(merged);
+    const updatedDoc: UnifiedDocument = {
+      ...unifiedDoc,
+      annotations: shapes as unknown as UnifiedDocument["annotations"],
+    };
+    const documentJson = JSON.stringify(updatedDoc);
     const payload = {
       name: planName,
       roomWidthCm: W,
@@ -368,9 +378,17 @@ export default function CadDrawing() {
     : 0;
   const drawingPreview = drawing && drawStart && drawCurrent;
 
+  const completedSteps = getCompletedSteps(unifiedDoc);
+
   return (
     <div className="h-full flex flex-col bg-background">
-      <PlannerStepNav planId={planId} planName={planName} currentStep="structure" document={unifiedDoc} />
+      <PlannerBreadcrumb
+        items={[{ label: "CAD Drawing" }]}
+        planId={planId}
+        planName={planName}
+        completedSteps={completedSteps}
+        icon={<PencilRuler className="w-3 h-3" />}
+      />
       <header className="h-14 border-b flex items-center justify-between px-5 shrink-0 bg-card">
         <div className="flex items-center gap-4">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500/10 to-cyan-500/5 flex items-center justify-center">

@@ -10,9 +10,17 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { useUndoRedo } from "@/hooks/use-undo-redo";
 import { Save, Loader2, Undo2, Redo2, Trash2, Copy, XCircle, Shapes } from "lucide-react";
-import { PlannerStepNav } from "@/components/planner-step-nav";
+import { PlannerBreadcrumb } from "@/components/planner/PlannerBreadcrumb";
 import { PlanBackgroundLayers } from "@/components/plan-background-layers";
-import { migrateDocument, mergeLayerIntoDocument, type UnifiedDocument } from "@/lib/unified-plan";
+import {
+  migrateDocument,
+  createEmptyDocument,
+  type UnifiedDocument,
+  type UnifiedStructureItem,
+  type UnifiedRoomItem,
+  getCompletedSteps,
+  updateLayer,
+} from "@/lib/unified-document";
 
 interface ShapeDef {
   label: string;
@@ -37,18 +45,7 @@ interface ShapeDetail {
   radius?: number;
 }
 
-interface CanvasItem {
-  id: string;
-  defLabel: string;
-  kind: "rect" | "ellipse";
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  fill: string;
-  rotation: number;
-  details?: ShapeDetail[];
-}
+type CanvasItem = UnifiedStructureItem;
 
 const CATS: { name: string; shapes: ShapeDef[] }[] = [
   {
@@ -294,6 +291,30 @@ function isLightColor(hex: string): boolean {
   return (r * 299 + g * 587 + b * 114) / 1000 > 150;
 }
 
+function BackgroundRoomsLayer({ rooms }: { rooms: UnifiedRoomItem[] }) {
+  if (rooms.length === 0) return null;
+  return (
+    <>
+      {rooms.map((r) => (
+        <Rect
+          key={r.id}
+          x={r.x}
+          y={r.y}
+          width={r.width}
+          height={r.height}
+          fill={r.fill}
+          rotation={r.rotation}
+          opacity={0.25}
+          stroke="#9ca3af"
+          strokeWidth={1}
+          dash={[4, 4]}
+          listening={false}
+        />
+      ))}
+    </>
+  );
+}
+
 export default function CustomShapes() {
   const searchParams = new URLSearchParams(window.location.search);
   const initialPlanId = searchParams.get("id") ? Number(searchParams.get("id")) : null;
@@ -304,7 +325,7 @@ export default function CustomShapes() {
   const { current: items, set: setItems, undo, redo, canUndo, canRedo, reset: resetItems } = useUndoRedo<CanvasItem[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [planName, setPlanName] = useState("New Shape Layout");
-  const [unifiedDoc, setUnifiedDoc] = useState<UnifiedDocument>({ version: 2 });
+  const [unifiedDoc, setUnifiedDoc] = useState<UnifiedDocument>(createEmptyDocument());
   const stageRef = useRef<Konva.Stage>(null);
 
   const { data: existingPlan } = useGetPlan(planId || 0, { query: { queryKey: getGetPlanQueryKey(planId || 0), enabled: !!planId } });
@@ -322,8 +343,11 @@ export default function CustomShapes() {
             : existingPlan.documentJson;
           const doc = migrateDocument(raw);
           setUnifiedDoc(doc);
-          if (doc.structure) resetItems(doc.structure as unknown as CanvasItem[]);
-          else if ((raw as any).items) resetItems((raw as any).items);
+          if (doc.structure && doc.structure.length > 0) {
+            resetItems(doc.structure as unknown as CanvasItem[]);
+          } else if ((raw as any).items) {
+            resetItems((raw as any).items);
+          }
         } catch { /* ignore parse errors */ }
       }
     }
@@ -388,7 +412,7 @@ export default function CustomShapes() {
   }, [handleKeyDown]);
 
   const handleSave = () => {
-    const merged = mergeLayerIntoDocument(unifiedDoc, "structure", items, "structure");
+    const merged = updateLayer({ ...unifiedDoc, currentStep: "structure" }, "structure", items as unknown as UnifiedStructureItem[]);
     setUnifiedDoc(merged);
     const documentJson = JSON.stringify(merged);
     const payload = {
@@ -421,17 +445,24 @@ export default function CustomShapes() {
     gridLines.push(<Line key={`gh${y}`} points={[0, y, W, y]} stroke={y % 100 === 0 ? "#d4d4d4" : "#eeeeee"} strokeWidth={y % 100 === 0 ? 0.6 : 0.3} listening={false} />);
 
   const sel = items.find((it) => it.id === selectedId);
+  const completedSteps = getCompletedSteps({ ...unifiedDoc, structure: items });
 
   return (
     <div className="h-full flex flex-col bg-background">
-      <PlannerStepNav planId={planId} planName={planName} currentStep="structure" document={unifiedDoc} />
+      <PlannerBreadcrumb
+        items={[{ label: "Custom Shapes" }]}
+        planId={planId}
+        planName={planName}
+        completedSteps={completedSteps}
+        icon={<Shapes className="w-3 h-3" />}
+      />
       <header className="h-14 border-b flex items-center justify-between px-5 shrink-0 bg-card">
         <div className="flex items-center gap-4">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500/10 to-orange-500/5 flex items-center justify-center">
             <Shapes className="w-4 h-4 text-primary" strokeWidth={1.8} />
           </div>
           <div className="flex flex-col">
-            <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-muted-foreground/50 leading-none">Drawing Tools</p>
+            <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-muted-foreground/50 leading-none">Step 2 — Add Structure</p>
             <Input
               value={planName}
               onChange={(e) => setPlanName(e.target.value)}

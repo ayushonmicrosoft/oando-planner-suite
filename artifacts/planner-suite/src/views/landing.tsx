@@ -10,7 +10,7 @@ import ClientLogos from "@/components/landing/client-logos";
 
 export default function Landing() {
   const router = useRouter();
-  const handleGetStarted = () => router.push("/sign-in");
+  const handleGetStarted = () => router.push("/sign-up");
 
   return (
     <div className="min-h-screen bg-background">
@@ -27,7 +27,7 @@ export default function Landing() {
               <button onClick={handleGetStarted} className="hover:text-white transition-colors">Portfolio</button>
             </div>
             <div className="flex items-center gap-4">
-              <button onClick={() => router.push("/sign-in")} className="text-sm text-white hover:text-white/80 transition-colors font-medium border border-white/40 px-4 py-1.5 rounded-full hover:border-white/70">
+              <button onClick={() => router.push("/sign-up")} className="text-sm text-white hover:text-white/80 transition-colors font-medium border border-white/40 px-4 py-1.5 rounded-full hover:border-white/70">
                 Sign In
               </button>
               <button

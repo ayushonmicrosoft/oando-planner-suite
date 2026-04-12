@@ -38,8 +38,8 @@ export default function SignUpPage() {
           <p className="text-sm text-muted">
             We sent a confirmation link to <strong>{email}</strong>. Click the link to activate your account.
           </p>
-          <Link href="/sign-in" className="text-sm text-brand font-medium hover:underline mt-4 inline-block">
-            Back to Sign In
+          <Link href="/sign-up" className="text-sm text-brand font-medium hover:underline mt-4 inline-block">
+            Back to Sign Up
           </Link>
         </div>
       </div>
@@ -143,7 +143,7 @@ export default function SignUpPage() {
 
         <p className="text-center text-xs text-muted mt-6">
           Already have an account?{" "}
-          <Link href="/sign-in" className="text-brand font-medium hover:underline">
+          <Link href="/sign-up" className="text-brand font-medium hover:underline">
             Sign in
           </Link>
         </p>

@@ -37,6 +37,7 @@ export async function updateSession(request: NextRequest) {
     "/templates",
     "/catalog",
     "/plans",
+    "/settings",
   ];
 
   const isProtected = protectedPaths.some((p) =>
@@ -45,15 +46,14 @@ export async function updateSession(request: NextRequest) {
 
   if (isProtected && !user) {
     const url = request.nextUrl.clone();
-    url.pathname = "/sign-in";
+    url.pathname = "/sign-up";
     url.searchParams.set("redirect", request.nextUrl.pathname);
     return NextResponse.redirect(url);
   }
 
   if (
     user &&
-    (request.nextUrl.pathname === "/sign-in" ||
-      request.nextUrl.pathname === "/sign-up")
+    request.nextUrl.pathname === "/sign-up"
   ) {
     const url = request.nextUrl.clone();
     url.pathname = "/";

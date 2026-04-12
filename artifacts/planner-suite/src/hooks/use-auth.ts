@@ -6,12 +6,18 @@ import type { User } from "@supabase/supabase-js";
 
 type UserRole = "user" | "admin";
 
+type PlanTier = "free" | "pro";
+type SubscriptionStatus = "active" | "cancelled" | "past_due" | "expired" | "pending" | null;
+
 interface DbProfile {
   id: string;
   email: string;
   displayName: string | null;
   avatarUrl: string | null;
   role: UserRole;
+  planTier: PlanTier;
+  subscriptionStatus: SubscriptionStatus;
+  currentPeriodEnd: string | null;
 }
 
 export function useAuth() {
@@ -119,6 +125,12 @@ export function useAuth() {
     profile,
     role: profile?.role ?? "user",
     isAdmin: profile?.role === "admin",
+    planTier: (profile?.planTier ?? "free") as PlanTier,
+    isPro: profile?.planTier === "pro" &&
+      (profile?.subscriptionStatus === "active" ||
+        (profile?.subscriptionStatus === "cancelled" &&
+          profile?.currentPeriodEnd != null &&
+          new Date(profile.currentPeriodEnd) > new Date())),
     isLoaded,
     profileLoaded,
     isSignedIn: !!user,

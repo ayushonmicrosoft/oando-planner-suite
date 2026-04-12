@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, FileSignature, Grid3X3, Box, Library, FolderOpen, Activity, Pencil, LayoutGrid, Shapes, ImagePlus, LayoutTemplate, LogOut, Settings, ChevronDown, Map, DraftingCompass, Layers3, Shield, Briefcase, Users } from 'lucide-react';
+import { LayoutDashboard, FileSignature, Grid3X3, Box, Library, FolderOpen, Activity, Pencil, LayoutGrid, Shapes, ImagePlus, LayoutTemplate, LogOut, Settings, ChevronDown, Map, DraftingCompass, Layers3, Shield, Briefcase, Users, CreditCard } from 'lucide-react';
 import { Sidebar, SidebarContent, SidebarHeader, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider, SidebarFooter } from '@/components/ui/sidebar';
 import { useHealthCheck, getHealthCheckQueryKey } from '@workspace/api-client-react';
 import { useAuth } from '@/hooks/use-auth';
@@ -40,6 +40,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     { href: '/templates', icon: LayoutTemplate, label: 'Templates' },
     { href: '/catalog', icon: Library, label: 'Furniture Catalog' },
     { href: '/plans', icon: FolderOpen, label: 'Saved Plans' },
+    { href: '/settings/billing', icon: CreditCard, label: 'Billing' },
   ];
 
   const isActive = (href: string) => {
@@ -70,9 +71,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                   <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="w-56">
-                  <DropdownMenuItem disabled>
-                    <Settings className="w-4 h-4 mr-2" />
-                    Settings
+                  <DropdownMenuItem onClick={() => window.location.href = '/settings/billing'}>
+                    <CreditCard className="w-4 h-4 mr-2" />
+                    Billing
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => signOut()}>

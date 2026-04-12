@@ -8,12 +8,15 @@ import usersRouter from "./users";
 import clientsRouter from "./clients";
 import projectsRouter from "./projects";
 import quotesRouter from "./quotes";
+import subscriptionsRouter from "./subscriptions";
+import webhooksRouter from "./webhooks";
 import { requireAuth } from "../middlewares/require-auth";
 
 const router: IRouter = Router();
 
 router.use(healthRouter);
 router.use(catalogRouter);
+router.use(webhooksRouter);
 
 router.use(requireAuth);
 router.use(usersRouter);
@@ -23,5 +26,6 @@ router.use(aiRouter);
 router.use(templatesRouter);
 router.use(clientsRouter);
 router.use(projectsRouter);
+router.use(subscriptionsRouter);
 
 export default router;

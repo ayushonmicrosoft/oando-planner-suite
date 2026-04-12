@@ -22,9 +22,9 @@ function isUnauthorizedError(error: unknown): boolean {
 
 function handleUnauthorized(error: unknown) {
   if (isUnauthorizedError(error)) {
-    const signInPath = `/sign-in`;
-    if (!window.location.pathname.startsWith(signInPath)) {
-      window.location.href = signInPath;
+    const signUpPath = `/sign-up`;
+    if (!window.location.pathname.startsWith(signUpPath)) {
+      window.location.href = signUpPath;
     }
   }
 }

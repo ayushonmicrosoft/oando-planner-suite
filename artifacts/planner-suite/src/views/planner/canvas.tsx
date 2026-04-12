@@ -28,6 +28,8 @@ import {
   PenTool
 } from 'lucide-react';
 import { PlannerBreadcrumb } from '@/components/planner/PlannerBreadcrumb';
+import { PlannerStepNav } from '@/components/planner-step-nav';
+import { PlanBackgroundLayers } from '@/components/plan-background-layers';
 import { getFurnitureShapeDef, getCategoryIcon } from '@/lib/furniture-shapes';
 
 const GRID_CM = 10;
@@ -340,7 +342,7 @@ export default function CanvasPlanner() {
     rotateItem, deleteItems, duplicateItems, clearAll,
     bringToFront, sendToBack, toggleLock,
     undo, redo,
-    loadDocument, getDocumentJson,
+    unifiedDoc, loadDocument, getDocumentJson,
     snapToGrid,
     zoom, setZoom,
     panOffset, setPanOffset,
@@ -759,6 +761,7 @@ export default function CanvasPlanner() {
 
   return (
     <div className="h-full flex flex-col bg-background">
+      <PlannerStepNav planId={planId} planName={planName} currentStep="furniture" document={unifiedDoc} />
       <PlannerBreadcrumb
         items={[
           { label: 'Plans', href: '/plans' },
@@ -1203,6 +1206,9 @@ export default function CanvasPlanner() {
               clipWidth={roomWidthPx}
               clipHeight={roomHeightPx}
             >
+              <Group x={roomOffsetX} y={roomOffsetY}>
+                <PlanBackgroundLayers rooms={unifiedDoc.rooms} structure={unifiedDoc.structure} annotations={unifiedDoc.annotations} site={unifiedDoc.site} />
+              </Group>
               {sortedItems.map(item => (
                 <FurnitureShape
                   key={item.instanceId}

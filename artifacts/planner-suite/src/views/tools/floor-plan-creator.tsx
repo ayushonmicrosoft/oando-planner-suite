@@ -10,6 +10,9 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { useUndoRedo } from "@/hooks/use-undo-redo";
 import { Save, Loader2, Undo2, Redo2, Trash2, Copy, XCircle, LayoutGrid } from "lucide-react";
+import { PlannerStepNav } from "@/components/planner-step-nav";
+import { PlanBackgroundLayers } from "@/components/plan-background-layers";
+import { migrateDocument, mergeLayerIntoDocument, type UnifiedDocument } from "@/lib/unified-plan";
 
 interface RoomPreset {
   label: string;
@@ -134,6 +137,7 @@ export default function FloorPlanCreator() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [showDims, setShowDims] = useState(true);
   const [planName, setPlanName] = useState("New Floor Plan");
+  const [unifiedDoc, setUnifiedDoc] = useState<UnifiedDocument>({ version: 2 });
   const stageRef = useRef<Konva.Stage>(null);
 
   const { data: existingPlan } = useGetPlan(planId || 0, { query: { queryKey: getGetPlanQueryKey(planId || 0), enabled: !!planId } });
@@ -146,9 +150,11 @@ export default function FloorPlanCreator() {
       setPlanName(existingPlan.name);
       if (existingPlan.documentJson) {
         try {
-          const doc = typeof existingPlan.documentJson === "string"
+          const raw = typeof existingPlan.documentJson === "string"
             ? JSON.parse(existingPlan.documentJson)
             : existingPlan.documentJson;
+          const doc = migrateDocument(raw);
+          setUnifiedDoc(doc);
           if (doc.rooms) resetRooms(doc.rooms);
         } catch { /* ignore parse errors */ }
       }
@@ -200,7 +206,9 @@ export default function FloorPlanCreator() {
   }, [handleKeyDown]);
 
   const handleSave = () => {
-    const documentJson = JSON.stringify({ rooms });
+    const merged = mergeLayerIntoDocument(unifiedDoc, "rooms", rooms, "rooms");
+    setUnifiedDoc(merged);
+    const documentJson = JSON.stringify(merged);
     const payload = {
       name: planName,
       roomWidthCm: W,
@@ -234,6 +242,7 @@ export default function FloorPlanCreator() {
 
   return (
     <div className="h-full flex flex-col bg-background">
+      <PlannerStepNav planId={planId} planName={planName} currentStep="rooms" document={unifiedDoc} />
       <header className="h-14 border-b flex items-center justify-between px-5 shrink-0 bg-card">
         <div className="flex items-center gap-4">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500/10 to-purple-500/5 flex items-center justify-center">
@@ -321,6 +330,9 @@ export default function FloorPlanCreator() {
             <Stage ref={stageRef} width={W} height={H} style={{ background: "#fff" }}
               onMouseDown={deselectAll} onTouchStart={deselectAll}>
               <Layer>{gridLines}</Layer>
+              <Layer>
+                <PlanBackgroundLayers structure={unifiedDoc.structure} annotations={unifiedDoc.annotations} site={unifiedDoc.site} />
+              </Layer>
               <Layer>
                 {rooms.map((r) => (
                   <RoomShape key={r.id} item={r} isSelected={r.id === selectedId} showDims={showDims}

@@ -14,6 +14,8 @@ import {
   Save, Loader2, MousePointer2, Minus, Square, CircleIcon, Type,
   Ruler, Undo2, Redo2, Trash2, XCircle, Upload, Import, RefreshCw, Crosshair
 } from "lucide-react";
+import { PlannerStepNav } from "@/components/planner-step-nav";
+import { migrateDocument, mergeLayerIntoDocument, type UnifiedDocument } from "@/lib/unified-plan";
 
 interface Annotation {
   id: string;
@@ -150,6 +152,7 @@ export default function ImportScale() {
   const [drawCurrent, setDrawCurrent] = useState<{ x: number; y: number } | null>(null);
   const [measureLine, setMeasureLine] = useState<{ x1: number; y1: number; x2: number; y2: number } | null>(null);
   const [planName, setPlanName] = useState("New Import");
+  const [unifiedDoc, setUnifiedDoc] = useState<UnifiedDocument>({ version: 2 });
   const stageRef = useRef<Konva.Stage>(null);
 
   const [calibLine, setCalibLine] = useState<{ x1: number; y1: number; x2: number; y2: number } | null>(null);
@@ -167,21 +170,40 @@ export default function ImportScale() {
       setPlanName(existingPlan.name);
       if (existingPlan.documentJson) {
         try {
-          const doc = typeof existingPlan.documentJson === "string"
+          const raw = typeof existingPlan.documentJson === "string"
             ? JSON.parse(existingPlan.documentJson)
             : existingPlan.documentJson;
-          if (doc.annotations) resetAnnotations(doc.annotations);
-          if (doc.scale) setScale(doc.scale);
-          if (doc.unit) setUnit(doc.unit);
-          if (doc.calibrated) setCalibrated(doc.calibrated);
-          if (doc.imageDataUrl && !file) {
-            const dataUrl = doc.imageDataUrl as string;
-            setFile(dataUrl);
-            setFileName(doc.fileName || "imported");
-            loadImageFromDataUrl(dataUrl).then(({ img, w, h }) => {
-              setImgEl(img);
-              setImgSize({ w, h });
-            });
+          const doc = migrateDocument(raw);
+          setUnifiedDoc(doc);
+          const il = doc.importLayer;
+          if (il) {
+            if (il.annotations) resetAnnotations(il.annotations as unknown as Annotation[]);
+            if (il.scale) setScale(il.scale);
+            if (il.unit) setUnit(il.unit);
+            if (il.calibrated) setCalibrated(il.calibrated);
+            if (il.imageDataUrl && !file) {
+              const dataUrl = il.imageDataUrl;
+              setFile(dataUrl);
+              setFileName(il.fileName || "imported");
+              loadImageFromDataUrl(dataUrl).then(({ img, w, h }) => {
+                setImgEl(img);
+                setImgSize({ w, h });
+              });
+            }
+          } else {
+            if ((raw as any).annotations) resetAnnotations((raw as any).annotations);
+            if ((raw as any).scale) setScale((raw as any).scale);
+            if ((raw as any).unit) setUnit((raw as any).unit);
+            if ((raw as any).calibrated) setCalibrated((raw as any).calibrated);
+            if ((raw as any).imageDataUrl && !file) {
+              const dataUrl = (raw as any).imageDataUrl as string;
+              setFile(dataUrl);
+              setFileName((raw as any).fileName || "imported");
+              loadImageFromDataUrl(dataUrl).then(({ img, w, h }) => {
+                setImgEl(img);
+                setImgSize({ w, h });
+              });
+            }
           }
         } catch { /* ignore parse errors */ }
       }
@@ -321,14 +343,17 @@ export default function ImportScale() {
   }, [handleKeyDown]);
 
   const handleSave = () => {
-    const documentJson = JSON.stringify({
+    const importLayerData = {
       annotations,
       scale,
       unit,
       calibrated,
       imageDataUrl: file,
       fileName,
-    });
+    };
+    const merged = mergeLayerIntoDocument(unifiedDoc, "importLayer", importLayerData, "rooms");
+    setUnifiedDoc(merged);
+    const documentJson = JSON.stringify(merged);
     const payload = {
       name: planName,
       roomWidthCm: imgSize.w,
@@ -369,6 +394,7 @@ export default function ImportScale() {
   if (!file) {
     return (
       <div className="h-full flex flex-col bg-background">
+        <PlannerStepNav planId={planId} planName={planName} currentStep="rooms" document={unifiedDoc} />
         <header className="h-14 border-b flex items-center px-5 shrink-0 bg-card">
           <div className="flex items-center gap-4">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-rose-500/10 to-pink-500/5 flex items-center justify-center">
@@ -418,6 +444,7 @@ export default function ImportScale() {
 
   return (
     <div className="h-full flex flex-col bg-background">
+      <PlannerStepNav planId={planId} planName={planName} currentStep="rooms" document={unifiedDoc} />
       <header className="h-14 border-b flex items-center justify-between px-5 shrink-0 bg-card">
         <div className="flex items-center gap-4">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-rose-500/10 to-pink-500/5 flex items-center justify-center">

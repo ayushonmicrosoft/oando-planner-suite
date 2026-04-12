@@ -11,6 +11,9 @@ import { useAutoSave } from "@/hooks/useAutoSave";
 import { useSearchParams } from "next/navigation";
 import { useGetPlan, getGetPlanQueryKey } from "@workspace/api-client-react";
 import { RotateCw, Copy, Trash2, Undo2, XCircle, Map } from "lucide-react";
+import { PlannerStepNav } from "@/components/planner-step-nav";
+import { PlanBackgroundLayers } from "@/components/plan-background-layers";
+import { migrateDocument, type UnifiedDocument } from "@/lib/unified-plan";
 
 interface SiteDef { label: string; w: number; h: number; fill: string; kind: "rect" | "ellipse"; }
 interface SiteItem { id: string; label: string; kind: "rect" | "ellipse"; x: number; y: number; width: number; height: number; fill: string; rotation: number; }
@@ -89,6 +92,7 @@ export default function SitePlan() {
   const [currentPlanId, setCurrentPlanId] = useState<number | null>(null);
   const [currentPlanName, setCurrentPlanName] = useState("");
   const [initialLoaded, setInitialLoaded] = useState(false);
+  const [unifiedDoc, setUnifiedDoc] = useState<UnifiedDocument>({ version: 2 });
   const stageRef = useRef<Konva.Stage>(null);
 
   const searchParams = useSearchParams();
@@ -96,7 +100,7 @@ export default function SitePlan() {
   const planIdParam = params.get("planId") || params.get("id");
   const planId = Number(planIdParam) || 0;
   const { data: loadedPlan } = useGetPlan(planId, { query: { queryKey: getGetPlanQueryKey(planId), enabled: !!planIdParam && !initialLoaded } });
-  useEffect(() => { if (loadedPlan && !initialLoaded) { try { const doc = typeof loadedPlan.documentJson === "string" ? JSON.parse(loadedPlan.documentJson) : loadedPlan.documentJson; if (doc?.items) setItems(doc.items); } catch {} setCurrentPlanId(loadedPlan.id); setCurrentPlanName(loadedPlan.name); setInitialLoaded(true); } }, [loadedPlan, initialLoaded]);
+  useEffect(() => { if (loadedPlan && !initialLoaded) { try { const raw = typeof loadedPlan.documentJson === "string" ? JSON.parse(loadedPlan.documentJson) : loadedPlan.documentJson; const doc = migrateDocument(raw); setUnifiedDoc(doc); if (doc.site) setItems(doc.site as unknown as SiteItem[]); else if ((raw as any)?.items) setItems((raw as any).items); } catch {} setCurrentPlanId(loadedPlan.id); setCurrentPlanName(loadedPlan.name); setInitialLoaded(true); } }, [loadedPlan, initialLoaded]);
 
   const getCanvasState = useCallback(() => ({ items }), [items]);
   const loadCanvasState = useCallback((state: Record<string, unknown>) => { if (Array.isArray(state.items)) setItems(state.items as SiteItem[]); }, []);
@@ -127,6 +131,7 @@ export default function SitePlan() {
 
   return (
     <div className="h-full flex flex-col bg-background">
+      <PlannerStepNav planId={currentPlanId} planName={currentPlanName || "Site Plan"} currentStep="rooms" document={unifiedDoc} />
       <header className="h-14 border-b flex items-center justify-between px-5 shrink-0 bg-card">
         <div className="flex items-center gap-4">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500/10 to-green-500/5 flex items-center justify-center">
@@ -194,6 +199,9 @@ export default function SitePlan() {
           <div className="shadow-xl shadow-black/[0.08] rounded-xl overflow-hidden" style={{ border: "1px solid rgba(138,154,91,0.3)", lineHeight: 0 }}>
             <Stage ref={stageRef} width={W} height={H} style={{ background: "#c8d5a0" }} onMouseDown={deselectAll} onTouchStart={deselectAll}>
               <Layer>{gridLines}</Layer>
+              <Layer>
+                <PlanBackgroundLayers rooms={unifiedDoc.rooms} structure={unifiedDoc.structure} annotations={unifiedDoc.annotations} />
+              </Layer>
               <Layer>
                 {items.map((item) => <SiteShape key={item.id} item={item} isSelected={item.id === selectedId} onSelect={() => setSelectedId(item.id)} onChange={(a) => updateItem(item.id, a)} />)}
               </Layer>

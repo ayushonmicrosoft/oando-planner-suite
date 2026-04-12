@@ -10,6 +10,9 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { useUndoRedo } from "@/hooks/use-undo-redo";
 import { Save, Loader2, Undo2, Redo2, Trash2, Copy, XCircle, Shapes } from "lucide-react";
+import { PlannerStepNav } from "@/components/planner-step-nav";
+import { PlanBackgroundLayers } from "@/components/plan-background-layers";
+import { migrateDocument, mergeLayerIntoDocument, type UnifiedDocument } from "@/lib/unified-plan";
 
 interface ShapeDef {
   label: string;
@@ -301,6 +304,7 @@ export default function CustomShapes() {
   const { current: items, set: setItems, undo, redo, canUndo, canRedo, reset: resetItems } = useUndoRedo<CanvasItem[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [planName, setPlanName] = useState("New Shape Layout");
+  const [unifiedDoc, setUnifiedDoc] = useState<UnifiedDocument>({ version: 2 });
   const stageRef = useRef<Konva.Stage>(null);
 
   const { data: existingPlan } = useGetPlan(planId || 0, { query: { queryKey: getGetPlanQueryKey(planId || 0), enabled: !!planId } });
@@ -313,10 +317,13 @@ export default function CustomShapes() {
       setPlanName(existingPlan.name);
       if (existingPlan.documentJson) {
         try {
-          const doc = typeof existingPlan.documentJson === "string"
+          const raw = typeof existingPlan.documentJson === "string"
             ? JSON.parse(existingPlan.documentJson)
             : existingPlan.documentJson;
-          if (doc.items) resetItems(doc.items);
+          const doc = migrateDocument(raw);
+          setUnifiedDoc(doc);
+          if (doc.structure) resetItems(doc.structure as unknown as CanvasItem[]);
+          else if ((raw as any).items) resetItems((raw as any).items);
         } catch { /* ignore parse errors */ }
       }
     }
@@ -381,7 +388,9 @@ export default function CustomShapes() {
   }, [handleKeyDown]);
 
   const handleSave = () => {
-    const documentJson = JSON.stringify({ items });
+    const merged = mergeLayerIntoDocument(unifiedDoc, "structure", items, "structure");
+    setUnifiedDoc(merged);
+    const documentJson = JSON.stringify(merged);
     const payload = {
       name: planName,
       roomWidthCm: W,
@@ -415,6 +424,7 @@ export default function CustomShapes() {
 
   return (
     <div className="h-full flex flex-col bg-background">
+      <PlannerStepNav planId={planId} planName={planName} currentStep="structure" document={unifiedDoc} />
       <header className="h-14 border-b flex items-center justify-between px-5 shrink-0 bg-card">
         <div className="flex items-center gap-4">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500/10 to-orange-500/5 flex items-center justify-center">
@@ -517,6 +527,9 @@ export default function CustomShapes() {
               onTouchStart={deselectAll}
             >
               <Layer>{gridLines}</Layer>
+              <Layer>
+                <PlanBackgroundLayers rooms={unifiedDoc.rooms} annotations={unifiedDoc.annotations} site={unifiedDoc.site} />
+              </Layer>
               <Layer>
                 {items.map((item) => (
                   <CanvasShape

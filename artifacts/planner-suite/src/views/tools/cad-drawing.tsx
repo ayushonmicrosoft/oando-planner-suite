@@ -14,6 +14,9 @@ import {
   Save, Loader2, MousePointer2, Minus, Square, CircleIcon, Type,
   Ruler, Undo2, Redo2, Trash2, Copy, XCircle, Grid3X3, PencilRuler
 } from "lucide-react";
+import { PlannerStepNav } from "@/components/planner-step-nav";
+import { PlanBackgroundLayers } from "@/components/plan-background-layers";
+import { migrateDocument, mergeLayerIntoDocument, type UnifiedDocument } from "@/lib/unified-plan";
 
 type ToolId = "select" | "line" | "rect" | "circle" | "measure" | "text";
 
@@ -171,6 +174,7 @@ export default function CadDrawing() {
   const [drawCurrent, setDrawCurrent] = useState<{ x: number; y: number } | null>(null);
   const [measureLine, setMeasureLine] = useState<{ x1: number; y1: number; x2: number; y2: number } | null>(null);
   const [planName, setPlanName] = useState("New CAD Drawing");
+  const [unifiedDoc, setUnifiedDoc] = useState<UnifiedDocument>({ version: 2 });
   const [pendingText, setPendingText] = useState<{ x: number; y: number; value: string } | null>(null);
   const stageRef = useRef<Konva.Stage>(null);
   const pendingTextRef = useRef<HTMLInputElement>(null);
@@ -185,10 +189,13 @@ export default function CadDrawing() {
       setPlanName(existingPlan.name);
       if (existingPlan.documentJson) {
         try {
-          const doc = typeof existingPlan.documentJson === "string"
+          const raw = typeof existingPlan.documentJson === "string"
             ? JSON.parse(existingPlan.documentJson)
             : existingPlan.documentJson;
-          if (doc.shapes) resetShapes(doc.shapes);
+          const doc = migrateDocument(raw);
+          setUnifiedDoc(doc);
+          if (doc.annotations) resetShapes(doc.annotations as unknown as DrawnShape[]);
+          else if ((raw as any).shapes) resetShapes((raw as any).shapes);
         } catch { /* ignore parse errors */ }
       }
     }
@@ -313,7 +320,9 @@ export default function CadDrawing() {
   const updateShape = (id: string, a: Partial<DrawnShape>) => setShapes((p) => p.map((s) => (s.id === id ? { ...s, ...a } : s)));
 
   const handleSave = () => {
-    const documentJson = JSON.stringify({ shapes });
+    const merged = mergeLayerIntoDocument(unifiedDoc, "annotations", shapes);
+    setUnifiedDoc(merged);
+    const documentJson = JSON.stringify(merged);
     const payload = {
       name: planName,
       roomWidthCm: W,
@@ -361,6 +370,7 @@ export default function CadDrawing() {
 
   return (
     <div className="h-full flex flex-col bg-background">
+      <PlannerStepNav planId={planId} planName={planName} currentStep="structure" document={unifiedDoc} />
       <header className="h-14 border-b flex items-center justify-between px-5 shrink-0 bg-card">
         <div className="flex items-center gap-4">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500/10 to-cyan-500/5 flex items-center justify-center">
@@ -481,6 +491,9 @@ export default function CadDrawing() {
               style={{ background: "#fff", cursor: tool === "select" ? "default" : "crosshair" }}
               onMouseDown={handleMouseDown} onMouseMove={handleMouseMove} onMouseUp={handleMouseUp}>
               <Layer>{gridLines}</Layer>
+              <Layer>
+                <PlanBackgroundLayers rooms={unifiedDoc.rooms} structure={unifiedDoc.structure} site={unifiedDoc.site} />
+              </Layer>
               <Layer>
                 {shapes.map((s) => (
                   <CadShape key={s.id} shape={s} isSelected={s.id === selectedId} tool={tool}

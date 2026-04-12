@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef } from 'react';
 import type { CatalogItem } from '@workspace/api-client-react';
+import { migrateDocument, mergeLayerIntoDocument, type UnifiedDocument } from '@/lib/unified-plan';
 
 export interface PlacedItem {
   instanceId: string;
@@ -232,30 +233,37 @@ export function useCanvasPlanner(initialRoomWidthCm = 500, initialRoomDepthCm = 
     setSelectedItemIds(new Set(items.map(i => i.instanceId)));
   }, [items]);
 
+  const [unifiedDoc, setUnifiedDoc] = useState<UnifiedDocument>({ version: 2 });
+
+  const parseItemFromRaw = (item: Record<string, unknown>): PlacedItem => ({
+    instanceId: (item.instanceId as string) || crypto.randomUUID(),
+    catalogId: (item.catalogId as string) || (item.id as string) || '',
+    name: (item.name as string) || 'Item',
+    category: (item.category as string) || '',
+    widthCm: (item.widthCm as number) || (item.width as number) || 60,
+    depthCm: (item.depthCm as number) || (item.depth as number) || 60,
+    heightCm: (item.heightCm as number) || 75,
+    color: (item.color as string) || '#6b7280',
+    shape: (item.shape as string) || 'rect',
+    seatCount: (item.seatCount as number) ?? null,
+    price: (item.price as number) ?? null,
+    x: (item.x as number) || 0,
+    y: (item.y as number) || 0,
+    rotation: (item.rotation as number) || 0,
+    scaleX: (item.scaleX as number) || 1,
+    scaleY: (item.scaleY as number) || 1,
+    locked: (item.locked as boolean) || false,
+    opacity: (item.opacity as number) ?? 1,
+    zIndex: (item.zIndex as number) ?? zIndexCounterRef.current++,
+  });
+
   const loadDocument = useCallback((jsonStr: string) => {
     try {
       const data = JSON.parse(jsonStr);
-      const loadedItems: PlacedItem[] = (data.items || []).map((item: Record<string, unknown>) => ({
-        instanceId: (item.instanceId as string) || crypto.randomUUID(),
-        catalogId: (item.catalogId as string) || (item.id as string) || '',
-        name: (item.name as string) || 'Item',
-        category: (item.category as string) || '',
-        widthCm: (item.widthCm as number) || (item.width as number) || 60,
-        depthCm: (item.depthCm as number) || (item.depth as number) || 60,
-        heightCm: (item.heightCm as number) || 75,
-        color: (item.color as string) || '#6b7280',
-        shape: (item.shape as string) || 'rect',
-        seatCount: (item.seatCount as number) ?? null,
-        price: (item.price as number) ?? null,
-        x: (item.x as number) || 0,
-        y: (item.y as number) || 0,
-        rotation: (item.rotation as number) || 0,
-        scaleX: (item.scaleX as number) || 1,
-        scaleY: (item.scaleY as number) || 1,
-        locked: (item.locked as boolean) || false,
-        opacity: (item.opacity as number) ?? 1,
-        zIndex: (item.zIndex as number) ?? zIndexCounterRef.current++,
-      }));
+      const doc = migrateDocument(data);
+      setUnifiedDoc(doc);
+      const rawItems = doc.furniture || data.items || [];
+      const loadedItems: PlacedItem[] = rawItems.map((item: Record<string, unknown>) => parseItemFromRaw(item));
       setItems(loadedItems);
       if (data.roomWidthCm) setRoomWidthCm(data.roomWidthCm);
       if (data.roomDepthCm) setRoomDepthCm(data.roomDepthCm);
@@ -267,13 +275,13 @@ export function useCanvasPlanner(initialRoomWidthCm = 500, initialRoomDepthCm = 
   }, [setItems]);
 
   const getDocumentJson = useCallback(() => {
+    const merged = mergeLayerIntoDocument(unifiedDoc, "furniture", items, "furniture");
     return JSON.stringify({
-      version: 2,
-      items,
+      ...merged,
       roomWidthCm,
       roomDepthCm,
     });
-  }, [items, roomWidthCm, roomDepthCm]);
+  }, [items, roomWidthCm, roomDepthCm, unifiedDoc]);
 
   const snapToGrid = useCallback((value: number, gridSize = 10) => {
     if (!gridSnap) return value;
@@ -317,6 +325,7 @@ export function useCanvasPlanner(initialRoomWidthCm = 500, initialRoomDepthCm = 
     canUndo,
     canRedo,
     selectAll,
+    unifiedDoc,
     loadDocument,
     getDocumentJson,
     snapToGrid,

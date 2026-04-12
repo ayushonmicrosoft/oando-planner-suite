@@ -1,6 +1,6 @@
 {
   "buildCommand": "pnpm -w run vercel-build",
-  "outputDirectory": "dist",
+  "outputDirectory": "artifacts/planner-suite/dist",
   "installCommand": "pnpm install",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }

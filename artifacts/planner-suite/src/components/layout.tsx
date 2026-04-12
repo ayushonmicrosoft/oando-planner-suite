@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, FileSignature, Grid3X3, Box, Library, FolderOpen, Pencil, LayoutGrid, Shapes, ImagePlus, LayoutTemplate, LogOut, Settings, ChevronDown, Map, DraftingCompass, Layers3, Shield, Briefcase, Users, CreditCard } from 'lucide-react';
+import { LayoutDashboard, FileSignature, Grid3X3, Box, Library, FolderOpen, Pencil, LayoutGrid, Shapes, ImagePlus, LayoutTemplate, LogOut, ChevronDown, Map, DraftingCompass, Layers3, Shield, Briefcase, Users, CreditCard } from 'lucide-react';
 import { Sidebar, SidebarContent, SidebarHeader, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider, SidebarFooter } from '@/components/ui/sidebar';
 import { useHealthCheck, getHealthCheckQueryKey } from '@workspace/api-client-react';
 import { useAuth } from '@/hooks/use-auth';
@@ -53,20 +53,20 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const initials = displayName.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase() || 'U';
 
   const renderNavGroup = (items: typeof mainNavItems, label?: string) => (
-    <SidebarGroup>
+    <SidebarGroup className="py-1">
       {label && (
-        <SidebarGroupLabel className="text-[10px] uppercase tracking-[0.12em] font-semibold text-white/15 px-3 mb-0.5">
+        <SidebarGroupLabel className="text-[10px] uppercase tracking-[0.12em] font-semibold text-sidebar-foreground/25 px-3 mb-0.5 h-6">
           {label}
         </SidebarGroupLabel>
       )}
       <SidebarGroupContent>
-        <SidebarMenu>
+        <SidebarMenu className="gap-0.5">
           {items.map((item) => (
             <SidebarMenuItem key={item.href}>
-              <SidebarMenuButton asChild isActive={isActive(item.href)}>
-                <Link href={item.href} className="flex items-center gap-2.5 text-[13px] text-white/45 hover:text-white/80 transition-colors">
-                  <item.icon className="w-[15px] h-[15px] opacity-50" strokeWidth={1.8} />
-                  <span>{item.label}</span>
+              <SidebarMenuButton asChild isActive={isActive(item.href)} className="h-8">
+                <Link href={item.href} className="flex items-center gap-2.5 text-[13px] transition-colors duration-300">
+                  <item.icon className="w-[15px] h-[15px] opacity-50 shrink-0" strokeWidth={1.8} />
+                  <span className="truncate">{item.label}</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -78,57 +78,57 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <SidebarProvider>
-      <div className="flex h-screen overflow-hidden bg-[#070D12] w-full">
-        <Sidebar className="!bg-[#0A0F15] !border-r !border-white/[0.04]">
-          <SidebarHeader className="border-b border-white/[0.04] px-4 py-3">
+      <div className="flex h-screen overflow-hidden bg-background w-full">
+        <Sidebar>
+          <SidebarHeader className="border-b border-sidebar-border/40 px-3 py-2.5">
             {isLoaded && user ? (
               <DropdownMenu>
-                <DropdownMenuTrigger className="flex items-center gap-2.5 w-full text-left hover:bg-white/[0.04] rounded-lg p-1.5 -m-1.5 transition-colors">
-                  <Avatar className="h-7 w-7">
+                <DropdownMenuTrigger className="flex items-center gap-2.5 w-full text-left hover:bg-sidebar-accent/50 rounded-lg p-2 -m-1 transition-colors duration-300 outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring">
+                  <Avatar className="h-7 w-7 ring-1 ring-sidebar-border/30">
                     <AvatarImage src={avatarUrl} alt={displayName} />
-                    <AvatarFallback className="text-[10px] bg-gradient-to-br from-[#5488B6] to-[#77A2C9] text-white font-semibold">{initials}</AvatarFallback>
+                    <AvatarFallback className="text-[10px] bg-gradient-to-br from-primary/15 to-primary/5 text-primary font-semibold">{initials}</AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium text-[13px] text-white/80 truncate">{displayName}</div>
-                    <div className="text-[11px] text-white/20 truncate">{user.email}</div>
+                    <div className="font-medium text-[13px] truncate leading-tight">{displayName}</div>
+                    <div className="text-[10px] text-sidebar-foreground/30 truncate leading-tight mt-0.5">{user.email}</div>
                   </div>
-                  <ChevronDown className="w-3.5 h-3.5 text-white/15 shrink-0" />
+                  <ChevronDown className="w-3 h-3 text-sidebar-foreground/20 shrink-0" />
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-52 bg-[#0F1520] border-white/[0.08]">
-                  <DropdownMenuItem onClick={() => window.location.href = '/settings/billing'} className="text-[13px] text-white/60 hover:text-white">
-                    <CreditCard className="w-3.5 h-3.5 mr-2 opacity-50" />
+                <DropdownMenuContent align="start" className="w-52">
+                  <DropdownMenuItem onClick={() => window.location.href = '/settings/billing'} className="text-[13px]">
+                    <CreditCard className="w-3.5 h-3.5 mr-2 opacity-60" />
                     Billing
                   </DropdownMenuItem>
-                  <DropdownMenuSeparator className="bg-white/[0.06]" />
-                  <DropdownMenuItem onClick={() => signOut()} className="text-[13px] text-white/60 hover:text-white">
-                    <LogOut className="w-3.5 h-3.5 mr-2 opacity-50" />
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => signOut()} className="text-[13px] text-destructive focus:text-destructive">
+                    <LogOut className="w-3.5 h-3.5 mr-2 opacity-60" />
                     Log Out
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-2.5 p-1">
                 <img src={"/logo-v2-white.webp"} alt="One&Only" className="h-5 w-auto" />
-                <span className="text-white/80 font-semibold text-[15px] tracking-[-0.02em]">One&Only</span>
+                <span className="text-sidebar-foreground font-semibold text-[15px] tracking-[-0.02em]">One&Only</span>
               </div>
             )}
           </SidebarHeader>
-          <SidebarContent className="pt-1">
+          <SidebarContent className="pt-0.5 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-sidebar-foreground/10 [&::-webkit-scrollbar-thumb]:rounded-full">
             {renderNavGroup(mainNavItems)}
             {renderNavGroup(toolNavItems, "Tools")}
             {renderNavGroup(managementNavItems, "Management")}
             {renderNavGroup(dataNavItems, "Data")}
             {isAdmin && (
-              <SidebarGroup>
-                <SidebarGroupLabel className="text-[10px] uppercase tracking-[0.12em] font-semibold text-white/15 px-3 mb-0.5">
+              <SidebarGroup className="py-1">
+                <SidebarGroupLabel className="text-[10px] uppercase tracking-[0.12em] font-semibold text-sidebar-foreground/25 px-3 mb-0.5 h-6">
                   Admin
                 </SidebarGroupLabel>
                 <SidebarGroupContent>
-                  <SidebarMenu>
+                  <SidebarMenu className="gap-0.5">
                     <SidebarMenuItem>
-                      <SidebarMenuButton asChild isActive={isActive('/admin')}>
-                        <Link href="/admin" className="flex items-center gap-2.5 text-[13px] text-white/45 hover:text-white/80 transition-colors">
-                          <Shield className="w-[15px] h-[15px] opacity-50" strokeWidth={1.8} />
+                      <SidebarMenuButton asChild isActive={isActive('/admin')} className="h-8">
+                        <Link href="/admin" className="flex items-center gap-2.5 text-[13px] transition-colors duration-300">
+                          <Shield className="w-[15px] h-[15px] opacity-50 shrink-0" strokeWidth={1.8} />
                           <span>Admin Panel</span>
                         </Link>
                       </SidebarMenuButton>
@@ -138,14 +138,14 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               </SidebarGroup>
             )}
           </SidebarContent>
-          <SidebarFooter className="border-t border-white/[0.04] p-3">
-            <div className="flex items-center gap-2 text-[11px] text-white/20">
-              <div className={`w-1.5 h-1.5 rounded-full ${isError ? 'bg-red-400' : health ? 'bg-emerald-400' : 'bg-white/15'}`} />
-              {isError ? 'API Offline' : health ? 'Connected' : 'Checking...'}
+          <SidebarFooter className="border-t border-sidebar-border/40 px-4 py-2.5">
+            <div className="flex items-center gap-2 text-[10px] text-sidebar-foreground/30 font-medium">
+              <div className={`w-1.5 h-1.5 rounded-full transition-colors duration-300 ${isError ? 'bg-red-400 shadow-[0_0_4px_rgba(248,113,113,0.4)]' : health ? 'bg-emerald-400 shadow-[0_0_4px_rgba(52,211,153,0.3)]' : 'bg-sidebar-foreground/20'}`} />
+              {isError ? 'Offline' : health ? 'Connected' : 'Checking...'}
             </div>
           </SidebarFooter>
         </Sidebar>
-        <main className="flex-1 overflow-auto">
+        <main className="flex-1 overflow-auto bg-muted/20">
           {children}
         </main>
       </div>

@@ -1,18 +1,27 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   useListPlans,
   useGetPlanStats,
   useListProjects,
 } from '@workspace/api-client-react';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Grid3X3, FileSignature, Box, Clock, ArrowRight, Pencil, LayoutGrid, Shapes, ImagePlus, LayoutTemplate, AlertCircle, RefreshCw, Map, Briefcase, FileText, Users, DraftingCompass, Layers3, Sparkles, TrendingUp, FolderOpen } from 'lucide-react';
+import { Grid3X3, FileSignature, Box, Clock, ArrowRight, Pencil, LayoutGrid, Shapes, ImagePlus, LayoutTemplate, AlertCircle, RefreshCw, Map, FileText, Users, Layers, TrendingUp, Calendar } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { PlanThumbnail } from '@/components/plan-thumbnail';
+import { DashboardStatsSkeleton, RecentPlansSkeleton } from '@/components/skeletons';
 import { useAuth } from '@/hooks/use-auth';
+
+function useHydrationSafeDate() {
+  const [now, setNow] = useState<Date | null>(null);
+  useEffect(() => { setNow(new Date()); }, []);
+  return now;
+}
 
 const plannerTypeRoutes: Record<string, string> = {
   canvas: '/planner/canvas',
@@ -44,24 +53,17 @@ function parsePlanItems(plan: { documentJson?: string }) {
   }
 }
 
-const planningTools = [
-  { href: '/planner/canvas', icon: Grid3X3, title: '2D Canvas Planner', desc: 'Konva-powered interactive floor plan editor', color: 'from-blue-500/20 to-blue-600/5', iconColor: 'text-blue-400', borderColor: 'border-blue-500/20 hover:border-blue-500/40' },
-  { href: '/planner/blueprint', icon: FileSignature, title: 'Blueprint Wizard', desc: 'Step-by-step guided room setup', color: 'from-violet-500/20 to-violet-600/5', iconColor: 'text-violet-400', borderColor: 'border-violet-500/20 hover:border-violet-500/40' },
-  { href: '/planner/studio', icon: DraftingCompass, title: 'Live Planner', desc: 'Real-time collaborative workspace', color: 'from-emerald-500/20 to-emerald-600/5', iconColor: 'text-emerald-400', borderColor: 'border-emerald-500/20 hover:border-emerald-500/40' },
-  { href: '/viewer/3d', icon: Box, title: '3D Viewer', desc: 'Interactive 3D walkthrough mode', color: 'from-amber-500/20 to-amber-600/5', iconColor: 'text-amber-400', borderColor: 'border-amber-500/20 hover:border-amber-500/40' },
-];
-
-const drawingTools = [
-  { href: '/tools/cad', icon: Pencil, title: 'CAD Drawing', color: 'text-blue-400' },
-  { href: '/tools/floor-plan', icon: LayoutGrid, title: 'Floor Plan', color: 'text-emerald-400' },
-  { href: '/tools/shapes', icon: Shapes, title: 'Custom Shapes', color: 'text-purple-400' },
-  { href: '/tools/site-plan', icon: Map, title: 'Site Plan', color: 'text-teal-400' },
-  { href: '/tools/import', icon: ImagePlus, title: 'Import & Scale', color: 'text-orange-400' },
-];
+function getGreeting(date: Date) {
+  const hour = date.getHours();
+  if (hour < 12) return 'Good morning';
+  if (hour < 17) return 'Good afternoon';
+  return 'Good evening';
+}
 
 export default function Home() {
   const router = useRouter();
   const { user } = useAuth();
+  const now = useHydrationSafeDate();
   const { data: stats, isLoading: statsLoading, isError: statsError, refetch: refetchStats } = useGetPlanStats();
   const { data: plans, isLoading: plansLoading, isError: plansError, refetch: refetchPlans } = useListPlans();
   const { data: projects } = useListProjects();
@@ -69,271 +71,387 @@ export default function Home() {
   const recentPlans = plans?.slice(0, 4) || [];
 
   const displayName = user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email?.split('@')[0] || 'there';
-  const greeting = new Date().getHours() < 12 ? 'Good morning' : new Date().getHours() < 17 ? 'Good afternoon' : 'Good evening';
+  const firstName = displayName.split(' ')[0];
 
   return (
-    <div className="min-h-screen bg-[#070D12]">
-      <div className="max-w-[1400px] mx-auto px-6 lg:px-10 py-8 space-y-10 animate-in fade-in duration-500">
-
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-          <div>
-            <p className="text-[13px] uppercase tracking-[0.15em] text-white/30 font-medium mb-2">{greeting}</p>
-            <h1 className="text-3xl md:text-4xl font-bold tracking-[-0.03em] text-white">
-              {displayName}
-            </h1>
-            <p className="text-white/40 mt-1 text-[15px]">{format(new Date(), 'EEEE, MMMM d, yyyy')}</p>
+    <div className="p-6 lg:p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in duration-500">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[var(--color-dark-midnight-blue-500)] via-[var(--color-dark-midnight-blue-600)] to-[var(--color-dark-midnight-blue-800)] p-8 lg:p-10 text-white">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--color-ocean-boat-blue-500)_0%,_transparent_60%)] opacity-20" />
+        <div className="relative z-10">
+          <div className="flex items-center gap-2 text-white/50 text-sm font-medium mb-2">
+            <Calendar className="w-3.5 h-3.5" />
+            {now ? format(now, 'EEEE, MMMM d, yyyy') : '\u00A0'}
           </div>
-          <div className="flex gap-3">
-            <Button
-              onClick={() => router.push('/planner/canvas')}
-              className="bg-white text-[#0B1324] hover:bg-white/90 rounded-full px-6 h-10 text-[13px] font-semibold gap-2"
-            >
-              <Sparkles className="w-4 h-4" /> New Plan
-            </Button>
-            <Button
-              onClick={() => router.push('/templates')}
-              variant="outline"
-              className="border-white/10 text-white/70 hover:text-white hover:border-white/20 rounded-full px-6 h-10 text-[13px] bg-transparent"
-            >
-              <LayoutTemplate className="w-4 h-4 mr-2" /> Templates
-            </Button>
-          </div>
+          <h1 className="text-3xl lg:text-4xl font-bold tracking-tight">
+            {now ? `${getGreeting(now)}, ${firstName}` : `Welcome, ${firstName}`}
+          </h1>
+          <p className="text-white/60 mt-2 text-base lg:text-lg max-w-xl">
+            Your workspace planning command center. Design, manage, and visualize office layouts with precision.
+          </p>
         </div>
+      </div>
 
-        {statsLoading ? (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[1,2,3,4].map(i => (
-              <div key={i} className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5 animate-pulse">
-                <div className="h-3 w-20 bg-white/5 rounded mb-4" />
-                <div className="h-8 w-16 bg-white/5 rounded" />
-              </div>
-            ))}
-          </div>
-        ) : statsError ? (
-          <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-5 flex items-center justify-between">
+      {statsLoading ? (
+        <DashboardStatsSkeleton />
+      ) : statsError ? (
+        <Card className="bg-destructive/5 border-destructive/20">
+          <CardContent className="flex items-center justify-between p-4">
             <div className="flex items-center gap-3">
-              <AlertCircle className="w-5 h-5 text-red-400" />
-              <span className="text-[14px] text-red-300">Failed to load statistics</span>
+              <AlertCircle className="w-5 h-5 text-destructive" />
+              <span className="text-sm font-medium">Failed to load statistics.</span>
             </div>
-            <Button variant="ghost" size="sm" onClick={() => refetchStats()} className="text-red-300 hover:text-red-200 gap-2">
+            <Button variant="outline" size="sm" onClick={() => refetchStats()} className="gap-2">
               <RefreshCw className="w-4 h-4" /> Retry
             </Button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              { label: 'Total Plans', value: stats?.totalPlans || 0, icon: FolderOpen, accent: 'from-blue-500 to-cyan-400' },
-              { label: 'Canvas Plans', value: stats?.canvas2dPlans || 0, icon: Grid3X3, accent: 'from-violet-500 to-purple-400' },
-              { label: 'Blueprint Plans', value: stats?.blueprintPlans || 0, icon: FileSignature, accent: 'from-emerald-500 to-teal-400' },
-              { label: 'Last Activity', value: stats?.recentPlan || 'None', icon: TrendingUp, accent: 'from-amber-500 to-orange-400', isText: true },
-            ].map((stat, i) => (
-              <div key={i} className="group rounded-2xl border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04] p-5 transition-all duration-300">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-[11px] uppercase tracking-[0.12em] text-white/30 font-medium">{stat.label}</span>
-                  <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${stat.accent} flex items-center justify-center opacity-80`}>
-                    <stat.icon className="w-4 h-4 text-white" strokeWidth={2} />
-                  </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card className="relative overflow-hidden border-[var(--color-ocean-boat-blue-100)] bg-gradient-to-br from-[var(--color-ocean-boat-blue-50)] to-white transition-all duration-300 hover:shadow-md">
+            <CardHeader className="pb-1 pt-5 px-5">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-xs font-semibold text-[var(--color-ocean-boat-blue-600)] uppercase tracking-wider">Total Plans</CardTitle>
+                <div className="w-8 h-8 rounded-lg bg-[var(--color-ocean-boat-blue-500)]/10 flex items-center justify-center">
+                  <Layers className="w-4 h-4 text-[var(--color-ocean-boat-blue-600)]" />
                 </div>
-                {(stat as any).isText ? (
-                  <p className="text-[15px] font-medium text-white/70 truncate" data-testid="text-recent-plan">{stat.value}</p>
-                ) : (
-                  <p className="text-3xl font-bold tracking-[-0.02em] text-white" data-testid={`text-${stat.label.toLowerCase().replace(/ /g,'-')}`}>{stat.value}</p>
-                )}
               </div>
-            ))}
-          </div>
-        )}
+            </CardHeader>
+            <CardContent className="px-5 pb-5">
+              <div className="text-3xl font-bold tracking-tight text-[var(--text-heading)]" data-testid="text-total-plans">
+                {stats?.totalPlans || 0}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">Across all workspaces</p>
+            </CardContent>
+          </Card>
 
-        <div>
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="text-lg font-semibold text-white tracking-[-0.02em]">Planning Tools</h2>
-            <Link href="/planners" className="text-[13px] text-white/30 hover:text-white/60 transition-colors flex items-center gap-1">
-              View all <ArrowRight className="w-3.5 h-3.5" />
+          <Card className="relative overflow-hidden border-[var(--color-sustain-300)]/30 bg-gradient-to-br from-[var(--color-sustain-300)]/5 to-white transition-all duration-300 hover:shadow-md">
+            <CardHeader className="pb-1 pt-5 px-5">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-xs font-semibold text-[var(--color-sustain-400)] uppercase tracking-wider">Canvas Plans</CardTitle>
+                <div className="w-8 h-8 rounded-lg bg-[var(--color-sustain-300)]/15 flex items-center justify-center">
+                  <Grid3X3 className="w-4 h-4 text-[var(--color-sustain-400)]" />
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="px-5 pb-5">
+              <div className="text-3xl font-bold tracking-tight text-[var(--text-heading)]" data-testid="text-canvas-plans">
+                {stats?.canvas2dPlans || 0}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">Interactive layouts</p>
+            </CardContent>
+          </Card>
+
+          <Card className="relative overflow-hidden border-[var(--color-bronze-300)]/30 bg-gradient-to-br from-[var(--color-bronze-300)]/8 to-white transition-all duration-300 hover:shadow-md">
+            <CardHeader className="pb-1 pt-5 px-5">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-xs font-semibold text-[var(--color-bronze-500)] uppercase tracking-wider">Blueprint Plans</CardTitle>
+                <div className="w-8 h-8 rounded-lg bg-[var(--color-bronze-400)]/10 flex items-center justify-center">
+                  <FileSignature className="w-4 h-4 text-[var(--color-bronze-500)]" />
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="px-5 pb-5">
+              <div className="text-3xl font-bold tracking-tight text-[var(--text-heading)]" data-testid="text-blueprint-plans">
+                {stats?.blueprintPlans || 0}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">Guided workflows</p>
+            </CardContent>
+          </Card>
+
+          <Card className="relative overflow-hidden border-[var(--color-dark-midnight-blue-100)] bg-gradient-to-br from-[var(--color-dark-midnight-blue-50)]/50 to-white transition-all duration-300 hover:shadow-md">
+            <CardHeader className="pb-1 pt-5 px-5">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-xs font-semibold text-[var(--color-dark-midnight-blue-400)] uppercase tracking-wider">Last Activity</CardTitle>
+                <div className="w-8 h-8 rounded-lg bg-[var(--color-dark-midnight-blue-300)]/15 flex items-center justify-center">
+                  <TrendingUp className="w-4 h-4 text-[var(--color-dark-midnight-blue-400)]" />
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="px-5 pb-5">
+              <div className="text-lg font-semibold truncate text-[var(--text-heading)]" data-testid="text-recent-plan">
+                {stats?.recentPlan || 'No activity'}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">Most recent update</p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Card className="group relative overflow-hidden border-primary/15 bg-gradient-to-br from-primary/4 via-primary/2 to-transparent transition-all duration-300 hover:shadow-lg hover:border-primary/25">
+          <CardContent className="flex flex-col sm:flex-row items-center justify-between gap-4 py-6 px-6">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center transition-transform duration-300 group-hover:scale-105">
+                <LayoutTemplate className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg text-[var(--text-heading)]">Start from Template</h3>
+                <p className="text-sm text-muted-foreground">Pick a pre-made office layout and customize it</p>
+              </div>
+            </div>
+            <Button className="gap-2 shrink-0" onClick={() => router.push('/templates')}>
+              Browse Templates <ArrowRight className="w-4 h-4" />
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="group relative overflow-hidden border-[var(--color-sustain-300)]/20 bg-gradient-to-br from-[var(--color-sustain-300)]/6 via-[var(--color-sustain-300)]/2 to-transparent transition-all duration-300 hover:shadow-lg hover:border-[var(--color-sustain-300)]/35">
+          <CardContent className="flex flex-col sm:flex-row items-center justify-between gap-4 py-6 px-6">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[var(--color-sustain-300)]/25 to-[var(--color-sustain-300)]/5 flex items-center justify-center transition-transform duration-300 group-hover:scale-105">
+                <Map className="w-6 h-6 text-[var(--color-sustain-500)]" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg text-[var(--text-heading)]">Site Plan Designer</h3>
+                <p className="text-sm text-muted-foreground">Create outdoor site plans with buildings and landscaping</p>
+              </div>
+            </div>
+            <Button variant="outline" className="gap-2 shrink-0" onClick={() => router.push('/tools/site-plan')}>
+              Open Site Plan <ArrowRight className="w-4 h-4" />
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div>
+        <div className="flex items-center gap-3 mb-5">
+          <h2 className="text-2xl font-bold tracking-tight text-[var(--text-heading)]">Planning Tools</h2>
+          <div className="h-px flex-1 bg-border/50" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <Card className="group relative overflow-hidden border-primary/15 hover:border-primary/30 transition-all duration-300 hover:shadow-lg">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary/60 to-primary/20" />
+            <CardHeader className="pt-6">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center mb-3 transition-transform duration-300 group-hover:scale-105">
+                <Grid3X3 className="w-6 h-6 text-primary" />
+              </div>
+              <CardTitle className="text-lg">2D Canvas Planner</CardTitle>
+              <CardDescription>Konva-powered interactive floor plan with transform handles.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="text-sm text-muted-foreground space-y-2.5">
+                <li className="flex items-center gap-2.5"><div className="w-1 h-1 rounded-full bg-primary/50" /> Resize & rotate handles</li>
+                <li className="flex items-center gap-2.5"><div className="w-1 h-1 rounded-full bg-primary/50" /> Undo/Redo & keyboard shortcuts</li>
+                <li className="flex items-center gap-2.5"><div className="w-1 h-1 rounded-full bg-primary/50" /> AI-powered layout advisor</li>
+              </ul>
+            </CardContent>
+            <CardFooter>
+              <Button className="w-full" onClick={() => router.push('/planner/canvas')} data-testid="button-start-canvas">
+                Start Empty Canvas
+              </Button>
+            </CardFooter>
+          </Card>
+
+          <Card className="group relative overflow-hidden border-[var(--color-bronze-300)]/20 hover:border-[var(--color-bronze-400)]/30 transition-all duration-300 hover:shadow-lg">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[var(--color-bronze-400)]/60 to-[var(--color-bronze-300)]/20" />
+            <CardHeader className="pt-6">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[var(--color-bronze-400)]/15 to-[var(--color-bronze-300)]/5 flex items-center justify-center mb-3 transition-transform duration-300 group-hover:scale-105">
+                <FileSignature className="w-6 h-6 text-[var(--color-bronze-500)]" />
+              </div>
+              <CardTitle className="text-lg">Blueprint Wizard</CardTitle>
+              <CardDescription>Step-by-step guided room setup and arrangement.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="text-sm text-muted-foreground space-y-2.5">
+                <li className="flex items-center gap-2.5"><div className="w-1 h-1 rounded-full bg-[var(--color-bronze-400)]/50" /> Structured workflow</li>
+                <li className="flex items-center gap-2.5"><div className="w-1 h-1 rounded-full bg-[var(--color-bronze-400)]/50" /> Bill of quantities</li>
+                <li className="flex items-center gap-2.5"><div className="w-1 h-1 rounded-full bg-[var(--color-bronze-400)]/50" /> Category-based selection</li>
+              </ul>
+            </CardContent>
+            <CardFooter>
+              <Button className="w-full" variant="secondary" onClick={() => router.push('/planner/blueprint')} data-testid="button-start-blueprint">
+                Start Blueprint Wizard
+              </Button>
+            </CardFooter>
+          </Card>
+
+          <Card className="group relative overflow-hidden border-[var(--color-ocean-boat-blue-200)]/40 hover:border-[var(--color-ocean-boat-blue-300)]/50 transition-all duration-300 hover:shadow-lg">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[var(--color-ocean-boat-blue-500)]/60 to-[var(--color-ocean-boat-blue-300)]/20" />
+            <CardHeader className="pt-6">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[var(--color-ocean-boat-blue-500)]/15 to-[var(--color-ocean-boat-blue-300)]/5 flex items-center justify-center mb-3 transition-transform duration-300 group-hover:scale-105">
+                <Box className="w-6 h-6 text-[var(--color-ocean-boat-blue-600)]" />
+              </div>
+              <CardTitle className="text-lg">3D Viewer</CardTitle>
+              <CardDescription>Visualize your latest plan in interactive 3D.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="text-sm text-muted-foreground space-y-2.5">
+                <li className="flex items-center gap-2.5"><div className="w-1 h-1 rounded-full bg-[var(--color-ocean-boat-blue-500)]/50" /> First-person walkthrough</li>
+                <li className="flex items-center gap-2.5"><div className="w-1 h-1 rounded-full bg-[var(--color-ocean-boat-blue-500)]/50" /> Orbit mode</li>
+                <li className="flex items-center gap-2.5"><div className="w-1 h-1 rounded-full bg-[var(--color-ocean-boat-blue-500)]/50" /> Real-time rendering</li>
+              </ul>
+            </CardContent>
+            <CardFooter>
+              <Link href="/viewer/3d" className="w-full">
+                <Button className="w-full" variant="outline" data-testid="button-view-3d">
+                  Open 3D Viewer
+                </Button>
+              </Link>
+            </CardFooter>
+          </Card>
+        </div>
+      </div>
+
+      <div>
+        <div className="flex items-center gap-3 mb-5">
+          <h2 className="text-2xl font-bold tracking-tight text-[var(--text-heading)]">Drawing Tools</h2>
+          <div className="h-px flex-1 bg-border/50" />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          {[
+            { icon: Pencil, color: 'var(--color-ocean-boat-blue-500)', colorLight: 'var(--color-ocean-boat-blue-500)', title: 'CAD Drawing', desc: 'Vector drawing with lines, shapes, and measurements.', route: '/tools/cad', testId: 'button-start-cad' },
+            { icon: LayoutGrid, color: 'var(--color-sustain-400)', colorLight: 'var(--color-sustain-300)', title: 'Floor Plan Creator', desc: 'Room-based layout builder with presets and area calculations.', route: '/tools/floor-plan', testId: 'button-start-floor-plan' },
+            { icon: Shapes, color: 'var(--color-bronze-500)', colorLight: 'var(--color-bronze-400)', title: 'Custom Shapes', desc: 'Categorized shape libraries for walls, furniture, and more.', route: '/tools/shapes', testId: 'button-start-shapes' },
+            { icon: Map, color: 'var(--color-sustain-500)', colorLight: 'var(--color-sustain-400)', title: 'Site Plan', desc: 'Outdoor site plans with buildings, roads, and utilities.', route: '/tools/site-plan', testId: 'button-start-site-plan' },
+            { icon: ImagePlus, color: 'var(--color-bronze-400)', colorLight: 'var(--color-bronze-300)', title: 'Import & Scale', desc: 'Upload images, calibrate scale, and annotate blueprints.', route: '/tools/import', testId: 'button-start-import' },
+          ].map((tool) => (
+            <Card key={tool.route} className="group hover:border-border transition-all duration-300 hover:shadow-md">
+              <CardHeader className="pb-2">
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center mb-2 transition-transform duration-300 group-hover:scale-105" style={{ background: `color-mix(in srgb, ${tool.colorLight} 12%, transparent)` }}>
+                  <tool.icon className="w-5 h-5" style={{ color: tool.color }} />
+                </div>
+                <CardTitle className="text-base">{tool.title}</CardTitle>
+                <CardDescription className="text-xs leading-relaxed">{tool.desc}</CardDescription>
+              </CardHeader>
+              <CardFooter className="pt-0">
+                <Button className="w-full" size="sm" variant="secondary" onClick={() => router.push(tool.route)} data-testid={tool.testId}>
+                  Open
+                </Button>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      {recentProjects.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <h2 className="text-2xl font-bold tracking-tight text-[var(--text-heading)]">Recent Projects</h2>
+              <div className="h-px flex-1 bg-border/50 min-w-8" />
+            </div>
+            <Link href="/projects">
+              <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground hover:text-foreground">View All <ArrowRight className="w-3.5 h-3.5" /></Button>
             </Link>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {planningTools.map((tool) => (
-              <button
-                key={tool.href}
-                onClick={() => router.push(tool.href)}
-                className={`group text-left rounded-2xl border ${tool.borderColor} bg-gradient-to-br ${tool.color} p-5 transition-all duration-300 hover:translate-y-[-2px] hover:shadow-lg hover:shadow-black/20`}
-              >
-                <div className={`w-10 h-10 rounded-xl bg-white/[0.06] flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
-                  <tool.icon className={`w-5 h-5 ${tool.iconColor}`} strokeWidth={1.8} />
-                </div>
-                <h3 className="text-[15px] font-semibold text-white mb-1">{tool.title}</h3>
-                <p className="text-[13px] text-white/40 leading-relaxed">{tool.desc}</p>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <h2 className="text-lg font-semibold text-white tracking-[-0.02em] mb-5">Drawing Tools</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-            {drawingTools.map((tool) => (
-              <button
-                key={tool.href}
-                onClick={() => router.push(tool.href)}
-                className="group text-left rounded-xl border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.05] p-4 transition-all duration-300"
-              >
-                <tool.icon className={`w-6 h-6 ${tool.color} mb-3 group-hover:scale-110 transition-transform`} strokeWidth={1.8} />
-                <h3 className="text-[13px] font-medium text-white/80 group-hover:text-white transition-colors">{tool.title}</h3>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <button
-            onClick={() => router.push('/templates')}
-            className="group text-left rounded-2xl border border-white/[0.06] bg-gradient-to-r from-blue-500/[0.08] to-cyan-500/[0.04] hover:from-blue-500/[0.12] hover:to-cyan-500/[0.08] p-6 transition-all duration-300"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center shrink-0">
-                <LayoutTemplate className="w-6 h-6 text-blue-400" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-[15px] font-semibold text-white mb-0.5">Start from Template</h3>
-                <p className="text-[13px] text-white/40">Pick a pre-made office layout and customize</p>
-              </div>
-              <ArrowRight className="w-5 h-5 text-white/20 group-hover:text-white/50 group-hover:translate-x-1 transition-all shrink-0" />
-            </div>
-          </button>
-
-          <button
-            onClick={() => router.push('/tools/site-plan')}
-            className="group text-left rounded-2xl border border-white/[0.06] bg-gradient-to-r from-emerald-500/[0.08] to-teal-500/[0.04] hover:from-emerald-500/[0.12] hover:to-teal-500/[0.08] p-6 transition-all duration-300"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center shrink-0">
-                <Map className="w-6 h-6 text-emerald-400" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-[15px] font-semibold text-white mb-0.5">Site Plan Designer</h3>
-                <p className="text-[13px] text-white/40">Outdoor site plans with buildings and landscaping</p>
-              </div>
-              <ArrowRight className="w-5 h-5 text-white/20 group-hover:text-white/50 group-hover:translate-x-1 transition-all shrink-0" />
-            </div>
-          </button>
-        </div>
-
-        {recentProjects.length > 0 && (
-          <div>
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="text-lg font-semibold text-white tracking-[-0.02em]">Recent Projects</h2>
-              <Link href="/projects" className="text-[13px] text-white/30 hover:text-white/60 transition-colors flex items-center gap-1">
-                View all <ArrowRight className="w-3.5 h-3.5" />
+            {recentProjects.map((project) => (
+              <Link key={project.id} href={`/projects/${project.id}`} className="block group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 rounded-xl">
+                <Card className="h-full hover:shadow-md transition-all duration-300">
+                  <CardHeader className="pb-2">
+                    <div className="flex justify-between items-start">
+                      <CardTitle className="text-base group-hover:text-primary transition-colors duration-300">{project.name}</CardTitle>
+                      <Badge variant="secondary" className="text-[10px] capitalize font-medium">{project.status.replace('_', ' ')}</Badge>
+                    </div>
+                    {project.clientName && (
+                      <CardDescription className="flex items-center gap-1.5">
+                        <Users className="w-3.5 h-3.5" /> {project.clientName}
+                      </CardDescription>
+                    )}
+                  </CardHeader>
+                  <CardContent className="pb-3">
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <div className="flex items-center gap-1.5">
+                        <FileText className="w-3.5 h-3.5" /> {project.planCount} plan{project.planCount !== 1 ? 's' : ''}
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <Clock className="w-3.5 h-3.5" /> {format(new Date(project.updatedAt), 'MMM d')}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               </Link>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {recentProjects.map((project) => (
-                <button
-                  key={project.id}
-                  onClick={() => router.push(`/projects/${project.id}`)}
-                  className="group text-left rounded-2xl border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04] p-5 transition-all duration-300"
-                >
-                  <div className="flex justify-between items-start mb-3">
-                    <h3 className="text-[14px] font-medium text-white truncate pr-2">{project.name}</h3>
-                    <span className="text-[10px] uppercase tracking-wider font-medium text-white/30 bg-white/[0.06] px-2 py-0.5 rounded-full shrink-0 capitalize">
-                      {project.status.replace('_', ' ')}
-                    </span>
-                  </div>
-                  {project.clientName && (
-                    <p className="text-[12px] text-white/30 flex items-center gap-1.5 mb-3">
-                      <Users className="w-3 h-3" /> {project.clientName}
-                    </p>
-                  )}
-                  <div className="flex items-center justify-between text-[12px] text-white/25">
-                    <span className="flex items-center gap-1"><FileText className="w-3 h-3" /> {project.planCount} plans</span>
-                    <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {format(new Date(project.updatedAt), 'MMM d')}</span>
-                  </div>
-                </button>
-              ))}
-            </div>
+            ))}
           </div>
-        )}
+        </div>
+      )}
 
-        <div>
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="text-lg font-semibold text-white tracking-[-0.02em]">Recent Plans</h2>
-            <Link href="/plans" className="text-[13px] text-white/30 hover:text-white/60 transition-colors flex items-center gap-1">
-              View all <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <h2 className="text-2xl font-bold tracking-tight text-[var(--text-heading)]">Recent Plans</h2>
+            <div className="h-px flex-1 bg-border/50 min-w-8" />
           </div>
+          <Link href="/plans">
+            <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground hover:text-foreground">View All <ArrowRight className="w-3.5 h-3.5" /></Button>
+          </Link>
+        </div>
 
-          {plansLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {[1,2,3,4].map(i => (
-                <div key={i} className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5 animate-pulse">
-                  <div className="h-4 w-32 bg-white/5 rounded mb-3" />
-                  <div className="h-32 bg-white/[0.03] rounded-lg mb-3" />
-                  <div className="h-3 w-24 bg-white/5 rounded" />
-                </div>
-              ))}
-            </div>
-          ) : plansError ? (
-            <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-5 flex items-center justify-between">
+        {plansLoading ? (
+          <RecentPlansSkeleton />
+        ) : plansError ? (
+          <Card className="bg-destructive/5 border-destructive/20">
+            <CardContent className="flex items-center justify-between p-4">
               <div className="flex items-center gap-3">
-                <AlertCircle className="w-5 h-5 text-red-400" />
-                <span className="text-[14px] text-red-300">Failed to load recent plans</span>
+                <AlertCircle className="w-5 h-5 text-destructive" />
+                <span className="text-sm font-medium">Failed to load recent plans.</span>
               </div>
-              <Button variant="ghost" size="sm" onClick={() => refetchPlans()} className="text-red-300 hover:text-red-200 gap-2">
+              <Button variant="outline" size="sm" onClick={() => refetchPlans()} className="gap-2">
                 <RefreshCw className="w-4 h-4" /> Retry
               </Button>
-            </div>
-          ) : recentPlans.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {recentPlans.map((plan) => {
-                const planItems = parsePlanItems(plan as { documentJson?: string });
-                return (
-                  <button
-                    key={plan.id}
-                    onClick={() => router.push(`${plannerTypeRoutes[plan.plannerType] || '/planner/canvas'}?id=${plan.id}`)}
-                    className="group text-left rounded-2xl border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04] p-5 transition-all duration-300"
-                    data-testid={`button-open-plan-${plan.id}`}
-                  >
-                    <div className="flex justify-between items-start mb-3">
-                      <h3 className="text-[14px] font-medium text-white truncate pr-2">{plan.name}</h3>
-                      <span className="text-[10px] text-white/30 font-mono shrink-0">#{plan.id}</span>
+            </CardContent>
+          </Card>
+        ) : recentPlans.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {recentPlans.map((plan) => {
+              const planItems = parsePlanItems(plan as { documentJson?: string });
+              return (
+                <Card key={plan.id} className="group hover:shadow-md transition-all duration-300">
+                  <CardHeader className="pb-2">
+                    <div className="flex justify-between items-start">
+                      <CardTitle className="text-base group-hover:text-primary transition-colors duration-300">{plan.name}</CardTitle>
+                      <Badge variant="outline" className="text-[10px] font-mono shrink-0">#{plan.id}</Badge>
                     </div>
-                    <p className="text-[12px] text-white/30 mb-3">{plannerTypeLabels[plan.plannerType] || plan.plannerType}</p>
-                    {planItems.length > 0 && (
-                      <div className="mb-3 rounded-lg overflow-hidden border border-white/[0.04] bg-white">
-                        <PlanThumbnail
-                          roomWidthCm={plan.roomWidthCm}
-                          roomDepthCm={plan.roomDepthCm}
-                          items={planItems}
-                          width={280}
-                          height={140}
-                          className="w-full"
-                        />
+                    <CardDescription>
+                      {plannerTypeLabels[plan.plannerType] || plan.plannerType}
+                    </CardDescription>
+                  </CardHeader>
+                  {planItems.length > 0 && (
+                    <CardContent className="pb-2">
+                      <PlanThumbnail
+                        roomWidthCm={plan.roomWidthCm}
+                        roomDepthCm={plan.roomDepthCm}
+                        items={planItems}
+                        width={280}
+                        height={160}
+                        className="w-full rounded-lg border bg-white"
+                      />
+                    </CardContent>
+                  )}
+                  <CardContent className="pb-2">
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <div className="flex items-center gap-1.5">
+                        <Box className="w-3.5 h-3.5" /> {plan.itemCount} items
                       </div>
-                    )}
-                    <div className="flex items-center justify-between text-[12px] text-white/25">
-                      <span className="flex items-center gap-1"><Box className="w-3 h-3" /> {plan.itemCount} items</span>
-                      <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {format(new Date(plan.updatedAt), 'MMM d')}</span>
+                      <div className="flex items-center gap-1.5">
+                        <Clock className="w-3.5 h-3.5" /> {format(new Date(plan.updatedAt), 'MMM d')}
+                      </div>
                     </div>
-                  </button>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="rounded-2xl border border-white/[0.06] border-dashed bg-white/[0.01] flex flex-col items-center justify-center h-48 text-center">
-              <Box className="w-10 h-10 text-white/10 mb-4" />
-              <p className="text-[15px] font-medium text-white/40">No plans created yet</p>
-              <p className="text-[13px] text-white/20 mt-1 mb-5">Start designing your first workspace layout</p>
-              <div className="flex gap-3">
-                <Button size="sm" onClick={() => router.push('/planner/canvas')} className="bg-white text-[#0B1324] hover:bg-white/90 rounded-full px-5 text-[12px] font-semibold" data-testid="button-start-canvas">
-                  Start Canvas
-                </Button>
-                <Button size="sm" variant="outline" onClick={() => router.push('/planner/blueprint')} className="border-white/10 text-white/60 hover:text-white rounded-full px-5 text-[12px] bg-transparent" data-testid="button-start-blueprint">
-                  Start Blueprint
-                </Button>
+                  </CardContent>
+                  <CardFooter>
+                    <Button variant="secondary" size="sm" className="w-full" onClick={() => router.push(`${plannerTypeRoutes[plan.plannerType] || '/planner/canvas'}?id=${plan.id}`)} data-testid={`button-open-plan-${plan.id}`}>
+                      Open Plan
+                    </Button>
+                  </CardFooter>
+                </Card>
+              );
+            })}
+          </div>
+        ) : (
+          <Card className="bg-gradient-to-br from-muted/30 to-muted/10 border-dashed">
+            <CardContent className="flex flex-col items-center justify-center h-48 text-center text-muted-foreground">
+              <div className="w-14 h-14 rounded-2xl bg-primary/5 flex items-center justify-center mb-4">
+                <Box className="w-7 h-7 text-primary/30" />
               </div>
-            </div>
-          )}
-        </div>
+              <p className="text-lg font-medium text-[var(--text-heading)]">No plans created yet</p>
+              <p className="text-sm mt-1">Start designing your first workspace layout.</p>
+              <div className="flex gap-3 mt-5">
+                <Button size="sm" onClick={() => router.push('/planner/canvas')}>Start Canvas</Button>
+                <Button size="sm" variant="secondary" onClick={() => router.push('/planner/blueprint')}>Start Blueprint</Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );

@@ -6,6 +6,9 @@ import {
   GetCatalogItemParams,
 } from "@workspace/api-zod";
 import { asyncHandler } from "../middlewares/async-handler";
+import { requireAuth } from "../middlewares/require-auth";
+import { requireAdmin } from "../middlewares/require-admin";
+import { randomUUID } from "crypto";
 
 const router: IRouter = Router();
 
@@ -73,6 +76,104 @@ router.get(
     }
 
     res.json(item);
+  }),
+);
+
+router.post(
+  "/admin/catalog",
+  requireAuth,
+  requireAdmin,
+  asyncHandler(async (req, res) => {
+    const { name, category, widthCm, depthCm, heightCm, color, description, imageUrl, shape, seatCount, price } = req.body;
+
+    if (!name || !category || widthCm == null || depthCm == null || heightCm == null) {
+      res.status(400).json({ error: "name, category, widthCm, depthCm, and heightCm are required", status: 400 });
+      return;
+    }
+
+    const id = `item-${randomUUID().slice(0, 8)}`;
+
+    const [item] = await db
+      .insert(catalogItemsTable)
+      .values({
+        id,
+        name,
+        category,
+        widthCm: Number(widthCm),
+        depthCm: Number(depthCm),
+        heightCm: Number(heightCm),
+        color: color ?? null,
+        description: description ?? null,
+        imageUrl: imageUrl ?? null,
+        shape: shape ?? null,
+        seatCount: seatCount != null ? Number(seatCount) : null,
+        price: price != null ? Number(price) : null,
+      })
+      .returning();
+
+    res.status(201).json(item);
+  }),
+);
+
+router.patch(
+  "/admin/catalog/:id",
+  requireAuth,
+  requireAdmin,
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { name, category, widthCm, depthCm, heightCm, color, description, imageUrl, shape, seatCount, price } = req.body;
+
+    const updates: Record<string, unknown> = {};
+    if (name !== undefined) updates.name = name;
+    if (category !== undefined) updates.category = category;
+    if (widthCm !== undefined) updates.widthCm = Number(widthCm);
+    if (depthCm !== undefined) updates.depthCm = Number(depthCm);
+    if (heightCm !== undefined) updates.heightCm = Number(heightCm);
+    if (color !== undefined) updates.color = color;
+    if (description !== undefined) updates.description = description;
+    if (imageUrl !== undefined) updates.imageUrl = imageUrl;
+    if (shape !== undefined) updates.shape = shape;
+    if (seatCount !== undefined) updates.seatCount = seatCount != null ? Number(seatCount) : null;
+    if (price !== undefined) updates.price = price != null ? Number(price) : null;
+
+    if (Object.keys(updates).length === 0) {
+      res.status(400).json({ error: "No fields to update", status: 400 });
+      return;
+    }
+
+    const [updated] = await db
+      .update(catalogItemsTable)
+      .set(updates)
+      .where(eq(catalogItemsTable.id, id))
+      .returning();
+
+    if (!updated) {
+      res.status(404).json({ error: "Catalog item not found", status: 404 });
+      return;
+    }
+
+    res.json(updated);
+  }),
+);
+
+router.delete(
+  "/admin/catalog/:id",
+  requireAuth,
+  requireAdmin,
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    const [deleted] = await db
+      .delete(catalogItemsTable)
+      .where(eq(catalogItemsTable.id, id))
+      .returning();
+
+    if (!deleted) {
+      res.status(404).json({ error: "Catalog item not found", status: 404 });
+      return;
+    }
+
+    res.status(204).send();
   }),
 );
 

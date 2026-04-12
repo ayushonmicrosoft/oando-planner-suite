@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
-import { eq } from "drizzle-orm";
-import { db, usersTable } from "@workspace/db";
+import { eq, count, desc } from "drizzle-orm";
+import { db, usersTable, plansTable, catalogItemsTable, templatesTable } from "@workspace/db";
 import { asyncHandler } from "../middlewares/async-handler";
 import { requireAdmin } from "../middlewares/require-admin";
 
@@ -113,6 +113,34 @@ router.patch(
     }
 
     res.json(updated);
+  }),
+);
+
+router.get(
+  "/admin/stats",
+  requireAdmin,
+  asyncHandler(async (_req, res) => {
+    const [[userCount], [planCount], [catalogCount], [templateCount], recentUsers] = await Promise.all([
+      db.select({ value: count() }).from(usersTable),
+      db.select({ value: count() }).from(plansTable),
+      db.select({ value: count() }).from(catalogItemsTable),
+      db.select({ value: count() }).from(templatesTable),
+      db.select().from(usersTable).orderBy(desc(usersTable.createdAt)).limit(5),
+    ]);
+
+    res.json({
+      totalUsers: userCount.value,
+      totalPlans: planCount.value,
+      totalCatalogItems: catalogCount.value,
+      totalTemplates: templateCount.value,
+      recentSignups: recentUsers.map((u) => ({
+        id: u.id,
+        email: u.email,
+        displayName: u.displayName,
+        role: u.role,
+        createdAt: u.createdAt.toISOString(),
+      })),
+    });
   }),
 );
 

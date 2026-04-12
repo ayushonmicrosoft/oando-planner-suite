@@ -18,11 +18,13 @@ export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<DbProfile | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [profileLoaded, setProfileLoaded] = useState(false);
   const supabase = createClient();
 
   const syncAndFetchProfile = useCallback(async (session: { access_token: string } | null) => {
     if (!session) {
       setProfile(null);
+      setProfileLoaded(true);
       return;
     }
 
@@ -48,6 +50,8 @@ export function useAuth() {
         setProfile(data);
       }
     } catch {
+    } finally {
+      setProfileLoaded(true);
     }
   }, []);
 
@@ -55,6 +59,9 @@ export function useAuth() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       setIsLoaded(true);
+      if (!session) {
+        setProfileLoaded(true);
+      }
       syncAndFetchProfile(session);
     });
 
@@ -113,6 +120,7 @@ export function useAuth() {
     role: profile?.role ?? "user",
     isAdmin: profile?.role === "admin",
     isLoaded,
+    profileLoaded,
     isSignedIn: !!user,
     signOut,
     signInWithProvider,

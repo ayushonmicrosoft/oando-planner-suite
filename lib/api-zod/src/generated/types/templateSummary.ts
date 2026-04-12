@@ -15,6 +15,7 @@ export interface TemplateSummary {
   roomDepthCm: number;
   layoutJson: string;
   furnitureCount: number;
+  usageCount: number;
   /** @nullable */
   thumbnailSvg?: string | null;
   createdAt: string;

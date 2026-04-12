@@ -11,6 +11,7 @@ export const templatesTable = pgTable("templates", {
   roomDepthCm: real("room_depth_cm").notNull(),
   layoutJson: text("layout_json").notNull(),
   furnitureCount: integer("furniture_count").notNull().default(0),
+  usageCount: integer("usage_count").notNull().default(0),
   thumbnailSvg: text("thumbnail_svg"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });

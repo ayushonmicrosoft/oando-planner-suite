@@ -670,6 +670,8 @@ components:
           type: string
         furnitureCount:
           type: integer
+        usageCount:
+          type: integer
         thumbnailSvg:
           type: ["string", "null"]
         createdAt:
@@ -683,6 +685,7 @@ components:
         - roomDepthCm
         - layoutJson
         - furnitureCount
+        - usageCount
         - createdAt
 
     UseTemplateBody:

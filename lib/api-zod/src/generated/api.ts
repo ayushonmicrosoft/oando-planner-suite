@@ -277,6 +277,7 @@ export const ListTemplatesResponseItem = zod.object({
   roomDepthCm: zod.number(),
   layoutJson: zod.string(),
   furnitureCount: zod.number(),
+  usageCount: zod.number(),
   thumbnailSvg: zod.string().nullish(),
   createdAt: zod.string(),
 });
@@ -298,6 +299,7 @@ export const GetTemplateResponse = zod.object({
   roomDepthCm: zod.number(),
   layoutJson: zod.string(),
   furnitureCount: zod.number(),
+  usageCount: zod.number(),
   thumbnailSvg: zod.string().nullish(),
   createdAt: zod.string(),
 });

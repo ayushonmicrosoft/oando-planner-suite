@@ -22,16 +22,16 @@
 }
 
 .planner-shell-chip {
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid var(--overlay-panel-10);
+  background: var(--overlay-panel-04);
   color: var(--planner-shell-muted);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  box-shadow: inset 0 1px 0 var(--overlay-panel-04);
 }
 
 .planner-rail-section {
   border: 1px solid color-mix(in srgb, white 10%, transparent);
   background: color-mix(in srgb, var(--surface-inverse-soft) 80%, black);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  box-shadow: inset 0 1px 0 var(--overlay-panel-04);
 }
 
 .planner-shell-stat {
@@ -98,8 +98,8 @@
   overflow: hidden;
   border: 1px solid var(--planner-stage-border);
   border-radius: 32px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.015));
-  box-shadow: 0 28px 80px rgba(1, 5, 10, 0.24);
+  background: linear-gradient(180deg, var(--overlay-panel-04), var(--overlay-panel-02));
+  box-shadow: var(--shadow-deep);
 }
 
 .planner-stage-grid {
@@ -116,21 +116,21 @@
   min-height: 0;
   margin: 0;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid var(--overlay-panel-12);
   border-radius: 30px;
-  background: radial-gradient(circle at top, rgba(46, 58, 71, 0.92) 0%, rgba(22, 30, 40, 0.96) 40%, rgba(8, 12, 18, 0.98) 100%);
+  background: radial-gradient(circle at top, var(--surface-viewport-top) 0%, var(--surface-viewport-mid) 40%, var(--surface-viewport-bottom) 100%);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.05),
-    0 24px 60px rgba(1, 5, 10, 0.28);
+    inset 0 1px 0 var(--overlay-panel-05),
+    var(--shadow-deep-strong);
 }
 
 .planner-stage-viewport::before {
   content: "";
   position: absolute;
   inset: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--overlay-panel-10);
   border-radius: 24px;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+  box-shadow: inset 0 0 0 1px var(--overlay-panel-02);
   pointer-events: none;
   z-index: 1;
 }
@@ -173,7 +173,7 @@
   right: 24px;
   z-index: 2;
   height: 1px;
-  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.12), transparent);
+  background: linear-gradient(to right, transparent, var(--overlay-panel-12), transparent);
   pointer-events: none;
 }
 

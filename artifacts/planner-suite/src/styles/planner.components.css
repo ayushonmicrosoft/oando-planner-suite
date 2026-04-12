@@ -19,7 +19,7 @@
   border-radius: 2rem;
   background:
     radial-gradient(circle at top left, color-mix(in srgb, var(--planner-compat-glow) 100%, white 0%) 0%, transparent 58%),
-    linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(237, 244, 250, 0.76) 52%, rgba(190, 175, 154, 0.18) 100%);
+    linear-gradient(135deg, var(--overlay-panel-90) 0%, var(--color-ocean-boat-blue-50) 52%, color-mix(in srgb, var(--color-bronze-300) 18%, transparent) 100%);
   pointer-events: none;
 }
 

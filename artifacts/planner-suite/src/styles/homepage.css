@@ -179,16 +179,16 @@
 }
 
 .btn-hero-primary {
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  background: rgba(8, 12, 18, 0.9);
-  color: #ffffff;
+  border: 1px solid var(--border-panel-28);
+  background: var(--overlay-inverse-90);
+  color: var(--text-inverse);
   font-weight: 700;
-  box-shadow: 0 18px 36px -24px rgba(0, 0, 0, 0.95);
+  box-shadow: var(--shadow-hero-btn);
 }
 
 .btn-hero-primary:hover {
-  background: rgba(6, 10, 16, 0.98);
-  border-color: rgba(255, 255, 255, 0.4);
+  background: var(--overlay-inverse-98);
+  border-color: var(--border-panel-40);
 }
 
 .btn-hero-accent {
@@ -217,16 +217,16 @@
 }
 
 .btn-hero-secondary {
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  background: rgba(255, 255, 255, 0.14);
-  color: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--border-panel-18);
+  background: var(--overlay-panel-14);
+  color: var(--overlay-panel-90);
   backdrop-filter: blur(12px);
-  box-shadow: 0 12px 28px -24px rgba(4, 8, 16, 0.55);
+  box-shadow: var(--shadow-hero-secondary);
 }
 
 .btn-hero-secondary:hover {
-  border-color: rgba(255, 255, 255, 0.28);
-  background: rgba(255, 255, 255, 0.2);
+  border-color: var(--border-panel-28);
+  background: var(--overlay-panel-20);
 }
 
 /* Contact teaser */

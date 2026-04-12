@@ -22,7 +22,7 @@
 }
 
 @utility border-danger-soft {
-  border-color: rgba(239, 68, 68, 0.2); /* Mapped from border-red-500/20 */
+  border-color: var(--color-danger-border-soft);
 }
 
 @utility hover-border-subtle {

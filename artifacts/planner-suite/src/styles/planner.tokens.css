@@ -1,6 +1,6 @@
 :root {
   --planner-compat-page:
-    radial-gradient(circle at top, rgba(255, 255, 255, 0.98) 0%, rgba(245, 247, 250, 0.98) 38%, rgba(230, 236, 243, 0.92) 100%);
+    radial-gradient(circle at top, var(--overlay-panel-98) 0%, #F5F7FAFA 38%, #E6ECF3EB 100%);
   --planner-compat-panel: color-mix(in srgb, var(--surface-glass-strong) 92%, white 8%);
   --planner-compat-panel-strong: color-mix(in srgb, var(--surface-panel) 86%, white 14%);
   --planner-compat-border: color-mix(in srgb, var(--border-accent) 58%, var(--border-soft) 42%);

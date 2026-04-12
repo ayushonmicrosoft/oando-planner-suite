@@ -153,6 +153,7 @@
   --color-success: var(--color-ocean-boat-blue-550);
   --color-warning: var(--color-bronze-400);
   --color-danger: var(--color-dark-midnight-blue-450);
+  --color-danger-border-soft: #EF444433;
 
   --surface-canvas: var(--color-dark-midnight-blue-950);
   --surface-canvas-soft: var(--color-dark-midnight-blue-900);
@@ -167,20 +168,50 @@
   --surface-status-ok: #E8EFF6;
   --surface-status-bad: #EEF1F5;
 
+  --surface-viewport-top: #2E3A47EB;
+  --surface-viewport-mid: #161E28F5;
+  --surface-viewport-bottom: #080C12FA;
+
   --overlay-inverse-06: #070D120F;
   --overlay-inverse-12: #070D121F;
   --overlay-inverse-18: #070D122E;
   --overlay-inverse-24: #070D123D;
   --overlay-inverse-35: #070D1259;
+  --overlay-inverse-55: #0408108C;
+  --overlay-inverse-90: #080C12E6;
+  --overlay-inverse-95: #080C12F2;
+  --overlay-inverse-98: #060A10FA;
+  --overlay-panel-02: #FFFFFF05;
+  --overlay-panel-04: #FFFFFF0A;
+  --overlay-panel-05: #FFFFFF0D;
+  --overlay-panel-06: #FFFFFF0F;
   --overlay-panel-08: #FFFFFF14;
   --overlay-panel-10: #FFFFFF1A;
   --overlay-panel-12: #FFFFFF1F;
   --overlay-panel-14: #FFFFFF24;
+  --overlay-panel-18: #FFFFFF2E;
+  --overlay-panel-20: #FFFFFF33;
+  --overlay-panel-28: #FFFFFF47;
+  --overlay-panel-40: #FFFFFF66;
   --overlay-panel-72: #FFFFFFB8;
   --overlay-panel-88: #FFFFFFE0;
+  --overlay-panel-90: #FFFFFFE6;
   --overlay-panel-92: #FFFFFFEB;
   --overlay-panel-95: #FFFFFFF2;
   --overlay-panel-98: #FFFFFFFA;
+
+  --border-panel-10: var(--overlay-panel-10);
+  --border-panel-12: var(--overlay-panel-12);
+  --border-panel-18: var(--overlay-panel-18);
+  --border-panel-28: var(--overlay-panel-28);
+  --border-panel-40: var(--overlay-panel-40);
+
+  --shadow-hero-btn: 0 18px 36px -24px #000000F2;
+  --shadow-hero-secondary: 0 12px 28px -24px var(--overlay-inverse-55);
+  --shadow-deep: 0 28px 80px #01050A3D;
+  --shadow-deep-strong: 0 24px 60px #01050A47;
+  --shadow-shell: 0 24px 72px #01050A57;
+  --shadow-accent-glow: 0 10px 24px #97764829;
 
   --shadow-soft: 0 16px 48px -30px #111E2D29;
   --shadow-panel: 0 24px 56px -42px #111E2D33;

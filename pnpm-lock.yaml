@@ -172,6 +172,9 @@ importers:
       '@workspace/db':
         specifier: workspace:*
         version: link:../../lib/db
+      better-auth:
+        specifier: ^1.6.2
+        version: 1.6.2(drizzle-kit@0.31.9)(drizzle-orm@0.45.1(@types/pg@8.18.0)(kysely@0.28.16)(pg@8.20.0))(next@16.2.3(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(pg@8.20.0)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       cookie-parser:
         specifier: ^1.4.7
         version: 1.4.7

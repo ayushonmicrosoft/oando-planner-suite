@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Office Planner Suite"
+version = "1.0.0"
+id = "artifacts/planner-suite"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 24140
+
+[services.development]
+run = "pnpm --filter @workspace/planner-suite run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/planner-suite", "run", "build" ]
+publicDir = "artifacts/planner-suite/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "24140"
+BASE_PATH = "/"

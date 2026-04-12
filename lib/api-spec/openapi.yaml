@@ -1,0 +1,692 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.2.0
+  description: Office Planner Suite API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: catalog
+    description: Furniture catalog operations
+  - name: plans
+    description: Floor plan operations
+  - name: ai
+    description: AI advisor operations
+  - name: templates
+    description: Template operations
+
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /catalog:
+    get:
+      operationId: listCatalogItems
+      tags: [catalog]
+      summary: List all furniture catalog items
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of catalog items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CatalogItem"
+
+  /catalog/{id}:
+    get:
+      operationId: getCatalogItem
+      tags: [catalog]
+      summary: Get a single catalog item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: A catalog item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CatalogItem"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /catalog/categories:
+    get:
+      operationId: listCategories
+      tags: [catalog]
+      summary: List all available categories with item counts
+      responses:
+        "200":
+          description: Category list with counts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CategorySummary"
+
+  /plans:
+    get:
+      operationId: listPlans
+      tags: [plans]
+      security:
+        - BearerAuth: []
+      summary: List all saved floor plans
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        "200":
+          description: List of floor plans
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PlanSummary"
+    post:
+      operationId: createPlan
+      tags: [plans]
+      security:
+        - BearerAuth: []
+      summary: Create a new floor plan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePlanBody"
+      responses:
+        "201":
+          description: Created plan
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Plan"
+
+  /plans/{id}:
+    get:
+      operationId: getPlan
+      tags: [plans]
+      security:
+        - BearerAuth: []
+      summary: Get a floor plan by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: A floor plan
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Plan"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updatePlan
+      tags: [plans]
+      security:
+        - BearerAuth: []
+      summary: Update a floor plan
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePlanBody"
+      responses:
+        "200":
+          description: Updated plan
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Plan"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deletePlan
+      tags: [plans]
+      security:
+        - BearerAuth: []
+      summary: Delete a floor plan
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /plans/{id}/duplicate:
+    post:
+      operationId: duplicatePlan
+      tags: [plans]
+      security:
+        - BearerAuth: []
+      summary: Duplicate an existing floor plan
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DuplicatePlanBody"
+      responses:
+        "201":
+          description: Duplicated plan
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Plan"
+        "404":
+          description: Source plan not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /plans/stats:
+    get:
+      operationId: getPlanStats
+      tags: [plans]
+      security:
+        - BearerAuth: []
+      summary: Get plan statistics summary
+      responses:
+        "200":
+          description: Stats summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlanStats"
+
+  /ai/advisor:
+    post:
+      operationId: getAiAdvice
+      tags: [ai]
+      security:
+        - BearerAuth: []
+      summary: Get AI layout recommendations
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AiAdvisorRequest"
+      responses:
+        "200":
+          description: AI advice response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiAdvisorResponse"
+
+  /templates:
+    get:
+      operationId: listTemplates
+      tags: [templates]
+      security:
+        - BearerAuth: []
+      summary: List all layout templates
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of templates
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TemplateSummary"
+
+  /templates/{id}:
+    get:
+      operationId: getTemplate
+      tags: [templates]
+      security:
+        - BearerAuth: []
+      summary: Get a single template
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: A template
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TemplateSummary"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /templates/{id}/use:
+    post:
+      operationId: useTemplate
+      tags: [templates]
+      security:
+        - BearerAuth: []
+      summary: Create a new plan from a template
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UseTemplateBody"
+      responses:
+        "201":
+          description: Plan created from template
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Plan"
+        "404":
+          description: Template not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+security: []
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        status:
+          type: integer
+      required:
+        - error
+
+    CatalogItem:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        category:
+          type: string
+        widthCm:
+          type: number
+        depthCm:
+          type: number
+        heightCm:
+          type: number
+        color:
+          type: ["string", "null"]
+        description:
+          type: ["string", "null"]
+        imageUrl:
+          type: ["string", "null"]
+        shape:
+          type: ["string", "null"]
+        seatCount:
+          type: ["integer", "null"]
+        price:
+          type: ["number", "null"]
+      required:
+        - id
+        - name
+        - category
+        - widthCm
+        - depthCm
+        - heightCm
+        - color
+        - description
+        - imageUrl
+        - shape
+        - seatCount
+        - price
+
+    CategorySummary:
+      type: object
+      properties:
+        name:
+          type: string
+        count:
+          type: integer
+      required:
+        - name
+        - count
+
+    PlannerType:
+      type: string
+      enum:
+        - canvas
+        - blueprint
+        - floorplan
+        - cad
+        - shapes
+        - import
+        - oando-floor-planning
+        - oando-cad-drawing
+        - oando-site-plan
+        - oando-floor-plan-creator
+        - oando-custom-shapes
+        - oando-import-scale
+        - oando-templates
+
+    PlanSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        plannerType:
+          $ref: "#/components/schemas/PlannerType"
+        roomWidthCm:
+          type: number
+        roomDepthCm:
+          type: number
+        itemCount:
+          type: integer
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - name
+        - plannerType
+        - roomWidthCm
+        - roomDepthCm
+        - itemCount
+        - createdAt
+        - updatedAt
+
+    Plan:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        plannerType:
+          $ref: "#/components/schemas/PlannerType"
+        roomWidthCm:
+          type: number
+        roomDepthCm:
+          type: number
+        documentJson:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - name
+        - plannerType
+        - roomWidthCm
+        - roomDepthCm
+        - documentJson
+        - createdAt
+        - updatedAt
+
+    CreatePlanBody:
+      type: object
+      properties:
+        name:
+          type: string
+        plannerType:
+          $ref: "#/components/schemas/PlannerType"
+        roomWidthCm:
+          type: number
+        roomDepthCm:
+          type: number
+        documentJson:
+          type: string
+      required:
+        - name
+        - plannerType
+        - roomWidthCm
+        - roomDepthCm
+        - documentJson
+
+    UpdatePlanBody:
+      type: object
+      properties:
+        name:
+          type: string
+        roomWidthCm:
+          type: number
+        roomDepthCm:
+          type: number
+        documentJson:
+          type: string
+
+    DuplicatePlanBody:
+      type: object
+      properties:
+        name:
+          type: string
+
+    PlanStats:
+      type: object
+      properties:
+        totalPlans:
+          type: integer
+        canvas2dPlans:
+          type: integer
+        blueprintPlans:
+          type: integer
+        recentPlan:
+          type: ["string", "null"]
+      required:
+        - totalPlans
+        - canvas2dPlans
+        - blueprintPlans
+        - recentPlan
+
+    AiAdvisorRequest:
+      type: object
+      properties:
+        roomWidthCm:
+          type: number
+        roomDepthCm:
+          type: number
+        itemCount:
+          type: integer
+        query:
+          type: string
+        categories:
+          type: array
+          items:
+            type: string
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/SpatialItem"
+      required:
+        - roomWidthCm
+        - roomDepthCm
+        - query
+
+    SpatialItem:
+      type: object
+      properties:
+        x:
+          type: number
+        y:
+          type: number
+        widthCm:
+          type: number
+        depthCm:
+          type: number
+        rotation:
+          type: number
+        name:
+          type: string
+      required:
+        - x
+        - y
+        - widthCm
+        - depthCm
+        - rotation
+        - name
+
+    AiAdvisorResponse:
+      type: object
+      properties:
+        advice:
+          type: string
+        suggestions:
+          type: array
+          items:
+            type: string
+        issues:
+          type: array
+          items:
+            type: string
+        positives:
+          type: array
+          items:
+            type: string
+      required:
+        - advice
+        - suggestions
+
+    TemplateSummary:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        roomWidthCm:
+          type: number
+        roomDepthCm:
+          type: number
+        layoutJson:
+          type: string
+        furnitureCount:
+          type: integer
+        thumbnailSvg:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+      required:
+        - id
+        - name
+        - description
+        - category
+        - roomWidthCm
+        - roomDepthCm
+        - layoutJson
+        - furnitureCount
+        - createdAt
+
+    UseTemplateBody:
+      type: object
+      properties:
+        name:
+          type: string

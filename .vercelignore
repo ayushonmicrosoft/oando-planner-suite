@@ -1,0 +1,8 @@
+node_modules
+.git
+.cache
+.local
+.agents
+attached_assets
+.pythonlibs
+.upm

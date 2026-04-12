@@ -49,23 +49,24 @@ export function PlansListSkeleton() {
 
 export function CatalogItemSkeleton() {
   return (
-    <Card className="overflow-hidden flex flex-col">
-      <Skeleton className="aspect-square w-full" />
-      <CardHeader className="p-4 pb-0">
+    <div className="rounded-xl border bg-card overflow-hidden flex flex-col">
+      <Skeleton className="aspect-[4/3] w-full rounded-none" />
+      <div className="p-4 space-y-2">
+        <Skeleton className="h-4 w-16 rounded-md" />
         <Skeleton className="h-5 w-3/4" />
-        <Skeleton className="h-4 w-full mt-1" />
-        <Skeleton className="h-4 w-2/3 mt-1" />
-      </CardHeader>
-      <CardContent className="p-4 pt-2 mt-auto">
-        <Skeleton className="h-8 w-full rounded-md" />
-      </CardContent>
-    </Card>
+        <Skeleton className="h-3 w-full" />
+        <div className="flex justify-between items-center pt-3 mt-3 border-t border-border/50">
+          <Skeleton className="h-3 w-20" />
+          <Skeleton className="h-3 w-12" />
+        </div>
+      </div>
+    </div>
   );
 }
 
 export function CatalogGridSkeleton() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
       {Array.from({ length: 8 }).map((_, i) => (
         <CatalogItemSkeleton key={i} />
       ))}
@@ -75,9 +76,9 @@ export function CatalogGridSkeleton() {
 
 export function CategoryListSkeleton() {
   return (
-    <div className="space-y-1">
+    <div className="space-y-0.5">
       {Array.from({ length: 5 }).map((_, i) => (
-        <Skeleton key={i} className="h-10 w-full rounded-md" />
+        <Skeleton key={i} className="h-9 w-full rounded-lg" />
       ))}
     </div>
   );

@@ -8,7 +8,6 @@ import {
   getGetCatalogItemQueryKey,
   getListCatalogItemsQueryOptions,
 } from "@workspace/api-client-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -22,53 +21,17 @@ import {
 } from "@/components/ui/breadcrumb";
 import {
   Loader2,
-  CircleDashed,
-  Square,
-  DollarSign,
-  Users,
   ArrowLeft,
   Maximize,
   Ruler,
   Plus,
+  Palette,
+  Users,
+  Box,
+  Layers,
+  DollarSign,
 } from "lucide-react";
-
-function ShapeIndicator({ shape, size = 20 }: { shape?: string; size?: number }) {
-  if (shape === "round" || shape === "circle") {
-    return (
-      <div
-        className="rounded-full border-2 border-muted-foreground/40"
-        style={{ width: size, height: size }}
-      />
-    );
-  }
-  if (shape === "l-left" || shape === "l-right") {
-    return (
-      <svg
-        width={size}
-        height={size}
-        viewBox="0 0 16 16"
-        className="text-muted-foreground/40"
-      >
-        <path
-          d={
-            shape === "l-left"
-              ? "M2 2h12v8H8v4H2z"
-              : "M2 2h12v8H14v4H8V10H2z"
-          }
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-        />
-      </svg>
-    );
-  }
-  return (
-    <div
-      className="rounded-sm border-2 border-muted-foreground/40"
-      style={{ width: size, height: size }}
-    />
-  );
-}
+import { FurnitureVisual, getColorForCategory } from "./catalog";
 
 function DimensionDiagram({
   width,
@@ -103,9 +66,20 @@ function DimensionDiagram({
         y={y}
         width={rectW}
         height={rectD}
-        fill="hsl(var(--primary) / 0.1)"
-        stroke="hsl(var(--primary))"
-        strokeWidth="2"
+        fill="hsl(var(--primary) / 0.08)"
+        stroke="hsl(var(--primary) / 0.3)"
+        strokeWidth="1.5"
+        rx="3"
+      />
+      <rect
+        x={x + 3}
+        y={y + 3}
+        width={rectW - 6}
+        height={rectD - 6}
+        fill="none"
+        stroke="hsl(var(--primary) / 0.1)"
+        strokeWidth="0.5"
+        strokeDasharray="4 3"
         rx="2"
       />
       <line
@@ -113,7 +87,7 @@ function DimensionDiagram({
         y1={y + rectD + 12}
         x2={x + rectW}
         y2={y + rectD + 12}
-        stroke="hsl(var(--muted-foreground))"
+        stroke="hsl(var(--muted-foreground) / 0.4)"
         strokeWidth="1"
         markerStart="url(#arrowL)"
         markerEnd="url(#arrowR)"
@@ -131,7 +105,7 @@ function DimensionDiagram({
         y1={y}
         x2={x + rectW + 12}
         y2={y + rectD}
-        stroke="hsl(var(--muted-foreground))"
+        stroke="hsl(var(--muted-foreground) / 0.4)"
         strokeWidth="1"
         markerStart="url(#arrowU)"
         markerEnd="url(#arrowD)"
@@ -154,19 +128,31 @@ function DimensionDiagram({
       </text>
       <defs>
         <marker id="arrowL" markerWidth="6" markerHeight="6" refX="0" refY="3" orient="auto">
-          <path d="M6,0 L0,3 L6,6" fill="none" stroke="hsl(var(--muted-foreground))" strokeWidth="1" />
+          <path d="M6,0 L0,3 L6,6" fill="none" stroke="hsl(var(--muted-foreground) / 0.4)" strokeWidth="1" />
         </marker>
         <marker id="arrowR" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto">
-          <path d="M0,0 L6,3 L0,6" fill="none" stroke="hsl(var(--muted-foreground))" strokeWidth="1" />
+          <path d="M0,0 L6,3 L0,6" fill="none" stroke="hsl(var(--muted-foreground) / 0.4)" strokeWidth="1" />
         </marker>
         <marker id="arrowU" markerWidth="6" markerHeight="6" refX="3" refY="0" orient="auto">
-          <path d="M0,6 L3,0 L6,6" fill="none" stroke="hsl(var(--muted-foreground))" strokeWidth="1" />
+          <path d="M0,6 L3,0 L6,6" fill="none" stroke="hsl(var(--muted-foreground) / 0.4)" strokeWidth="1" />
         </marker>
         <marker id="arrowD" markerWidth="6" markerHeight="6" refX="3" refY="6" orient="auto">
-          <path d="M0,0 L3,6 L6,0" fill="none" stroke="hsl(var(--muted-foreground))" strokeWidth="1" />
+          <path d="M0,0 L3,6 L6,0" fill="none" stroke="hsl(var(--muted-foreground) / 0.4)" strokeWidth="1" />
         </marker>
       </defs>
     </svg>
+  );
+}
+
+function SpecCard({ icon: Icon, label, children }: { icon: typeof Maximize; label: string; children: React.ReactNode }) {
+  return (
+    <div className="bg-muted/40 hover:bg-muted/60 transition-colors duration-200 p-4 rounded-xl space-y-1.5">
+      <div className="flex items-center gap-1.5 text-xs text-muted-foreground/70 font-medium uppercase tracking-wider">
+        <Icon className="w-3.5 h-3.5" strokeWidth={1.5} />
+        {label}
+      </div>
+      <div className="font-mono text-sm">{children}</div>
+    </div>
   );
 }
 
@@ -204,7 +190,10 @@ export default function CatalogDetail() {
   if (isLoading) {
     return (
       <div className="p-8 max-w-6xl mx-auto flex justify-center items-center min-h-[400px]">
-        <Loader2 className="w-10 h-10 animate-spin text-primary" />
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="w-8 h-8 animate-spin text-primary/60" />
+          <p className="text-sm text-muted-foreground/60">Loading product details…</p>
+        </div>
       </div>
     );
   }
@@ -215,8 +204,8 @@ export default function CatalogDetail() {
         <Button variant="ghost" size="sm" onClick={() => router.push("/catalog")} className="gap-2">
           <ArrowLeft className="w-4 h-4" /> Back to Catalog
         </Button>
-        <Card className="bg-destructive/5 border-destructive/20">
-          <CardContent className="flex flex-col items-center justify-center h-64 text-center space-y-4">
+        <div className="bg-destructive/5 border border-destructive/20 rounded-xl">
+          <div className="flex flex-col items-center justify-center h-64 text-center space-y-4">
             <p className="text-lg font-medium">Item not found</p>
             <p className="text-sm text-muted-foreground">
               The catalog item you're looking for doesn't exist or has been removed.
@@ -224,217 +213,201 @@ export default function CatalogDetail() {
             <Button variant="outline" onClick={() => router.push("/catalog")}>
               Return to Catalog
             </Button>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     );
   }
 
   const floorArea = ((item.widthCm * item.depthCm) / 10000).toFixed(2);
+  const catColor = getColorForCategory(item.category);
 
   return (
-    <div className="p-4 sm:p-8 max-w-6xl mx-auto space-y-6 animate-in fade-in duration-500">
-      <Breadcrumb>
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink asChild>
-              <Link href="/catalog">Catalog</Link>
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbLink asChild>
-              <Link href={`/catalog?category=${encodeURIComponent(item.category)}`}>
-                {item.category}
-              </Link>
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage>{item.name}</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
+    <div className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto space-y-6 animate-in fade-in duration-500">
+      <div className="flex items-center justify-between">
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link href="/catalog">Catalog</Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link href={`/catalog?category=${encodeURIComponent(item.category)}`} className="capitalize">
+                  {item.category.replace('-', ' ')}
+                </Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>{item.name}</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="space-y-4">
-          <div className="aspect-square bg-muted/30 rounded-xl flex items-center justify-center relative overflow-hidden border">
-            {item.shape === "round" || item.shape === "circle" ? (
-              <CircleDashed className="w-1/2 h-1/2 text-muted-foreground/20" />
-            ) : (
-              <Square className="w-1/2 h-1/2 text-muted-foreground/20" />
-            )}
-            {item.color && (
-              <div
-                className="absolute bottom-4 right-4 w-10 h-10 rounded-full border-2 border-white shadow-lg"
-                style={{ backgroundColor: item.color }}
-                title={`Color: ${item.color}`}
+          <div className="rounded-2xl overflow-hidden border bg-card">
+            <div className="group">
+              <FurnitureVisual
+                category={item.category}
+                name={item.name}
+                color={item.color}
+                widthCm={item.widthCm}
+                depthCm={item.depthCm}
+                size="lg"
               />
-            )}
-            <Badge
-              variant="outline"
-              className="absolute top-4 left-4 bg-background/80 backdrop-blur-sm"
-            >
-              {item.category}
-            </Badge>
+            </div>
+            <div className="p-4 border-t bg-muted/20">
+              <div className="flex items-center justify-between">
+                <Badge variant="outline" className={`capitalize ${catColor.accent} font-normal`}>
+                  {item.category.replace('-', ' ')}
+                </Badge>
+                {item.color && (
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="w-5 h-5 rounded-full border-2 border-background shadow-sm ring-1 ring-border"
+                      style={{ backgroundColor: item.color }}
+                    />
+                    <span className="text-xs text-muted-foreground font-mono">{item.color}</span>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center gap-2">
-                <Ruler className="w-4 h-4" />
-                Dimension Diagram
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="flex justify-center">
+          <div className="rounded-xl border bg-card p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <Ruler className="w-4 h-4 text-muted-foreground/60" strokeWidth={1.5} />
+              <h3 className="text-sm font-medium">Dimension Diagram</h3>
+            </div>
+            <div className="flex justify-center">
               <DimensionDiagram
                 width={item.widthCm}
                 depth={item.depthCm}
                 height={item.heightCm}
               />
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
 
         <div className="space-y-6">
           <div>
-            <div className="flex items-start justify-between gap-4 mb-2">
-              <h1 className="text-3xl font-bold tracking-tight">{item.name}</h1>
-              <Badge variant="secondary" className="text-sm shrink-0">
-                {item.category}
-              </Badge>
-            </div>
-            <p className="text-muted-foreground leading-relaxed">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{item.name}</h1>
+            <p className="text-muted-foreground leading-relaxed mt-2">
               {item.description || "No description available for this item."}
             </p>
           </div>
 
           {item.price != null && (
-            <div className="text-3xl font-bold text-primary flex items-center gap-1">
-              <DollarSign className="w-7 h-7" />
-              {item.price.toFixed(2)}
+            <div className="flex items-baseline gap-1">
+              <span className="text-3xl font-bold tracking-tight">₹{item.price.toLocaleString()}</span>
+              <span className="text-sm text-muted-foreground/60 ml-1">per unit</span>
             </div>
           )}
 
           <Separator />
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-muted/50 p-4 rounded-lg space-y-1">
-              <div className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">
-                Dimensions
-              </div>
-              <div className="font-mono text-sm flex items-center gap-1.5">
-                <Maximize className="w-3.5 h-3.5 text-muted-foreground" />
+          <div>
+            <h3 className="text-xs font-medium uppercase tracking-[0.1em] text-muted-foreground/60 mb-3">Specifications</h3>
+            <div className="grid grid-cols-2 gap-3">
+              <SpecCard icon={Maximize} label="Dimensions">
                 {item.widthCm}W × {item.depthCm}D × {item.heightCm}H cm
-              </div>
-            </div>
-            <div className="bg-muted/50 p-4 rounded-lg space-y-1">
-              <div className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">
-                Floor Area
-              </div>
-              <div className="font-mono text-sm">{floorArea} m²</div>
-            </div>
-            <div className="bg-muted/50 p-4 rounded-lg space-y-1">
-              <div className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">
-                Shape
-              </div>
-              <div className="flex items-center gap-2">
-                <ShapeIndicator shape={item.shape ?? undefined} />
-                <span className="font-mono text-sm capitalize">
-                  {item.shape || "Standard"}
-                </span>
-              </div>
-            </div>
-            {item.color && (
-              <div className="bg-muted/50 p-4 rounded-lg space-y-1">
-                <div className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">
-                  Color
-                </div>
-                <div className="flex items-center gap-2">
-                  <div
-                    className="w-5 h-5 rounded-full border shadow-sm"
-                    style={{ backgroundColor: item.color }}
-                  />
-                  <span className="font-mono text-sm">{item.color}</span>
-                </div>
-              </div>
-            )}
-            {item.seatCount != null && (
-              <div className="bg-muted/50 p-4 rounded-lg space-y-1">
-                <div className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">
-                  Capacity
-                </div>
-                <div className="font-mono text-sm flex items-center gap-1.5">
-                  <Users className="w-3.5 h-3.5 text-muted-foreground" />
+              </SpecCard>
+              <SpecCard icon={Layers} label="Floor Area">
+                {floorArea} m²
+              </SpecCard>
+              <SpecCard icon={Box} label="Shape">
+                <span className="capitalize">{item.shape || "Standard"}</span>
+              </SpecCard>
+              {item.color && (
+                <SpecCard icon={Palette} label="Color">
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="w-4 h-4 rounded-full border shadow-sm"
+                      style={{ backgroundColor: item.color }}
+                    />
+                    <span>{item.color}</span>
+                  </div>
+                </SpecCard>
+              )}
+              {item.seatCount != null && (
+                <SpecCard icon={Users} label="Capacity">
                   {item.seatCount} {item.seatCount === 1 ? "person" : "persons"}
-                </div>
-              </div>
-            )}
-            {item.price != null && (
-              <div className="bg-muted/50 p-4 rounded-lg space-y-1">
-                <div className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">
-                  Price
-                </div>
-                <div className="font-mono text-sm flex items-center gap-1.5">
-                  <DollarSign className="w-3.5 h-3.5 text-muted-foreground" />
-                  {item.price.toFixed(2)}
-                </div>
-              </div>
-            )}
+                </SpecCard>
+              )}
+              {item.price != null && (
+                <SpecCard icon={DollarSign} label="Unit Price">
+                  ₹{item.price.toLocaleString()}
+                </SpecCard>
+              )}
+            </div>
           </div>
 
-          <Button
-            size="lg"
-            className="w-full gap-2"
-            onClick={() =>
-              router.push(`/planner/studio?itemId=${encodeURIComponent(id)}`)
-            }
-          >
-            <Plus className="w-5 h-5" />
-            Add to Plan
-          </Button>
+          <div className="pt-2">
+            <Button
+              size="lg"
+              className="w-full gap-2 h-12 text-base font-semibold shadow-sm hover:shadow-md transition-shadow"
+              onClick={() =>
+                router.push(`/planner/studio?itemId=${encodeURIComponent(id)}`)
+              }
+            >
+              <Plus className="w-5 h-5" />
+              Add to Plan
+            </Button>
+            <p className="text-[11px] text-muted-foreground/50 text-center mt-2">Opens in the Floor Plan Studio</p>
+          </div>
         </div>
       </div>
 
       {filteredRelated && filteredRelated.length > 0 && (
         <>
-          <Separator className="my-8" />
+          <Separator className="my-6" />
           <div className="space-y-4">
-            <h2 className="text-xl font-semibold tracking-tight">
-              Related Items in {item.category}
-            </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-              {filteredRelated.map((rel) => (
-                <Link
-                  key={rel.id}
-                  href={`/catalog/${rel.id}`}
-                  className="group"
-                >
-                  <Card className="overflow-hidden hover:shadow-md transition-shadow hover:border-primary/50">
-                    <div className="aspect-square bg-muted/30 flex items-center justify-center p-4 border-b relative">
-                      {rel.shape === "round" || rel.shape === "circle" ? (
-                        <CircleDashed className="w-full h-full text-muted-foreground/20" />
-                      ) : (
-                        <Square className="w-full h-full text-muted-foreground/20" />
-                      )}
-                      {rel.color && (
-                        <div
-                          className="absolute bottom-2 right-2 w-4 h-4 rounded-full border border-white shadow-sm"
-                          style={{ backgroundColor: rel.color }}
-                        />
-                      )}
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold tracking-tight">
+                Related in <span className="capitalize">{item.category.replace('-', ' ')}</span>
+              </h2>
+              <Link
+                href={`/catalog?category=${encodeURIComponent(item.category)}`}
+                className="text-xs text-primary hover:underline"
+              >
+                View all →
+              </Link>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
+              {filteredRelated.map((rel) => {
+                const relColor = getColorForCategory(rel.category);
+                return (
+                  <Link
+                    key={rel.id}
+                    href={`/catalog/${rel.id}`}
+                    className="group"
+                  >
+                    <div className="rounded-xl border bg-card overflow-hidden hover:shadow-md hover:border-primary/20 transition-all duration-300">
+                      <FurnitureVisual
+                        category={rel.category}
+                        name={rel.name}
+                        color={rel.color}
+                        widthCm={rel.widthCm}
+                        depthCm={rel.depthCm}
+                        size="sm"
+                      />
+                      <div className="p-3">
+                        <p className="text-sm font-medium line-clamp-1 group-hover:text-primary transition-colors">
+                          {rel.name}
+                        </p>
+                        <p className="text-xs text-muted-foreground/60 font-mono mt-1">
+                          {rel.price ? `₹${rel.price.toLocaleString()}` : "—"}
+                        </p>
+                      </div>
                     </div>
-                    <CardContent className="p-3">
-                      <p className="text-sm font-medium line-clamp-1 group-hover:text-primary transition-colors">
-                        {rel.name}
-                      </p>
-                      <p className="text-xs text-muted-foreground font-mono mt-1">
-                        {rel.price ? `$${rel.price.toFixed(0)}` : "—"}
-                      </p>
-                    </CardContent>
-                  </Card>
-                </Link>
-              ))}
+                  </Link>
+                );
+              })}
             </div>
           </div>
         </>

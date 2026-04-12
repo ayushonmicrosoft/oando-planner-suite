@@ -141,7 +141,7 @@ export function StudioCatalog() {
   const totalCount = items.length;
 
   return (
-    <div className="absolute top-12 left-0 bottom-8 z-20 w-[300px] border-r bg-white/95 backdrop-blur-md flex flex-col shadow-lg">
+    <div className="absolute top-12 left-[120px] bottom-8 z-20 w-[300px] border-r bg-white/95 backdrop-blur-md flex flex-col shadow-lg">
       <div className="px-3 pt-3 pb-2 border-b space-y-2">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-bold text-navy flex items-center gap-1.5">

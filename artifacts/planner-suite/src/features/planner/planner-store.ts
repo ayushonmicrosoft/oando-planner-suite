@@ -5,7 +5,9 @@ export type PlannerStep = "layout" | "furnish" | "review" | "export";
 export type CanvasToolMode =
   | "select" | "draw" | "hand" | "eraser"
   | "geo" | "line" | "text" | "frame"
-  | "note" | "arrow" | "laser" | "highlight";
+  | "note" | "arrow" | "laser" | "highlight"
+  | "wall" | "room" | "door" | "window"
+  | "furniture" | "zone" | "measure";
 
 export interface CatalogProduct {
   id: string;
@@ -21,6 +23,8 @@ export interface CatalogProduct {
   price?: number;
   seatCount?: number;
 }
+
+export type LabelUnit = "cm" | "m";
 
 interface PlannerState {
   editor: Editor | null;
@@ -69,6 +73,21 @@ interface PlannerState {
 
   catalogSearch: string;
   setCatalogSearch: (q: string) => void;
+
+  snapDistance: number;
+  setSnapDistance: (d: number) => void;
+
+  labelUnit: LabelUnit;
+  setLabelUnit: (u: LabelUnit) => void;
+
+  showSettings: boolean;
+  toggleSettings: () => void;
+
+  shapeCounts: { walls: number; rooms: number; doors: number; windows: number; furniture: number; zones: number };
+  setShapeCounts: (c: Partial<PlannerState["shapeCounts"]>) => void;
+
+  isSaved: boolean;
+  setSaved: (saved: boolean) => void;
 }
 
 export const usePlannerStore = create<PlannerState>()((set) => ({
@@ -118,4 +137,19 @@ export const usePlannerStore = create<PlannerState>()((set) => ({
 
   catalogSearch: "",
   setCatalogSearch: (catalogSearch) => set({ catalogSearch }),
+
+  snapDistance: 10,
+  setSnapDistance: (snapDistance) => set({ snapDistance }),
+
+  labelUnit: "cm",
+  setLabelUnit: (labelUnit) => set({ labelUnit }),
+
+  showSettings: false,
+  toggleSettings: () => set((s) => ({ showSettings: !s.showSettings })),
+
+  shapeCounts: { walls: 0, rooms: 0, doors: 0, windows: 0, furniture: 0, zones: 0 },
+  setShapeCounts: (c) => set((s) => ({ shapeCounts: { ...s.shapeCounts, ...c } })),
+
+  isSaved: false,
+  setSaved: (isSaved) => set({ isSaved }),
 }));

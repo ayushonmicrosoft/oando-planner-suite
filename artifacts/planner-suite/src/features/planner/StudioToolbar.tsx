@@ -10,6 +10,8 @@ import {
   AlignEndHorizontal, AlignStartVertical, AlignCenterVertical,
   AlignEndVertical, Group, Ungroup, MoveUp, MoveDown,
   Highlighter, Pointer, Download, FileText, Image, Map as MapIcon, FileSpreadsheet,
+  LayoutTemplate, FolderOpen, FilePlus, Save, FileInput, Layers,
+  AlignHorizontalSpaceAround, Settings2, Presentation,
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { usePlannerStore, type CanvasToolMode } from "./planner-store";
@@ -31,52 +33,27 @@ const TOOL_MAP: Record<string, string> = {
   highlight: "highlight",
 };
 
-function ToolBtn({
-  tool, icon: Icon, label, shortcut, size = "default",
-}: {
-  tool: CanvasToolMode;
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  shortcut?: string;
-  size?: "default" | "sm";
-}) {
-  const { activeTool, setActiveTool, editor } = usePlannerStore();
-  const active = activeTool === tool;
-  return (
-    <button
-      onClick={() => {
-        setActiveTool(tool);
-        if (editor && TOOL_MAP[tool]) editor.setCurrentTool(TOOL_MAP[tool]);
-      }}
-      className={cn(
-        "flex items-center justify-center rounded-md transition-all",
-        size === "sm" ? "h-7 w-7" : "h-8 w-8",
-        active ? "bg-navy text-white shadow-sm" : "text-navy-text/70 hover:bg-navy/10 hover:text-navy"
-      )}
-      title={`${label}${shortcut ? ` (${shortcut})` : ""}`}
-    >
-      <Icon className={size === "sm" ? "h-3.5 w-3.5" : "h-4 w-4"} />
-    </button>
-  );
-}
-
 function ActionBtn({
-  icon: Icon, label, onClick, danger, disabled,
+  icon: Icon, label, onClick, danger, disabled, active, className: extraClass,
 }: {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   onClick: () => void;
   danger?: boolean;
   disabled?: boolean;
+  active?: boolean;
+  className?: string;
 }) {
   return (
     <button
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        "flex h-8 w-8 items-center justify-center rounded-md transition-all",
-        danger ? "text-red-500/70 hover:bg-red-50 hover:text-red-600" : "text-navy-text/60 hover:bg-navy/10 hover:text-navy",
-        disabled && "opacity-30 pointer-events-none"
+        "flex h-8 items-center justify-center rounded-md transition-all",
+        active ? "bg-navy text-white" : "",
+        danger ? "text-red-500/70 hover:bg-red-50 hover:text-red-600" : !active ? "text-navy-text/60 hover:bg-navy/10 hover:text-navy" : "",
+        disabled && "opacity-30 pointer-events-none",
+        extraClass
       )}
       title={label}
     >
@@ -85,12 +62,39 @@ function ActionBtn({
   );
 }
 
+function TopBarBtn({
+  icon: Icon, label, onClick, disabled, badge,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  onClick: () => void;
+  disabled?: boolean;
+  badge?: boolean;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={cn(
+        "flex h-8 items-center gap-1.5 px-2 rounded-md text-[11px] font-medium transition-all",
+        "text-navy-text/60 hover:bg-navy/10 hover:text-navy",
+        disabled && "opacity-30 pointer-events-none",
+        badge && "bg-primary text-white hover:bg-primary/90 hover:text-white"
+      )}
+      title={label}
+    >
+      <Icon className="h-3.5 w-3.5" />
+      <span className="hidden xl:inline">{label}</span>
+    </button>
+  );
+}
+
 export function StudioToolbar() {
   const {
-    editor, planName, setPlanName, isDirty,
+    editor, planName, setPlanName, isDirty, isSaved,
     showCatalog, toggleCatalog, showInspector, toggleInspector,
     showGrid, toggleGrid, show3D, toggle3D, showMinimap, toggleMinimap,
-    zoom, setZoom,
+    zoom, setZoom, showSettings, toggleSettings,
   } = usePlannerStore();
   const router = useRouter();
   const [showExportMenu, setShowExportMenu] = useState(false);
@@ -224,121 +228,62 @@ export function StudioToolbar() {
     <div className="absolute top-0 left-0 right-0 z-30 flex h-12 items-center border-b bg-white/95 backdrop-blur-md px-2 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
       <button
         onClick={() => router.push("/")}
-        className="flex h-8 w-8 items-center justify-center rounded-md text-navy-text/60 hover:bg-navy/10 hover:text-navy mr-1"
+        className="flex items-center gap-1.5 rounded-md text-navy-text/60 hover:bg-navy/10 hover:text-navy px-2 h-8 mr-1"
         title="Back to Dashboard"
       >
-        <ChevronLeft className="h-4 w-4" />
-      </button>
-
-      <div className="flex items-center gap-0.5 mr-2">
-        <img src={`/logo-v2-white.webp`} alt="" className="h-5 w-auto invert opacity-80" />
-      </div>
-
-      <button
-        onClick={toggleCatalog}
-        className={cn(
-          "flex h-8 w-8 items-center justify-center rounded-md transition-all mr-1",
-          showCatalog ? "bg-navy text-white" : "text-navy-text/50 hover:bg-navy/10"
-        )}
-        title="Catalog (C)"
-      >
-        <PanelLeft className="h-4 w-4" />
+        <img src="/logo-v2-white.webp" alt="One&Only" className="h-5 w-auto invert opacity-80" />
       </button>
 
       <Separator orientation="vertical" className="h-6 mx-1" />
-
-      <div className="flex items-center gap-0.5 rounded-lg border border-navy/10 bg-brand-surface p-0.5">
-        <ToolBtn tool="select" icon={MousePointer2} label="Select" shortcut="V" />
-        <ToolBtn tool="hand" icon={Hand} label="Pan" shortcut="H" />
-      </div>
-
-      <Separator orientation="vertical" className="h-6 mx-1" />
-
-      <div className="flex items-center gap-0.5 rounded-lg border border-navy/10 bg-brand-surface p-0.5">
-        <ToolBtn tool="geo" icon={Square} label="Rectangle / Ellipse" shortcut="R" />
-        <ToolBtn tool="line" icon={Minus} label="Line" shortcut="L" />
-        <ToolBtn tool="arrow" icon={ArrowUpRight} label="Arrow" shortcut="A" />
-        <ToolBtn tool="draw" icon={Pencil} label="Freehand" shortcut="D" />
-        <ToolBtn tool="text" icon={Type} label="Text" shortcut="T" />
-        <ToolBtn tool="note" icon={StickyNote} label="Sticky Note" shortcut="N" />
-        <ToolBtn tool="frame" icon={Frame} label="Frame" shortcut="F" />
-        <ToolBtn tool="highlight" icon={Highlighter} label="Highlight" />
-        <ToolBtn tool="eraser" icon={Eraser} label="Eraser" shortcut="E" />
-      </div>
-
-      <Separator orientation="vertical" className="h-6 mx-1" />
-
-      <ActionBtn icon={Undo2} label="Undo (Ctrl+Z)" onClick={handleUndo} />
-      <ActionBtn icon={Redo2} label="Redo (Ctrl+Shift+Z)" onClick={handleRedo} />
-
-      <Separator orientation="vertical" className="h-6 mx-1" />
-
-      <ActionBtn icon={RotateCcw} label="Rotate Left 90°" onClick={handleRotateCCW} disabled={!hasSelection} />
-      <ActionBtn icon={RotateCw} label="Rotate Right 90°" onClick={handleRotateCW} disabled={!hasSelection} />
-      <ActionBtn icon={Copy} label="Duplicate (Ctrl+D)" onClick={handleDuplicate} disabled={!hasSelection} />
-      <ActionBtn icon={MoveUp} label="Bring Forward" onClick={handleBringForward} disabled={!hasSelection} />
-      <ActionBtn icon={MoveDown} label="Send Backward" onClick={handleSendBackward} disabled={!hasSelection} />
-      <ActionBtn icon={Trash2} label="Delete" onClick={handleDelete} danger disabled={!hasSelection} />
-
-      <div className="flex-1" />
 
       <input
         type="text"
         value={planName}
         onChange={(e) => setPlanName(e.target.value)}
-        className="h-7 w-44 rounded-md border bg-white px-2.5 text-xs font-medium text-navy-text outline-none focus:border-navy focus:ring-1 focus:ring-navy/20 transition-all mr-2"
+        className="h-7 w-40 rounded-md border bg-white px-2.5 text-xs font-semibold text-navy-text outline-none focus:border-navy focus:ring-1 focus:ring-navy/20 transition-all mr-1"
       />
 
-      {isDirty && <span className="text-[10px] text-amber-500 font-semibold mr-2">UNSAVED</span>}
-
-      <Separator orientation="vertical" className="h-6 mx-1" />
-
-      <div className="flex items-center gap-0.5 mr-1">
-        <ActionBtn icon={ZoomOut} label="Zoom Out" onClick={handleZoomOut} />
-        <button onClick={handleZoomReset} className="h-7 px-2 text-[11px] font-semibold text-navy-text/60 hover:bg-navy/10 rounded-md" title="Reset Zoom">
-          {zoom}%
-        </button>
-        <ActionBtn icon={ZoomIn} label="Zoom In" onClick={handleZoomIn} />
-        <ActionBtn icon={Maximize} label="Zoom to Fit" onClick={handleZoomFit} />
+      <div className="flex items-center gap-0.5 text-[10px] mr-1">
+        {isSaved && <span className="text-emerald-500 font-semibold flex items-center gap-1"><Save className="w-3 h-3" /> Saved</span>}
+        {isDirty && !isSaved && <span className="text-amber-500 font-semibold">Unsaved</span>}
       </div>
 
       <Separator orientation="vertical" className="h-6 mx-1" />
 
-      <button
-        onClick={toggleGrid}
-        className={cn("flex h-8 w-8 items-center justify-center rounded-md transition-all", showGrid ? "bg-navy/10 text-navy" : "text-navy-text/40 hover:bg-navy/5")}
-        title="Grid"
-      >
-        <Grid3X3 className="h-3.5 w-3.5" />
-      </button>
-      <button
-        onClick={toggleMinimap}
-        className={cn("flex h-8 w-8 items-center justify-center rounded-md transition-all", showMinimap ? "bg-navy/10 text-navy" : "text-navy-text/40 hover:bg-navy/5")}
-        title="Minimap"
-      >
-        <MapIcon className="h-3.5 w-3.5" />
-      </button>
-      <button
-        onClick={toggle3D}
-        className={cn(
-          "flex h-8 items-center gap-1 px-2 rounded-md text-xs font-semibold transition-all",
-          show3D ? "bg-navy text-white" : "text-navy/70 hover:bg-navy/10"
-        )}
-        title="3D View"
-      >
-        <Box className="h-3.5 w-3.5" />
-        <span className="hidden xl:inline">3D</span>
-      </button>
+      <ActionBtn icon={Undo2} label="Undo (Ctrl+Z)" onClick={handleUndo} className="w-8" />
+      <ActionBtn icon={Redo2} label="Redo (Ctrl+Shift+Z)" onClick={handleRedo} className="w-8" />
 
       <Separator orientation="vertical" className="h-6 mx-1" />
+
+      <TopBarBtn icon={LayoutTemplate} label="Templates" onClick={() => router.push("/templates")} />
+      <TopBarBtn icon={FolderOpen} label="Projects" onClick={() => router.push("/projects")} />
+      <TopBarBtn icon={FilePlus} label="New" onClick={() => { editor?.selectNone(); }} />
+      <TopBarBtn icon={FolderOpen} label="Open" onClick={() => router.push("/plans")} />
+      <TopBarBtn icon={Save} label="Save" onClick={() => { usePlannerStore.getState().setSaved(true); usePlannerStore.getState().setDirty(false); }} />
+      <TopBarBtn icon={FileSpreadsheet} label="BOQ" onClick={() => router.push("/plans")} />
+      <TopBarBtn icon={FileInput} label="Import" onClick={() => router.push("/tools/import")} />
+
+      <Separator orientation="vertical" className="h-6 mx-1" />
+
+      <TopBarBtn icon={Layers} label="Clusters" onClick={() => {}} />
+      <TopBarBtn icon={AlignStartHorizontal} label="Arrange" onClick={() => {}} />
+      <TopBarBtn icon={MapIcon} label="Zones" onClick={() => {}} />
+      <TopBarBtn icon={AlignHorizontalSpaceAround} label="Spacing" onClick={() => {}} />
+
+      <Separator orientation="vertical" className="h-6 mx-1" />
+
+      <TopBarBtn icon={Presentation} label="Present" onClick={() => {}} badge />
+      <TopBarBtn icon={Sparkles} label="AI" onClick={() => {}} />
+
+      <div className="flex-1" />
 
       <div className="relative">
         <button
           onClick={() => setShowExportMenu(!showExportMenu)}
-          className="flex h-8 items-center gap-1.5 px-3 rounded-md text-xs font-semibold text-navy hover:bg-navy/10 transition-all"
+          className="flex h-8 items-center gap-1.5 px-3 rounded-md text-xs font-semibold text-white bg-navy hover:bg-navy/90 transition-all shadow-sm"
         >
           <Download className="h-3.5 w-3.5" />
-          <span className="hidden lg:inline">Export</span>
+          <span>Export</span>
         </button>
         {showExportMenu && (
           <>
@@ -361,17 +306,6 @@ export function StudioToolbar() {
           </>
         )}
       </div>
-
-      <button
-        onClick={toggleInspector}
-        className={cn(
-          "flex h-8 w-8 items-center justify-center rounded-md transition-all ml-1",
-          showInspector ? "bg-navy text-white" : "text-navy-text/50 hover:bg-navy/10"
-        )}
-        title="Inspector"
-      >
-        <PanelRight className="h-4 w-4" />
-      </button>
     </div>
   );
 }

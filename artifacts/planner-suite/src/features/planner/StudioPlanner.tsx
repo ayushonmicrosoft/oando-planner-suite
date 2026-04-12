@@ -5,6 +5,7 @@ import type { Editor, TLComponents, TLUiOverrides } from "tldraw";
 import "tldraw/tldraw.css";
 import { usePlannerStore } from "./planner-store";
 import { StudioToolbar } from "./StudioToolbar";
+import { StudioSidebar } from "./StudioSidebar";
 import { StudioCatalog } from "./StudioCatalog";
 import { StudioInspector } from "./StudioInspector";
 import { StudioStatusBar } from "./StudioStatusBar";
@@ -19,7 +20,6 @@ const CANVAS_COMPONENTS: TLComponents = {
   SharePanel: null,
   TopPanel: null,
   MenuPanel: null,
-  StylePanel: null,
   PageMenu: null,
   NavigationPanel: null,
   HelpMenu: null,
@@ -36,10 +36,33 @@ const UI_OVERRIDES: TLUiOverrides = {
   },
 };
 
+function countShapesByMeta(editor: Editor) {
+  const counts = { walls: 0, rooms: 0, doors: 0, windows: 0, furniture: 0, zones: 0 };
+  const shapes = editor.getCurrentPageShapes();
+  for (const shape of shapes) {
+    const meta = (shape.meta || {}) as Record<string, string>;
+    const archType = meta.archType;
+    if (archType === "wall") counts.walls++;
+    else if (archType === "room") counts.rooms++;
+    else if (archType === "door") counts.doors++;
+    else if (archType === "window") counts.windows++;
+    else if (archType === "furniture") counts.furniture++;
+    else if (archType === "zone") counts.zones++;
+    else {
+      if (shape.type === "line" || shape.type === "arrow") counts.walls++;
+      else if (shape.type === "geo") counts.rooms++;
+      else if (shape.type === "frame") counts.zones++;
+      else if (shape.type === "note" || shape.type === "text") {}
+      else counts.furniture++;
+    }
+  }
+  return counts;
+}
+
 export function StudioPlanner() {
   const {
     setEditor, showCatalog, showInspector, showGrid, show3D,
-    setZoom, setShapeCount, setCursorPos,
+    setZoom, setShapeCount, setCursorPos, setShapeCounts,
   } = usePlannerStore();
   const editorRef = useRef<Editor | null>(null);
 
@@ -55,6 +78,7 @@ export function StudioPlanner() {
         const z = Math.round(editor.getZoomLevel() * 100);
         usePlannerStore.getState().setZoom(z);
         usePlannerStore.getState().setShapeCount(editor.getCurrentPageShapeIds().size);
+        usePlannerStore.getState().setShapeCounts(countShapesByMeta(editor));
       };
 
       updateMeta();
@@ -99,16 +123,24 @@ export function StudioPlanner() {
         return;
       }
 
-      const toolMap: Record<string, string> = {
-        v: "select", h: "hand", d: "draw", e: "eraser",
-        r: "geo", l: "line", t: "text", f: "frame",
-        n: "note", a: "arrow",
+      const toolMap: Record<string, { tool: string; tldrawTool: string }> = {
+        v: { tool: "select", tldrawTool: "select" },
+        h: { tool: "hand", tldrawTool: "hand" },
+        w: { tool: "wall", tldrawTool: "line" },
+        r: { tool: "room", tldrawTool: "geo" },
+        d: { tool: "door", tldrawTool: "geo" },
+        f: { tool: "furniture", tldrawTool: "select" },
+        z: { tool: "zone", tldrawTool: "geo" },
+        m: { tool: "measure", tldrawTool: "select" },
+        e: { tool: "eraser", tldrawTool: "eraser" },
+        t: { tool: "text", tldrawTool: "text" },
+        l: { tool: "line", tldrawTool: "line" },
       };
 
-      if (toolMap[key]) {
-        const tool = toolMap[key];
-        usePlannerStore.getState().setActiveTool(tool as any);
-        editor.setCurrentTool(tool);
+      if (toolMap[key] && !ctrl) {
+        const mapped = toolMap[key];
+        usePlannerStore.getState().setActiveTool(mapped.tool as any);
+        editor.setCurrentTool(mapped.tldrawTool);
       }
 
       if (key === "c" && !ctrl) {
@@ -131,6 +163,7 @@ export function StudioPlanner() {
     }
   }, [showGrid]);
 
+  const sidebarW = 120;
   const catalogW = showCatalog ? 300 : 0;
   const inspectorW = showInspector && !show3D ? 280 : 0;
   const threeDW = show3D ? "50%" : "0";
@@ -138,6 +171,7 @@ export function StudioPlanner() {
   return (
     <div className="h-screen w-full relative overflow-hidden bg-brand-surface-alt">
       <StudioToolbar />
+      <StudioSidebar />
       <StudioCatalog />
       {!show3D && <StudioInspector />}
       <Studio3DView />
@@ -148,7 +182,7 @@ export function StudioPlanner() {
         style={{
           top: 48,
           bottom: 32,
-          left: catalogW,
+          left: sidebarW + catalogW,
           right: show3D ? threeDW : inspectorW,
         }}
       >

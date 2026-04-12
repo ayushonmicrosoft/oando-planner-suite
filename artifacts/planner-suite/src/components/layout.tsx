@@ -14,6 +14,11 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const { data: health, isError } = useHealthCheck({ query: { queryKey: getHealthCheckQueryKey(), refetchInterval: 30000 } });
   const { user, isLoaded, isAdmin, signOut } = useAuth();
 
+  const isFullscreen = location === '/planner/studio' || location.startsWith('/planner/studio/');
+  if (isFullscreen) {
+    return <>{children}</>;
+  }
+
   const mainNavItems = [
     { href: '/', icon: LayoutDashboard, label: 'Dashboard' },
     { href: '/planner/studio', icon: DraftingCompass, label: 'Live Planner' },

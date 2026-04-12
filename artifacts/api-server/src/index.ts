@@ -1,5 +1,7 @@
+import { createServer } from "node:http";
 import app from "./app";
 import { logger } from "./lib/logger";
+import { setupCollabWebSocket } from "./collab";
 
 const DEFAULT_PORT = 8080;
 const rawPort = process.env["PORT"] || String(DEFAULT_PORT);
@@ -10,7 +12,11 @@ if (Number.isNaN(port) || port <= 0) {
   process.exit(1);
 }
 
-const server = app.listen(port, () => {
+const server = createServer(app);
+
+setupCollabWebSocket(server);
+
+server.listen(port, () => {
   logger.info({ port }, "Server listening");
 });
 

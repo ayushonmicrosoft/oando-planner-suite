@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { usePlannerStore, type CanvasToolMode } from "./planner-store";
+import { CollaboratorIndicator } from "./CollaboratorIndicator";
 import { cn } from "@/lib/utils";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ShareDialog } from "@/components/share-dialog";
@@ -99,6 +100,7 @@ export function StudioToolbar() {
     showCatalog, toggleCatalog, showInspector, toggleInspector,
     showGrid, toggleGrid, show3D, toggle3D, showMinimap, toggleMinimap,
     zoom, setZoom, showSettings, toggleSettings,
+    collaborators, collabConnected,
   } = usePlannerStore();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -494,6 +496,13 @@ export function StudioToolbar() {
       )}
 
       <div className="flex-1" />
+
+      <CollaboratorIndicator
+        collaborators={collaborators}
+        connected={collabConnected}
+      />
+
+      <Separator orientation="vertical" className="h-6 mx-1" />
 
       <div className="relative">
         <button

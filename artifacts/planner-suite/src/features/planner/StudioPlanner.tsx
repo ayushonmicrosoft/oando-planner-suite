@@ -1,9 +1,9 @@
 "use client";
 
-import { Suspense, lazy, useCallback, useEffect, useRef, useMemo } from "react";
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef } from "react";
 import type { Editor, TLComponents, TLUiOverrides } from "tldraw";
 import "tldraw/tldraw.css";
-import { usePlannerStore } from "./planner-store";
+import { usePlannerStore, type CanvasToolMode } from "./planner-store";
 import { StudioToolbar } from "./StudioToolbar";
 import { StudioSidebar } from "./StudioSidebar";
 import { StudioCatalog } from "./StudioCatalog";
@@ -11,6 +11,8 @@ import { StudioInspector } from "./StudioInspector";
 import { StudioStatusBar } from "./StudioStatusBar";
 import { Studio3DView } from "./Studio3DView";
 import { VersionHistoryPanel } from "./VersionHistoryPanel";
+import { CollaboratorCursors } from "./CollaboratorCursors";
+import { useCollaboration } from "./useCollaboration";
 import { Loader2 } from "lucide-react";
 
 const TldrawEditor = lazy(() =>
@@ -66,6 +68,7 @@ export function StudioPlanner() {
     setZoom, setShapeCount, setCursorPos, setShapeCounts,
     currentPlanId, showVersionHistory, setCurrentPlanId,
     setVersionHistoryOpen,
+    collabPlanId, setCollaborators, setCollabConnected,
   } = usePlannerStore();
   const editorRef = useRef<Editor | null>(null);
 
@@ -84,6 +87,25 @@ export function StudioPlanner() {
     return () => { setCurrentPlanId(null); };
   }, [setCurrentPlanId, setVersionHistoryOpen]);
 
+  const stableUserName = useMemo(
+    () => `Designer ${Math.floor(Math.random() * 900) + 100}`,
+    []
+  );
+
+  const { collaborators, connected, sendCursor } = useCollaboration({
+    planId: collabPlanId,
+    editor: editorRef.current,
+    userName: stableUserName,
+  });
+
+  useEffect(() => {
+    setCollaborators(collaborators);
+    setCollabConnected(connected);
+  }, [collaborators, connected, setCollaborators, setCollabConnected]);
+
+  const sendCursorRef = useRef(sendCursor);
+  sendCursorRef.current = sendCursor;
+
   const handleMount = useCallback(
     (editor: Editor) => {
       editorRef.current = editor;
@@ -100,14 +122,23 @@ export function StudioPlanner() {
       };
 
       updateMeta();
-      editor.store.listen(updateMeta);
+      const unsubscribeStore = editor.store.listen(updateMeta);
 
-      editor.on("event" as any, (info: any) => {
+      const handlePointer = (info: { name: string; point?: { x: number; y: number } }) => {
         if (info.name === "pointer_move" && info.point) {
           const p = editor.screenToPage(info.point);
           usePlannerStore.getState().setCursorPos({ x: p.x, y: p.y });
+          sendCursorRef.current({ x: p.x, y: p.y });
         }
-      });
+      };
+
+      const eventName = "event" as Parameters<typeof editor.on>[0];
+      editor.on(eventName, handlePointer);
+
+      return () => {
+        unsubscribeStore();
+        editor.off(eventName, handlePointer);
+      };
     },
     [setEditor]
   );
@@ -157,7 +188,7 @@ export function StudioPlanner() {
 
       if (toolMap[key] && !ctrl) {
         const mapped = toolMap[key];
-        usePlannerStore.getState().setActiveTool(mapped.tool as any);
+        usePlannerStore.getState().setActiveTool(mapped.tool as CanvasToolMode);
         editor.setCurrentTool(mapped.tldrawTool);
       }
 
@@ -251,6 +282,10 @@ export function StudioPlanner() {
             autoFocus
           />
         </Suspense>
+        <CollaboratorCursors
+          editor={editorRef.current}
+          collaborators={collaborators}
+        />
       </div>
     </div>
   );

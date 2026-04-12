@@ -4,5 +4,13 @@ const nextConfig: NextConfig = {
   images: { unoptimized: true },
   typescript: { ignoreBuildErrors: true },
   allowedDevOrigins: ["*.picard.replit.dev", "*.replit.dev"],
+  async rewrites() {
+    return [
+      {
+        source: "/api/collab/:planId",
+        destination: "http://localhost:8080/api/collab/:planId",
+      },
+    ];
+  },
 };
 export default nextConfig;

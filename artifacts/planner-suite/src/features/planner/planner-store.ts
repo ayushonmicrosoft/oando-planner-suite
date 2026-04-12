@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import type { Editor } from "tldraw";
+import type { CollabUser } from "./useCollaboration";
 
 export type PlannerStep = "layout" | "furnish" | "review" | "export";
 export type CanvasToolMode =
@@ -95,6 +96,13 @@ interface PlannerState {
   showVersionHistory: boolean;
   toggleVersionHistory: () => void;
   setVersionHistoryOpen: (open: boolean) => void;
+
+  collabPlanId: string | null;
+  setCollabPlanId: (id: string | null) => void;
+  collaborators: CollabUser[];
+  setCollaborators: (users: CollabUser[]) => void;
+  collabConnected: boolean;
+  setCollabConnected: (connected: boolean) => void;
 }
 
 export const usePlannerStore = create<PlannerState>()((set) => ({
@@ -166,4 +174,11 @@ export const usePlannerStore = create<PlannerState>()((set) => ({
   showVersionHistory: false,
   toggleVersionHistory: () => set((s) => ({ showVersionHistory: !s.showVersionHistory })),
   setVersionHistoryOpen: (showVersionHistory) => set({ showVersionHistory }),
+
+  collabPlanId: null,
+  setCollabPlanId: (collabPlanId) => set({ collabPlanId }),
+  collaborators: [],
+  setCollaborators: (collaborators) => set({ collaborators }),
+  collabConnected: false,
+  setCollabConnected: (collabConnected) => set({ collabConnected }),
 }));

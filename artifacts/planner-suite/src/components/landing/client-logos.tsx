@@ -1,6 +1,5 @@
 "use client";
 
-
 const logos = [
   { name: "L&T", file: "LandT.webp" },
   { name: "JSW", file: "JSW.webp" },
@@ -20,18 +19,23 @@ const logos = [
 
 export default function ClientLogos() {
   return (
-    <section className="py-10 bg-white border-b overflow-hidden" aria-label="Trusted by leading organisations">
+    <section className="py-8 bg-[#070D12] border-t border-b border-white/[0.04] overflow-hidden" aria-label="Trusted by leading organisations">
+      <div className="max-w-[1200px] mx-auto px-5">
+        <p className="text-[11px] text-white/20 text-center font-medium tracking-[0.2em] uppercase mb-6">Trusted by India&apos;s Leading Enterprises</p>
+      </div>
       <div className="relative">
+        <div className="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-[#070D12] to-transparent z-10" />
+        <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-[#070D12] to-transparent z-10" />
         <div className="flex animate-scroll-left" style={{ width: "max-content" }}>
           {[...logos, ...logos].map((logo, i) => (
-            <div key={i} className="flex items-center justify-center px-8 shrink-0">
+            <div key={i} className="flex items-center justify-center px-10 shrink-0">
               <img
                 src={`/ClientLogos/${logo.file}`}
-                alt={`${logo.name} — One&Only client for office furniture and workspace planning`}
-                className="h-10 w-auto opacity-50 hover:opacity-100 transition-opacity grayscale hover:grayscale-0"
+                alt={`${logo.name}`}
+                className="h-8 w-auto opacity-30 hover:opacity-70 transition-opacity duration-300 grayscale brightness-200"
                 loading="lazy"
                 width={120}
-                height={40}
+                height={32}
               />
             </div>
           ))}

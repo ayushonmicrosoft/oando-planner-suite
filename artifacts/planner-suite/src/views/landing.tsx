@@ -13,28 +13,28 @@ export default function Landing() {
   const handleGetStarted = () => router.push("/sign-up");
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[#070D12]">
       <header>
-        <nav className="sticky top-0 z-50 bg-[#0B1324] border-b border-white/10" aria-label="Main navigation">
+        <nav className="fixed top-0 left-0 right-0 z-50 bg-[#070D12]/60 backdrop-blur-xl border-b border-white/[0.04]" aria-label="Main navigation">
           <div className="max-w-[1200px] mx-auto px-5 h-16 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <img src={"/logo-v2-white.webp"} alt="One&Only Office Furniture — Office Planner & Workspace Design Tool" className="h-7 w-auto" width={120} height={28} />
+              <img src={"/logo-v2-white.webp"} alt="One&Only" className="h-6 w-auto" width={120} height={24} />
             </div>
-            <div className="hidden md:flex items-center gap-6 text-sm text-white/80">
+            <div className="hidden md:flex items-center gap-8 text-[13px] text-white/50 font-medium">
               <button onClick={handleGetStarted} className="hover:text-white transition-colors">Planner</button>
               <button onClick={handleGetStarted} className="hover:text-white transition-colors">Products</button>
               <button onClick={handleGetStarted} className="hover:text-white transition-colors">Solutions</button>
               <button onClick={handleGetStarted} className="hover:text-white transition-colors">Portfolio</button>
             </div>
-            <div className="flex items-center gap-4">
-              <button onClick={() => router.push("/sign-up")} className="text-sm text-white hover:text-white/80 transition-colors font-medium border border-white/40 px-4 py-1.5 rounded-full hover:border-white/70">
+            <div className="flex items-center gap-3">
+              <button onClick={() => router.push("/sign-up")} className="text-[13px] text-white/60 hover:text-white transition-colors font-medium px-4 py-1.5">
                 Sign In
               </button>
               <button
                 onClick={() => router.push("/sign-up")}
-                className="text-sm bg-white text-navy px-5 py-2 rounded-full hover:bg-white/90 transition-colors font-medium"
+                className="text-[13px] bg-white text-[#0B1324] px-5 py-2 rounded-full hover:bg-white/90 transition-colors font-semibold"
               >
-                Guided Planner
+                Get Started
               </button>
             </div>
           </div>

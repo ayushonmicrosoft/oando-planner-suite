@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -18,17 +20,17 @@ const testimonials = [
     title: "Commanding Officer, Crime Scene Unit",
   },
   {
-    quote: "We're able to create clear, easy-to-follow diagrams with directions and annotations that our team can quickly understand on scene. The software produces accurate, professional drawings for reconstruction.",
+    quote: "We're able to create clear, easy-to-follow diagrams with directions and annotations that our team can quickly understand on scene.",
     name: "Jonathan Shim",
     title: "Captain, Office of the Fire Marshal",
   },
 ];
 
 const stats = [
-  { value: "120+", label: "Organisations served" },
-  { value: "259+", label: "Projects delivered" },
-  { value: "15+", label: "Years experience" },
-  { value: "18+", label: "Sectors served" },
+  { value: "120+", label: "Organisations" },
+  { value: "259+", label: "Projects Delivered" },
+  { value: "15+", label: "Years Experience" },
+  { value: "18+", label: "Sectors Served" },
 ];
 
 const reviews = [
@@ -41,7 +43,7 @@ function StarRating({ count }: { count: number }) {
   return (
     <div className="flex gap-0.5" role="img" aria-label={`${count} out of 5 stars`}>
       {Array.from({ length: count }).map((_, i) => (
-        <svg key={i} className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+        <svg key={i} className="w-4 h-4 text-amber-400" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
           <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
         </svg>
       ))}
@@ -58,10 +60,10 @@ export default function SocialProof() {
   }, []);
 
   return (
-    <section className="py-20 lg:py-28 bg-background" id="testimonials" aria-label="Testimonials and social proof">
+    <section className="py-24 lg:py-32 bg-[#0A1018]" id="testimonials" aria-label="Testimonials and social proof">
       <div className="max-w-[1200px] mx-auto px-5">
         <motion.div
-          className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-16"
+          className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-20"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -69,31 +71,32 @@ export default function SocialProof() {
         >
           {stats.map((s) => (
             <div key={s.label} className="text-center">
-              <div className="text-3xl md:text-4xl font-bold text-navy">{s.value}</div>
-              <div className="text-sm text-muted-foreground mt-1">{s.label}</div>
+              <div className="text-4xl md:text-5xl font-bold bg-gradient-to-b from-white to-white/50 bg-clip-text text-transparent">{s.value}</div>
+              <div className="text-sm text-white/30 mt-2 font-medium tracking-wide">{s.label}</div>
             </div>
           ))}
         </motion.div>
 
         <motion.div
-          className="text-center mb-12"
+          className="text-center mb-14"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <h2 className="text-[32px] md:text-[44px] font-bold text-foreground mb-4">
-            Trusted by Leading Indian Enterprises
+          <p className="text-sm font-medium tracking-[0.2em] uppercase text-[#5488B6] mb-4">Testimonials</p>
+          <h2 className="text-[32px] md:text-[44px] font-semibold text-white mb-4 tracking-[-0.02em]">
+            Trusted by Leading Enterprises
           </h2>
-          <p className="text-[18px] text-muted-foreground">
-            From L&amp;T to Tata Motors — see how top organisations plan their workspaces with One&amp;Only.
+          <p className="text-[17px] text-white/40">
+            From L&amp;T to Tata Motors — see how top organisations plan their workspaces.
           </p>
         </motion.div>
 
-        <div className="max-w-[800px] mx-auto mb-16">
-          <div className="bg-card border rounded-xl p-8 md:p-12 shadow-sm min-h-[240px]">
+        <div className="max-w-[800px] mx-auto mb-20">
+          <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-8 md:p-12 min-h-[220px] backdrop-blur-sm">
             <div className="flex items-start gap-3 mb-6">
-              <svg className="w-10 h-10 text-navy/30 shrink-0" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <svg className="w-8 h-8 text-[#5488B6]/30 shrink-0" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/>
               </svg>
             </div>
@@ -105,12 +108,12 @@ export default function SocialProof() {
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.4 }}
               >
-                <blockquote className="text-[16px] md:text-[18px] text-muted-foreground leading-relaxed italic mb-8">
+                <blockquote className="text-[17px] md:text-[19px] text-white/60 leading-relaxed italic mb-8">
                   &ldquo;{testimonials[active].quote}&rdquo;
                 </blockquote>
                 <div>
-                  <div className="font-bold text-foreground text-[16px]">{testimonials[active].name}</div>
-                  <div className="text-[14px] text-muted-foreground">{testimonials[active].title}</div>
+                  <div className="font-semibold text-white text-[15px]">{testimonials[active].name}</div>
+                  <div className="text-[13px] text-white/30 mt-0.5">{testimonials[active].title}</div>
                 </div>
               </motion.div>
             </AnimatePresence>
@@ -121,8 +124,8 @@ export default function SocialProof() {
               <button
                 key={i}
                 onClick={() => setActive(i)}
-                className={`w-3 h-3 rounded-full transition-all ${
-                  i === active ? "bg-navy w-8" : "bg-border hover:bg-muted-foreground"
+                className={`h-1.5 rounded-full transition-all duration-300 ${
+                  i === active ? "bg-[#5488B6] w-8" : "bg-white/10 w-3 hover:bg-white/20"
                 }`}
                 aria-label={`View testimonial ${i + 1} of ${testimonials.length}`}
               />
@@ -130,20 +133,20 @@ export default function SocialProof() {
           </div>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-3 gap-4">
           {reviews.map((review, i) => (
             <motion.div
               key={i}
-              className="bg-card border rounded-xl p-6 hover:shadow-md transition-shadow"
+              className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 hover:bg-white/[0.04] transition-all duration-300"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1, duration: 0.5 }}
             >
               <StarRating count={review.stars} />
-              <h3 className="font-bold text-foreground text-[16px] mt-3 mb-2">{review.title}</h3>
-              <p className="text-[14px] text-muted-foreground leading-relaxed mb-4">{review.text}</p>
-              <p className="text-[13px] text-muted-foreground/70">{review.reviewer}</p>
+              <h3 className="font-semibold text-white text-[15px] mt-4 mb-2">{review.title}</h3>
+              <p className="text-[13px] text-white/40 leading-relaxed mb-4">{review.text}</p>
+              <p className="text-[12px] text-white/20 font-medium">{review.reviewer}</p>
             </motion.div>
           ))}
         </div>

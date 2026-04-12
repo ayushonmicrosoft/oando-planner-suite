@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, FileSignature, Grid3X3, Box, Library, FolderOpen, Activity, Pencil, LayoutGrid, Shapes, ImagePlus, LayoutTemplate, LogOut, Settings, ChevronDown, Map, DraftingCompass, Layers3, Shield, Briefcase, Users, CreditCard } from 'lucide-react';
+import { LayoutDashboard, FileSignature, Grid3X3, Box, Library, FolderOpen, Activity, Pencil, LayoutGrid, Shapes, ImagePlus, LayoutTemplate, LogOut, Settings, ChevronDown, Map, DraftingCompass, Layers3, Shield, Briefcase, Users, CreditCard, ChevronRight } from 'lucide-react';
 import { Sidebar, SidebarContent, SidebarHeader, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider, SidebarFooter } from '@/components/ui/sidebar';
 import { useHealthCheck, getHealthCheckQueryKey } from '@workspace/api-client-react';
 import { useAuth } from '@/hooks/use-auth';
@@ -52,123 +52,83 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const avatarUrl = user?.user_metadata?.avatar_url || user?.user_metadata?.picture;
   const initials = displayName.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase() || 'U';
 
+  const renderNavGroup = (items: typeof mainNavItems, label?: string) => (
+    <SidebarGroup>
+      {label && (
+        <SidebarGroupLabel className="text-[10px] uppercase tracking-[0.12em] font-semibold text-sidebar-foreground/25 px-3 mb-0.5">
+          {label}
+        </SidebarGroupLabel>
+      )}
+      <SidebarGroupContent>
+        <SidebarMenu>
+          {items.map((item) => (
+            <SidebarMenuItem key={item.href}>
+              <SidebarMenuButton asChild isActive={isActive(item.href)}>
+                <Link href={item.href} className="flex items-center gap-2.5 text-[13px]">
+                  <item.icon className="w-[15px] h-[15px] opacity-60" strokeWidth={1.8} />
+                  <span>{item.label}</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ))}
+        </SidebarMenu>
+      </SidebarGroupContent>
+    </SidebarGroup>
+  );
+
   return (
     <SidebarProvider>
       <div className="flex h-screen overflow-hidden bg-background w-full">
         <Sidebar>
-          <SidebarHeader className="border-b px-4 py-3 border-border">
+          <SidebarHeader className="border-b border-sidebar-border/50 px-4 py-3">
             {isLoaded && user ? (
               <DropdownMenu>
-                <DropdownMenuTrigger className="flex items-center gap-3 w-full text-left hover:bg-muted/50 rounded-md p-1 -m-1 transition-colors">
-                  <Avatar className="h-8 w-8">
+                <DropdownMenuTrigger className="flex items-center gap-2.5 w-full text-left hover:bg-sidebar-accent/50 rounded-lg p-1.5 -m-1.5 transition-colors">
+                  <Avatar className="h-7 w-7">
                     <AvatarImage src={avatarUrl} alt={displayName} />
-                    <AvatarFallback className="text-xs">{initials}</AvatarFallback>
+                    <AvatarFallback className="text-[10px] bg-primary/10 text-primary font-semibold">{initials}</AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-sm truncate">{displayName}</div>
-                    <div className="text-xs text-muted-foreground truncate">{user.email}</div>
+                    <div className="font-medium text-[13px] truncate">{displayName}</div>
+                    <div className="text-[11px] text-sidebar-foreground/30 truncate">{user.email}</div>
                   </div>
-                  <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />
+                  <ChevronDown className="w-3.5 h-3.5 text-sidebar-foreground/20 shrink-0" />
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-56">
-                  <DropdownMenuItem onClick={() => window.location.href = '/settings/billing'}>
-                    <CreditCard className="w-4 h-4 mr-2" />
+                <DropdownMenuContent align="start" className="w-52">
+                  <DropdownMenuItem onClick={() => window.location.href = '/settings/billing'} className="text-[13px]">
+                    <CreditCard className="w-3.5 h-3.5 mr-2 opacity-60" />
                     Billing
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => signOut()}>
-                    <LogOut className="w-4 h-4 mr-2" />
+                  <DropdownMenuItem onClick={() => signOut()} className="text-[13px]">
+                    <LogOut className="w-3.5 h-3.5 mr-2 opacity-60" />
                     Log Out
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <div className="flex items-center gap-2.5 font-bold text-lg tracking-tight">
-                <img src={"/logo-v2-white.webp"} alt="One&Only" className="h-6 w-auto" />
-                <span className="text-sidebar-foreground">One&Only</span>
+              <div className="flex items-center gap-2.5">
+                <img src={"/logo-v2-white.webp"} alt="One&Only" className="h-5 w-auto" />
+                <span className="text-sidebar-foreground font-semibold text-[15px] tracking-[-0.02em]">One&Only</span>
               </div>
             )}
           </SidebarHeader>
-          <SidebarContent>
-            <SidebarGroup>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {mainNavItems.map((item) => (
-                    <SidebarMenuItem key={item.href}>
-                      <SidebarMenuButton asChild isActive={isActive(item.href)}>
-                        <Link href={item.href} className="flex items-center gap-3">
-                          <item.icon className="w-4 h-4" />
-                          <span>{item.label}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-
-            <SidebarGroup>
-              <SidebarGroupLabel className="text-xs uppercase tracking-wider font-semibold text-muted-foreground px-3">Drawing Tools</SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {toolNavItems.map((item) => (
-                    <SidebarMenuItem key={item.href}>
-                      <SidebarMenuButton asChild isActive={isActive(item.href)}>
-                        <Link href={item.href} className="flex items-center gap-3">
-                          <item.icon className="w-4 h-4" />
-                          <span>{item.label}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-
-            <SidebarGroup>
-              <SidebarGroupLabel className="text-xs uppercase tracking-wider font-semibold text-muted-foreground px-3">Management</SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {managementNavItems.map((item) => (
-                    <SidebarMenuItem key={item.href}>
-                      <SidebarMenuButton asChild isActive={isActive(item.href)}>
-                        <Link href={item.href} className="flex items-center gap-3">
-                          <item.icon className="w-4 h-4" />
-                          <span>{item.label}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-
-            <SidebarGroup>
-              <SidebarGroupLabel className="text-xs uppercase tracking-wider font-semibold text-muted-foreground px-3">Data</SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {dataNavItems.map((item) => (
-                    <SidebarMenuItem key={item.href}>
-                      <SidebarMenuButton asChild isActive={isActive(item.href)}>
-                        <Link href={item.href} className="flex items-center gap-3">
-                          <item.icon className="w-4 h-4" />
-                          <span>{item.label}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
+          <SidebarContent className="pt-1">
+            {renderNavGroup(mainNavItems)}
+            {renderNavGroup(toolNavItems, "Tools")}
+            {renderNavGroup(managementNavItems, "Management")}
+            {renderNavGroup(dataNavItems, "Data")}
             {isAdmin && (
               <SidebarGroup>
-                <SidebarGroupLabel className="text-xs uppercase tracking-wider font-semibold text-muted-foreground px-3">Admin</SidebarGroupLabel>
+                <SidebarGroupLabel className="text-[10px] uppercase tracking-[0.12em] font-semibold text-sidebar-foreground/25 px-3 mb-0.5">
+                  Admin
+                </SidebarGroupLabel>
                 <SidebarGroupContent>
                   <SidebarMenu>
                     <SidebarMenuItem>
                       <SidebarMenuButton asChild isActive={isActive('/admin')}>
-                        <Link href="/admin" className="flex items-center gap-3">
-                          <Shield className="w-4 h-4" />
+                        <Link href="/admin" className="flex items-center gap-2.5 text-[13px]">
+                          <Shield className="w-[15px] h-[15px] opacity-60" strokeWidth={1.8} />
                           <span>Admin Panel</span>
                         </Link>
                       </SidebarMenuButton>
@@ -178,21 +138,14 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               </SidebarGroup>
             )}
           </SidebarContent>
-          <SidebarFooter className="border-t p-4">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Activity className="w-4 h-4" />
-              API Status:
-              {isError ? (
-                <span className="text-destructive font-medium flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-destructive"></span> Offline</span>
-              ) : health ? (
-                <span className="text-green-500 font-medium flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500"></span> {health.status}</span>
-              ) : (
-                <span>Checking...</span>
-              )}
+          <SidebarFooter className="border-t border-sidebar-border/50 p-3">
+            <div className="flex items-center gap-2 text-[11px] text-sidebar-foreground/25">
+              <div className={`w-1.5 h-1.5 rounded-full ${isError ? 'bg-red-400' : health ? 'bg-emerald-400' : 'bg-sidebar-foreground/20'}`} />
+              {isError ? 'API Offline' : health ? 'Connected' : 'Checking...'}
             </div>
           </SidebarFooter>
         </Sidebar>
-        <main className="flex-1 overflow-auto bg-muted/30">
+        <main className="flex-1 overflow-auto bg-muted/20">
           {children}
         </main>
       </div>

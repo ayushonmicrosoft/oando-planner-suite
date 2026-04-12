@@ -26,12 +26,11 @@ args = ["pnpm", "--filter", "@workspace/planner-suite", "run", "build"]
 NODE_ENV = "production"
 
 [services.production.run]
-args = ["node", "artifacts/planner-suite/.next/standalone/artifacts/planner-suite/server.js"]
+args = ["node", "artifacts/planner-suite/start-production.mjs"]
 
 [services.production.run.env]
 PORT = "24140"
 NODE_ENV = "production"
-HOSTNAME = "0.0.0.0"
 
 [services.production.health.startup]
 path = "/"

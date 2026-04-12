@@ -267,6 +267,50 @@ export const GetAiAdviceResponse = zod.object({
 });
 
 /**
+ * @summary Generate an AI-powered furniture layout for a room
+ */
+export const GenerateAutoLayoutBody = zod.object({
+  roomWidthCm: zod.number(),
+  roomDepthCm: zod.number(),
+  roomType: zod.enum([
+    "open-office",
+    "conference",
+    "executive",
+    "reception",
+    "breakout",
+    "training",
+    "hot-desk",
+  ]),
+  capacity: zod.number(),
+  constraints: zod.string().optional(),
+});
+
+export const GenerateAutoLayoutResponse = zod.object({
+  layout: zod.array(
+    zod.object({
+      catalogId: zod.string(),
+      name: zod.string(),
+      category: zod.string(),
+      x: zod.number(),
+      y: zod.number(),
+      widthCm: zod.number(),
+      depthCm: zod.number(),
+      heightCm: zod.number(),
+      rotation: zod.number(),
+      color: zod.string(),
+      shape: zod.string(),
+    }),
+  ),
+  validation: zod.object({
+    valid: zod.boolean(),
+    overlaps: zod.array(zod.string()),
+    outOfBounds: zod.array(zod.string()),
+    warnings: zod.array(zod.string()),
+  }),
+  summary: zod.string(),
+});
+
+/**
  * @summary List all layout templates
  */
 export const ListTemplatesQueryParams = zod.object({

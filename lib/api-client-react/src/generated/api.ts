@@ -19,6 +19,8 @@ import type {
 import type {
   AiAdvisorRequest,
   AiAdvisorResponse,
+  AutoLayoutRequest,
+  AutoLayoutResponse,
   CatalogItem,
   CategorySummary,
   Client,
@@ -1069,6 +1071,92 @@ export const useGetAiAdvice = <
   TContext
 > => {
   return useMutation(getGetAiAdviceMutationOptions(options));
+};
+
+/**
+ * @summary Generate an AI-powered furniture layout for a room
+ */
+export const getGenerateAutoLayoutUrl = () => {
+  return `/api/ai/auto-layout`;
+};
+
+export const generateAutoLayout = async (
+  autoLayoutRequest: AutoLayoutRequest,
+  options?: RequestInit,
+): Promise<AutoLayoutResponse> => {
+  return customFetch<AutoLayoutResponse>(getGenerateAutoLayoutUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(autoLayoutRequest),
+  });
+};
+
+export const getGenerateAutoLayoutMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof generateAutoLayout>>,
+    TError,
+    { data: BodyType<AutoLayoutRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof generateAutoLayout>>,
+  TError,
+  { data: BodyType<AutoLayoutRequest> },
+  TContext
+> => {
+  const mutationKey = ["generateAutoLayout"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof generateAutoLayout>>,
+    { data: BodyType<AutoLayoutRequest> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return generateAutoLayout(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type GenerateAutoLayoutMutationResult = NonNullable<
+  Awaited<ReturnType<typeof generateAutoLayout>>
+>;
+export type GenerateAutoLayoutMutationBody = BodyType<AutoLayoutRequest>;
+export type GenerateAutoLayoutMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Generate an AI-powered furniture layout for a room
+ */
+export const useGenerateAutoLayout = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof generateAutoLayout>>,
+    TError,
+    { data: BodyType<AutoLayoutRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof generateAutoLayout>>,
+  TError,
+  { data: BodyType<AutoLayoutRequest> },
+  TContext
+> => {
+  return useMutation(getGenerateAutoLayoutMutationOptions(options));
 };
 
 /**

@@ -298,6 +298,27 @@ paths:
               schema:
                 $ref: "#/components/schemas/AiAdvisorResponse"
 
+  /ai/auto-layout:
+    post:
+      operationId: generateAutoLayout
+      tags: [ai]
+      security:
+        - BearerAuth: []
+      summary: Generate an AI-powered furniture layout for a room
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AutoLayoutRequest"
+      responses:
+        "200":
+          description: Generated layout
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AutoLayoutResponse"
+
   /templates:
     get:
       operationId: listTemplates
@@ -1012,6 +1033,110 @@ components:
       required:
         - advice
         - suggestions
+
+    AutoLayoutRequest:
+      type: object
+      properties:
+        roomWidthCm:
+          type: number
+        roomDepthCm:
+          type: number
+        roomType:
+          type: string
+          enum:
+            - open-office
+            - conference
+            - executive
+            - reception
+            - breakout
+            - training
+            - hot-desk
+        capacity:
+          type: integer
+        constraints:
+          type: string
+      required:
+        - roomWidthCm
+        - roomDepthCm
+        - roomType
+        - capacity
+
+    AutoLayoutResponse:
+      type: object
+      properties:
+        layout:
+          type: array
+          items:
+            $ref: "#/components/schemas/AutoLayoutItem"
+        validation:
+          $ref: "#/components/schemas/AutoLayoutValidation"
+        summary:
+          type: string
+      required:
+        - layout
+        - validation
+        - summary
+
+    AutoLayoutItem:
+      type: object
+      properties:
+        catalogId:
+          type: string
+        name:
+          type: string
+        category:
+          type: string
+        x:
+          type: number
+        y:
+          type: number
+        widthCm:
+          type: number
+        depthCm:
+          type: number
+        heightCm:
+          type: number
+        rotation:
+          type: number
+        color:
+          type: string
+        shape:
+          type: string
+      required:
+        - catalogId
+        - name
+        - category
+        - x
+        - y
+        - widthCm
+        - depthCm
+        - heightCm
+        - rotation
+        - color
+        - shape
+
+    AutoLayoutValidation:
+      type: object
+      properties:
+        valid:
+          type: boolean
+        overlaps:
+          type: array
+          items:
+            type: string
+        outOfBounds:
+          type: array
+          items:
+            type: string
+        warnings:
+          type: array
+          items:
+            type: string
+      required:
+        - valid
+        - overlaps
+        - outOfBounds
+        - warnings
 
     TemplateSummary:
       type: object

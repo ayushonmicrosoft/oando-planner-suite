@@ -8,6 +8,11 @@
 
 export * from "./aiAdvisorRequest";
 export * from "./aiAdvisorResponse";
+export * from "./autoLayoutItem";
+export * from "./autoLayoutRequest";
+export * from "./autoLayoutRequestRoomType";
+export * from "./autoLayoutResponse";
+export * from "./autoLayoutValidation";
 export * from "./boquItem";
 export * from "./catalogItem";
 export * from "./categorySummary";

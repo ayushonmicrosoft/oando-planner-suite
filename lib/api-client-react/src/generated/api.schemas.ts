@@ -140,6 +140,54 @@ export interface AiAdvisorResponse {
   positives?: string[];
 }
 
+export type AutoLayoutRequestRoomType =
+  (typeof AutoLayoutRequestRoomType)[keyof typeof AutoLayoutRequestRoomType];
+
+export const AutoLayoutRequestRoomType = {
+  "open-office": "open-office",
+  conference: "conference",
+  executive: "executive",
+  reception: "reception",
+  breakout: "breakout",
+  training: "training",
+  "hot-desk": "hot-desk",
+} as const;
+
+export interface AutoLayoutRequest {
+  roomWidthCm: number;
+  roomDepthCm: number;
+  roomType: AutoLayoutRequestRoomType;
+  capacity: number;
+  constraints?: string;
+}
+
+export interface AutoLayoutItem {
+  catalogId: string;
+  name: string;
+  category: string;
+  x: number;
+  y: number;
+  widthCm: number;
+  depthCm: number;
+  heightCm: number;
+  rotation: number;
+  color: string;
+  shape: string;
+}
+
+export interface AutoLayoutValidation {
+  valid: boolean;
+  overlaps: string[];
+  outOfBounds: string[];
+  warnings: string[];
+}
+
+export interface AutoLayoutResponse {
+  layout: AutoLayoutItem[];
+  validation: AutoLayoutValidation;
+  summary: string;
+}
+
 export interface TemplateSummary {
   id: string;
   name: string;

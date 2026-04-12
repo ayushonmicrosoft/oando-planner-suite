@@ -12,12 +12,15 @@ import {
   Highlighter, Pointer, Download, FileText, Image, Map as MapIcon, FileSpreadsheet,
   LayoutTemplate, FolderOpen, FilePlus, Save, FileInput, Layers,
   AlignHorizontalSpaceAround, Settings2, Presentation, Share2, History, GitCompare,
+  Loader2, Wand2, AlertTriangle, CheckCircle2, RefreshCw, X,
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { usePlannerStore, type CanvasToolMode } from "./planner-store";
 import { cn } from "@/lib/utils";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ShareDialog } from "@/components/share-dialog";
+import { useGenerateAutoLayout, type AutoLayoutResponse, type AutoLayoutRequestRoomType } from "@workspace/api-client-react";
+import { createShapeId, type TLShapePartial } from "tldraw";
 
 const TOOL_MAP: Record<string, string> = {
   select: "select",
@@ -102,6 +105,13 @@ export function StudioToolbar() {
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
   const currentPlanId = searchParams ? parseInt(searchParams.get("id") || "0", 10) : 0;
+  const [showAiLayout, setShowAiLayout] = useState(false);
+  const [aiRoomType, setAiRoomType] = useState<AutoLayoutRequestRoomType>("open-office");
+  const [aiCapacity, setAiCapacity] = useState(6);
+  const [aiRoomWidth, setAiRoomWidth] = useState(800);
+  const [aiRoomDepth, setAiRoomDepth] = useState(600);
+  const [aiResult, setAiResult] = useState<AutoLayoutResponse | null>(null);
+  const generateLayout = useGenerateAutoLayout();
 
   const handleUndo = () => editor?.undo();
   const handleRedo = () => editor?.redo();
@@ -118,7 +128,7 @@ export function StudioToolbar() {
     if (ids?.length && editor) {
       ids.forEach((id) => {
         const shape = editor.getShape(id);
-        if (shape) editor.updateShape({ id: shape.id, type: shape.type, rotation: (shape.rotation || 0) + Math.PI / 2 } as any);
+        if (shape) editor.updateShape({ id: shape.id, type: shape.type, rotation: (shape.rotation || 0) + Math.PI / 2 } as TLShapePartial);
       });
     }
   };
@@ -127,7 +137,7 @@ export function StudioToolbar() {
     if (ids?.length && editor) {
       ids.forEach((id) => {
         const shape = editor.getShape(id);
-        if (shape) editor.updateShape({ id: shape.id, type: shape.type, rotation: (shape.rotation || 0) - Math.PI / 2 } as any);
+        if (shape) editor.updateShape({ id: shape.id, type: shape.type, rotation: (shape.rotation || 0) - Math.PI / 2 } as TLShapePartial);
       });
     }
   };
@@ -228,7 +238,206 @@ export function StudioToolbar() {
 
   const hasSelection = editor ? editor.getSelectedShapeIds().length > 0 : false;
 
+  const handleGenerateLayout = () => {
+    generateLayout.mutate({
+      data: {
+        roomWidthCm: aiRoomWidth,
+        roomDepthCm: aiRoomDepth,
+        roomType: aiRoomType,
+        capacity: aiCapacity,
+      },
+    }, {
+      onSuccess: (data) => {
+        setAiResult(data);
+      },
+    });
+  };
+
+  const handleAcceptLayout = () => {
+    if (!editor || !aiResult) return;
+    const shapes: TLShapePartial[] = aiResult.layout.map((item) => {
+      const id = createShapeId();
+      const w = item.widthCm;
+      const h = item.depthCm;
+      return {
+        id,
+        type: "geo" as const,
+        x: item.x,
+        y: item.y,
+        rotation: (item.rotation * Math.PI) / 180,
+        props: {
+          w,
+          h,
+          geo: "rectangle",
+          color: "black",
+          fill: "solid",
+          labelColor: "black",
+          text: item.name,
+          size: "s",
+        },
+        meta: {
+          archType: "furniture",
+          catalogId: item.catalogId,
+          category: item.category,
+          furnitureColor: item.color,
+          furnitureShape: item.shape,
+        },
+      };
+    });
+    editor.createShapes(shapes);
+    editor.zoomToFit();
+    setShowAiLayout(false);
+    setAiResult(null);
+  };
+
   return (
+    <>
+      {showAiLayout && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="w-[480px] max-h-[85vh] bg-white rounded-xl shadow-2xl border overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between px-5 py-4 border-b">
+              <div className="flex items-center gap-2">
+                <Wand2 className="w-5 h-5 text-primary" />
+                <h2 className="text-base font-semibold text-navy-text">AI Auto-Layout</h2>
+              </div>
+              <button onClick={() => { setShowAiLayout(false); setAiResult(null); }} className="text-navy-text/40 hover:text-navy-text">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-5 space-y-4 flex-1 overflow-y-auto">
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-navy-text/70">Room Type</label>
+                <select
+                  value={aiRoomType}
+                  onChange={(e) => setAiRoomType(e.target.value as AutoLayoutRequestRoomType)}
+                  className="w-full h-9 rounded-lg border bg-white px-3 text-sm outline-none focus:border-navy focus:ring-1 focus:ring-navy/20"
+                >
+                  <option value="open-office">Open Office</option>
+                  <option value="conference">Conference Room</option>
+                  <option value="executive">Executive Office</option>
+                  <option value="reception">Reception Area</option>
+                  <option value="breakout">Breakout / Lounge</option>
+                  <option value="training">Training Room</option>
+                  <option value="hot-desk">Hot Desk Area</option>
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-navy-text/70">Capacity (people)</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={100}
+                  value={aiCapacity}
+                  onChange={(e) => setAiCapacity(Math.max(1, Math.min(100, Number(e.target.value))))}
+                  className="w-full h-9 rounded-lg border bg-white px-3 text-sm outline-none focus:border-navy focus:ring-1 focus:ring-navy/20"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-navy-text/70">Width (cm)</label>
+                  <input
+                    type="number"
+                    min={200}
+                    max={5000}
+                    value={aiRoomWidth}
+                    onChange={(e) => setAiRoomWidth(Math.max(200, Math.min(5000, Number(e.target.value))))}
+                    className="w-full h-9 rounded-lg border bg-white px-3 text-sm outline-none focus:border-navy focus:ring-1 focus:ring-navy/20"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-navy-text/70">Depth (cm)</label>
+                  <input
+                    type="number"
+                    min={200}
+                    max={5000}
+                    value={aiRoomDepth}
+                    onChange={(e) => setAiRoomDepth(Math.max(200, Math.min(5000, Number(e.target.value))))}
+                    className="w-full h-9 rounded-lg border bg-white px-3 text-sm outline-none focus:border-navy focus:ring-1 focus:ring-navy/20"
+                  />
+                </div>
+              </div>
+
+              <button
+                onClick={handleGenerateLayout}
+                disabled={generateLayout.isPending}
+                className="w-full h-10 rounded-lg bg-navy text-white text-sm font-semibold hover:bg-navy/90 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                {generateLayout.isPending ? (
+                  <><Loader2 className="w-4 h-4 animate-spin" /> Generating...</>
+                ) : (
+                  <><Wand2 className="w-4 h-4" /> Generate Layout</>
+                )}
+              </button>
+
+              {aiResult && (
+                <div className="space-y-3 pt-2">
+                  <div className="rounded-lg bg-navy/5 p-3 text-xs text-navy-text/80 leading-relaxed">
+                    {aiResult.summary}
+                  </div>
+
+                  <div className="text-xs font-medium text-navy-text/60">
+                    {aiResult.layout.length} items placed
+                  </div>
+
+                  {!aiResult.validation.valid && (
+                    <div className="space-y-1.5">
+                      {aiResult.validation.overlaps.map((o, i) => (
+                        <div key={`o${i}`} className="flex items-start gap-2 text-xs text-red-600 bg-red-50 rounded-md p-2">
+                          <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                          <span>{o}</span>
+                        </div>
+                      ))}
+                      {aiResult.validation.outOfBounds.map((o, i) => (
+                        <div key={`b${i}`} className="flex items-start gap-2 text-xs text-red-600 bg-red-50 rounded-md p-2">
+                          <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                          <span>{o}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {aiResult.validation.warnings.length > 0 && (
+                    <div className="space-y-1.5">
+                      {aiResult.validation.warnings.map((w, i) => (
+                        <div key={`w${i}`} className="flex items-start gap-2 text-xs text-amber-700 bg-amber-50 rounded-md p-2">
+                          <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                          <span>{w}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {aiResult.validation.valid && (
+                    <div className="flex items-center gap-2 text-xs text-green-700 bg-green-50 rounded-md p-2">
+                      <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                      <span>Layout passed all validation checks</span>
+                    </div>
+                  )}
+
+                  <div className="flex gap-2 pt-1">
+                    <button
+                      onClick={handleAcceptLayout}
+                      className="flex-1 h-9 rounded-lg bg-primary text-white text-xs font-semibold hover:bg-primary/90 transition-colors flex items-center justify-center gap-1.5"
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5" /> Accept & Place
+                    </button>
+                    <button
+                      onClick={handleGenerateLayout}
+                      disabled={generateLayout.isPending}
+                      className="h-9 px-4 rounded-lg border text-xs font-medium hover:bg-navy/5 transition-colors flex items-center gap-1.5 disabled:opacity-50"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" /> Regenerate
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     <div className="absolute top-0 left-0 right-0 z-30 flex h-12 items-center border-b bg-white/95 backdrop-blur-md px-2 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
       <button
         onClick={() => router.push("/")}
@@ -278,6 +487,7 @@ export function StudioToolbar() {
 
       <TopBarBtn icon={Presentation} label="Present" onClick={() => {}} badge />
       <TopBarBtn icon={Sparkles} label="AI" onClick={() => {}} />
+      <TopBarBtn icon={Wand2} label="AI Layout" onClick={() => setShowAiLayout(true)} />
       <TopBarBtn icon={History} label="Versions" onClick={() => usePlannerStore.getState().toggleVersionHistory()} />
       {currentPlanId > 0 && (
         <TopBarBtn icon={Share2} label="Share" onClick={() => setShowShareDialog(true)} />
@@ -323,5 +533,6 @@ export function StudioToolbar() {
         />
       )}
     </div>
+    </>
   );
 }

@@ -1,6 +1,6 @@
 {
   "buildCommand": "pnpm --filter @workspace/planner-suite run build",
-  "outputDirectory": "artifacts/planner-suite/dist",
+  "outputDirectory": "artifacts/planner-suite/build",
   "installCommand": "pnpm install",
   "framework": null,
   "rewrites": [

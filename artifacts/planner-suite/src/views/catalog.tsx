@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useMemo, useEffect } from 'react';
-import { useListCatalogItems, useListCategories, useGetCatalogItem, getGetCatalogItemQueryKey } from '@workspace/api-client-react';
+import Link from 'next/link';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { useListCatalogItems, useListCategories } from '@workspace/api-client-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, Loader2, Maximize, CircleDashed, Square, DollarSign, Users, AlertCircle, RefreshCw, PackageOpen, LayoutGrid, List, ChevronLeft, ChevronRight } from 'lucide-react';
 import { CatalogGridSkeleton, CategoryListSkeleton } from '@/components/skeletons';
@@ -49,74 +50,12 @@ function ShapeIndicator({ shape, size = 16 }: { shape?: string; size?: number })
   return <div className="rounded-sm border-2 border-muted-foreground/40" style={{ width: size, height: size }} />;
 }
 
-function ItemDetailsDialog({ itemId, open, onOpenChange }: { itemId: string | null, open: boolean, onOpenChange: (o: boolean) => void }) {
-  const { data: item, isLoading } = useGetCatalogItem(itemId || '', { query: { queryKey: getGetCatalogItemQueryKey(itemId || ''), enabled: !!itemId && open } });
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle>Item Details</DialogTitle>
-        </DialogHeader>
-        {isLoading ? (
-          <div className="flex justify-center p-8"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
-        ) : item ? (
-          <div className="space-y-4">
-            <div className="aspect-video bg-muted rounded-md flex items-center justify-center relative overflow-hidden">
-              {item.shape === 'round' ? (
-                <CircleDashed className="w-32 h-32 text-muted-foreground/30" />
-              ) : (
-                <Square className="w-32 h-32 text-muted-foreground/30" />
-              )}
-              {item.color && (
-                <div className="absolute bottom-4 right-4 w-8 h-8 rounded-full border-2 border-white shadow-md" style={{ backgroundColor: item.color }} title={item.color} />
-              )}
-            </div>
-            <div>
-              <div className="flex justify-between items-start mb-2">
-                <h3 className="text-xl font-bold">{item.name}</h3>
-                <Badge variant="secondary">{item.category}</Badge>
-              </div>
-              <p className="text-muted-foreground text-sm">{item.description || 'No description available for this item.'}</p>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-muted/50 p-3 rounded-lg space-y-1">
-                <div className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">Dimensions</div>
-                <div className="font-mono text-sm">{item.widthCm}W × {item.depthCm}D × {item.heightCm}H cm</div>
-              </div>
-              <div className="bg-muted/50 p-3 rounded-lg space-y-1">
-                <div className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">Pricing</div>
-                <div className="font-mono text-sm flex items-center gap-1">
-                  <DollarSign className="w-3.5 h-3.5 text-muted-foreground" /> {item.price ? item.price.toFixed(2) : 'N/A'}
-                </div>
-              </div>
-              <div className="bg-muted/50 p-3 rounded-lg space-y-1">
-                <div className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">Capacity</div>
-                <div className="font-mono text-sm flex items-center gap-1">
-                  <Users className="w-3.5 h-3.5 text-muted-foreground" /> {item.seatCount ? `${item.seatCount} persons` : 'N/A'}
-                </div>
-              </div>
-              <div className="bg-muted/50 p-3 rounded-lg space-y-1">
-                <div className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">Shape</div>
-                <div className="flex items-center gap-2">
-                  <ShapeIndicator shape={item.shape ?? undefined} />
-                  <span className="font-mono text-sm capitalize">{item.shape || 'Standard'}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="text-center p-8 text-muted-foreground">Item not found.</div>
-        )}
-      </DialogContent>
-    </Dialog>
-  );
-}
-
 export default function Catalog() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const categoryFromUrl = searchParams.get('category') || undefined;
   const [search, setSearch] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined);
-  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(categoryFromUrl);
   const [sortBy, setSortBy] = useState<SortOption>('name-asc');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>(getViewMode);
   const [page, setPage] = useState(1);
@@ -309,11 +248,9 @@ export default function Catalog() {
                 const itemArea = item.widthCm * item.depthCm;
                 const areaPercent = (itemArea / maxArea) * 100;
                 return (
+                  <Link key={item.id} href={`/catalog/${item.id}`} data-testid={`item-card-${item.id}`}>
                   <Card
-                    key={item.id}
-                    className="overflow-hidden flex flex-col hover:shadow-md transition-shadow cursor-pointer border-transparent hover:border-primary/50"
-                    onClick={() => setSelectedItemId(item.id)}
-                    data-testid={`item-card-${item.id}`}
+                    className="overflow-hidden flex flex-col hover:shadow-md transition-shadow cursor-pointer border-transparent hover:border-primary/50 h-full"
                   >
                     <div className="aspect-square bg-muted/30 flex items-center justify-center p-6 border-b relative">
                       <Badge variant="outline" className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm shadow-sm">
@@ -361,6 +298,7 @@ export default function Catalog() {
                       </div>
                     </CardContent>
                   </Card>
+                  </Link>
                 );
               })}
             </div>
@@ -385,10 +323,14 @@ export default function Catalog() {
                       <tr
                         key={item.id}
                         className="border-t hover:bg-muted/30 cursor-pointer transition-colors"
-                        onClick={() => setSelectedItemId(item.id)}
+                        onClick={() => router.push(`/catalog/${item.id}`)}
                         data-testid={`item-row-${item.id}`}
                       >
-                        <td className="px-4 py-3 font-medium">{item.name}</td>
+                        <td className="px-4 py-3 font-medium">
+                          <Link href={`/catalog/${item.id}`} className="hover:text-primary hover:underline">
+                            {item.name}
+                          </Link>
+                        </td>
                         <td className="px-4 py-3">
                           <Badge variant="outline" className="text-xs">{item.category}</Badge>
                         </td>
@@ -434,11 +376,6 @@ export default function Catalog() {
         </div>
       </div>
 
-      <ItemDetailsDialog
-        itemId={selectedItemId}
-        open={!!selectedItemId}
-        onOpenChange={(open) => !open && setSelectedItemId(null)}
-      />
     </div>
   );
 }

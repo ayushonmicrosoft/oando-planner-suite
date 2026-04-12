@@ -6,6 +6,7 @@ export const catalogItemsTable = pgTable("catalog_items", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   category: text("category").notNull(),
+  subCategory: text("sub_category"),
   widthCm: real("width_cm").notNull(),
   depthCm: real("depth_cm").notNull(),
   heightCm: real("height_cm").notNull(),

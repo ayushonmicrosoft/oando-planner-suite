@@ -10,6 +10,8 @@ export interface CatalogItem {
   id: string;
   name: string;
   category: string;
+  /** @nullable */
+  subCategory: string | null;
   widthCm: number;
   depthCm: number;
   heightCm: number;

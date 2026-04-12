@@ -41,6 +41,9 @@ router.get(
     if (query.data.category) {
       conditions.push(eq(catalogItemsTable.category, query.data.category));
     }
+    if (query.data.subCategory) {
+      conditions.push(eq(catalogItemsTable.subCategory, query.data.subCategory));
+    }
     if (query.data.search) {
       conditions.push(ilike(catalogItemsTable.name, `%${query.data.search}%`));
     }
@@ -84,7 +87,7 @@ router.post(
   requireAuth,
   requireAdmin,
   asyncHandler(async (req, res) => {
-    const { name, category, widthCm, depthCm, heightCm, color, description, imageUrl, shape, seatCount, price } = req.body;
+    const { name, category, subCategory, widthCm, depthCm, heightCm, color, description, imageUrl, shape, seatCount, price } = req.body;
 
     if (!name || !category || widthCm == null || depthCm == null || heightCm == null) {
       res.status(400).json({ error: "name, category, widthCm, depthCm, and heightCm are required", status: 400 });
@@ -99,6 +102,7 @@ router.post(
         id,
         name,
         category,
+        subCategory: subCategory ?? null,
         widthCm: Number(widthCm),
         depthCm: Number(depthCm),
         heightCm: Number(heightCm),
@@ -121,11 +125,12 @@ router.patch(
   requireAdmin,
   asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const { name, category, widthCm, depthCm, heightCm, color, description, imageUrl, shape, seatCount, price } = req.body;
+    const { name, category, subCategory, widthCm, depthCm, heightCm, color, description, imageUrl, shape, seatCount, price } = req.body;
 
     const updates: Record<string, unknown> = {};
     if (name !== undefined) updates.name = name;
     if (category !== undefined) updates.category = category;
+    if (subCategory !== undefined) updates.subCategory = subCategory;
     if (widthCm !== undefined) updates.widthCm = Number(widthCm);
     if (depthCm !== undefined) updates.depthCm = Number(depthCm);
     if (heightCm !== undefined) updates.heightCm = Number(heightCm);

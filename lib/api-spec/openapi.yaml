@@ -50,6 +50,10 @@ paths:
           in: query
           schema:
             type: string
+        - name: subCategory
+          in: query
+          schema:
+            type: string
         - name: search
           in: query
           schema:
@@ -785,6 +789,8 @@ components:
           type: string
         category:
           type: string
+        subCategory:
+          type: ["string", "null"]
         widthCm:
           type: number
         depthCm:
@@ -807,6 +813,7 @@ components:
         - id
         - name
         - category
+        - subCategory
         - widthCm
         - depthCm
         - heightCm

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
-import { Search, X, ChevronRight, Plus, Package, Star, Armchair, Table2, MonitorSmartphone, Archive, BookOpen, Puzzle, LayoutGrid, GripVertical } from "lucide-react";
+import { Search, X, ChevronRight, Plus, Package, Armchair, Table2, MonitorSmartphone, Archive, BookOpen, Puzzle, LayoutGrid, ChevronDown } from "lucide-react";
 import { usePlannerStore, type CatalogProduct } from "./planner-store";
 import { useListCatalogItems } from "@workspace/api-client-react";
 import { cn } from "@/lib/utils";
@@ -29,7 +29,28 @@ const SHAPE_COLORS: Record<string, string> = {
   accessories: "light-red",
 };
 
-function FurnitureTopView({ item, size = 48 }: { item: CatalogProduct; size?: number }) {
+function ProductThumbnail({ item, size = 48 }: { item: CatalogProduct; size?: number }) {
+  const [imgError, setImgError] = useState(false);
+  const catMeta = CATEGORY_META[item.category];
+  const fill = catMeta?.color || "#1F3653";
+
+  if (item.imageUrl && !imgError) {
+    return (
+      <div
+        className="shrink-0 rounded-lg overflow-hidden bg-gray-50 flex items-center justify-center"
+        style={{ width: size, height: size }}
+      >
+        <img
+          src={item.imageUrl}
+          alt={item.name}
+          className="w-full h-full object-cover"
+          loading="lazy"
+          onError={() => setImgError(true)}
+        />
+      </div>
+    );
+  }
+
   const w = item.widthCm;
   const d = item.depthCm;
   const maxDim = Math.max(w, d);
@@ -37,8 +58,6 @@ function FurnitureTopView({ item, size = 48 }: { item: CatalogProduct; size?: nu
   const rw = w * scale;
   const rd = d * scale;
   const isRound = item.shape === "circle" || item.shape === "round";
-  const catMeta = CATEGORY_META[item.category];
-  const fill = catMeta?.color || "#1F3653";
 
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="shrink-0">
@@ -74,6 +93,7 @@ function FurnitureTopView({ item, size = 48 }: { item: CatalogProduct; size?: nu
 export function StudioCatalog() {
   const { showCatalog, editor, catalogTab, setCatalogTab, catalogSearch, setCatalogSearch } = usePlannerStore();
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
+  const [selectedSubCategory, setSelectedSubCategory] = useState<string | null>(null);
 
   const { data: rawItems, isLoading } = useListCatalogItems();
   const items: CatalogProduct[] = useMemo(() => {
@@ -81,12 +101,14 @@ export function StudioCatalog() {
       id: String(item.id),
       name: item.name,
       category: item.category,
+      subCategory: item.subCategory || null,
       widthCm: item.widthCm || 60,
       depthCm: item.depthCm || 60,
       heightCm: item.heightCm || 75,
       color: item.color || "#94a3b8",
       shape: item.shape || "rect",
       description: item.description,
+      imageUrl: item.imageUrl,
       price: item.price,
       seatCount: item.seatCount,
     }));
@@ -98,15 +120,38 @@ export function StudioCatalog() {
     return Array.from(map.entries()).sort((a, b) => a[0].localeCompare(b[0]));
   }, [items]);
 
+  const subCategories = useMemo(() => {
+    if (catalogTab === "all") return [];
+    const map = new Map<string, number>();
+    items
+      .filter((i) => i.category === catalogTab && i.subCategory)
+      .forEach((i) => {
+        const sc = i.subCategory!;
+        map.set(sc, (map.get(sc) || 0) + 1);
+      });
+    return Array.from(map.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+  }, [items, catalogTab]);
+
   const filtered = useMemo(() => {
     let result = items;
     if (catalogTab !== "all") result = result.filter((i) => i.category === catalogTab);
+    if (selectedSubCategory) result = result.filter((i) => i.subCategory === selectedSubCategory);
     if (catalogSearch) {
       const q = catalogSearch.toLowerCase();
-      result = result.filter((i) => i.name.toLowerCase().includes(q) || i.category.toLowerCase().includes(q) || (i.description || "").toLowerCase().includes(q));
+      result = result.filter((i) =>
+        i.name.toLowerCase().includes(q) ||
+        i.category.toLowerCase().includes(q) ||
+        (i.subCategory || "").toLowerCase().includes(q) ||
+        (i.description || "").toLowerCase().includes(q)
+      );
     }
     return result;
-  }, [items, catalogTab, catalogSearch]);
+  }, [items, catalogTab, selectedSubCategory, catalogSearch]);
+
+  const handleCategoryChange = useCallback((cat: string) => {
+    setCatalogTab(catalogTab === cat ? "all" : cat);
+    setSelectedSubCategory(null);
+  }, [catalogTab, setCatalogTab]);
 
   const placeOnCanvas = useCallback((item: CatalogProduct) => {
     if (!editor) return;
@@ -146,7 +191,7 @@ export function StudioCatalog() {
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-bold text-navy flex items-center gap-1.5">
             <Package className="h-4 w-4" />
-            Furniture Catalog
+            AFC Furniture Catalog
           </h3>
           <span className="text-[10px] font-semibold text-navy-text/40 bg-navy/5 px-2 py-0.5 rounded-full">
             {totalCount} items
@@ -171,7 +216,7 @@ export function StudioCatalog() {
 
       <div className="flex gap-1 px-2 py-1.5 overflow-x-auto border-b scrollbar-none">
         <button
-          onClick={() => setCatalogTab("all")}
+          onClick={() => { setCatalogTab("all"); setSelectedSubCategory(null); }}
           className={cn(
             "px-2 py-1 rounded-md text-[10px] font-semibold whitespace-nowrap transition-all flex items-center gap-1",
             catalogTab === "all" ? "bg-navy text-white" : "bg-navy/5 text-navy-text/60 hover:bg-navy/10"
@@ -185,7 +230,7 @@ export function StudioCatalog() {
           return (
             <button
               key={cat}
-              onClick={() => setCatalogTab(catalogTab === cat ? "all" : cat)}
+              onClick={() => handleCategoryChange(cat)}
               className={cn(
                 "px-2 py-1 rounded-md text-[10px] font-semibold whitespace-nowrap transition-all flex items-center gap-1",
                 catalogTab === cat ? "text-white" : "text-navy-text/60 hover:bg-navy/10",
@@ -197,6 +242,34 @@ export function StudioCatalog() {
           );
         })}
       </div>
+
+      {subCategories.length > 0 && (
+        <div className="flex gap-1 px-2 py-1 overflow-x-auto border-b scrollbar-none bg-gray-50/50">
+          <button
+            onClick={() => setSelectedSubCategory(null)}
+            className={cn(
+              "px-2 py-0.5 rounded text-[9px] font-medium whitespace-nowrap transition-all",
+              !selectedSubCategory ? "bg-navy/80 text-white" : "bg-white text-navy-text/50 hover:bg-navy/5 border"
+            )}
+          >
+            All
+          </button>
+          {subCategories.map(([sc, count]) => (
+            <button
+              key={sc}
+              onClick={() => setSelectedSubCategory(selectedSubCategory === sc ? null : sc)}
+              className={cn(
+                "px-2 py-0.5 rounded text-[9px] font-medium whitespace-nowrap transition-all",
+                selectedSubCategory === sc
+                  ? "bg-navy/80 text-white"
+                  : "bg-white text-navy-text/50 hover:bg-navy/5 border"
+              )}
+            >
+              {sc} ({count})
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="flex-1 overflow-y-auto p-2">
         {isLoading ? (
@@ -223,13 +296,18 @@ export function StudioCatalog() {
                     : "border-transparent hover:border-navy/15 hover:bg-brand-surface"
                 )}
               >
-                <FurnitureTopView item={item} size={56} />
+                <ProductThumbnail item={item} size={56} />
                 <span className="mt-1.5 text-[11px] font-medium text-navy-text leading-tight line-clamp-2 w-full">
                   {item.name}
                 </span>
                 <span className="text-[9px] text-navy-text/40 mt-0.5">
                   {item.widthCm}×{item.depthCm} cm
                 </span>
+                {item.subCategory && (
+                  <span className="text-[8px] text-navy-text/30 mt-0.5 line-clamp-1">
+                    {item.subCategory}
+                  </span>
+                )}
                 {hoveredItem === item.id && (
                   <div className="absolute -top-1 -right-1 bg-navy text-white rounded-full p-0.5 shadow-md">
                     <Plus className="h-3 w-3" />

@@ -38,6 +38,7 @@ interface CatalogItem {
   id: string;
   name: string;
   category: string;
+  subCategory: string | null;
   widthCm: number;
   depthCm: number;
   heightCm: number;
@@ -52,6 +53,7 @@ interface CatalogItem {
 const emptyForm = {
   name: "",
   category: "",
+  subCategory: "",
   widthCm: "",
   depthCm: "",
   heightCm: "",
@@ -64,10 +66,16 @@ const emptyForm = {
 };
 
 const categoryColors: Record<string, string> = {
+  workstations: "bg-blue-50 text-blue-700 border-blue-200",
+  seating: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  "soft-seating": "bg-violet-50 text-violet-700 border-violet-200",
+  tables: "bg-orange-50 text-orange-700 border-orange-200",
+  storage: "bg-amber-50 text-amber-700 border-amber-200",
+  education: "bg-cyan-50 text-cyan-700 border-cyan-200",
+  accessories: "bg-rose-50 text-rose-700 border-rose-200",
   desk: "bg-blue-50 text-blue-700 border-blue-200",
   chair: "bg-emerald-50 text-emerald-700 border-emerald-200",
   table: "bg-violet-50 text-violet-700 border-violet-200",
-  storage: "bg-amber-50 text-amber-700 border-amber-200",
   sofa: "bg-rose-50 text-rose-700 border-rose-200",
   partition: "bg-slate-50 text-slate-700 border-slate-200",
 };
@@ -100,6 +108,7 @@ export default function AdminCatalogPage() {
     setForm({
       name: item.name,
       category: item.category,
+      subCategory: item.subCategory || "",
       widthCm: String(item.widthCm),
       depthCm: String(item.depthCm),
       heightCm: String(item.heightCm),
@@ -123,6 +132,7 @@ export default function AdminCatalogPage() {
       const payload: Record<string, unknown> = {
         name: form.name,
         category: form.category,
+        subCategory: form.subCategory || null,
         widthCm: Number(form.widthCm),
         depthCm: Number(form.depthCm),
         heightCm: Number(form.heightCm),
@@ -167,7 +177,8 @@ export default function AdminCatalogPage() {
   const filtered = (items as CatalogItem[] | undefined)?.filter(
     (item) =>
       item.name.toLowerCase().includes(search.toLowerCase()) ||
-      item.category.toLowerCase().includes(search.toLowerCase())
+      item.category.toLowerCase().includes(search.toLowerCase()) ||
+      (item.subCategory || "").toLowerCase().includes(search.toLowerCase())
   ) ?? [];
 
   const categories = [...new Set((items as CatalogItem[] | undefined)?.map((i) => i.category) ?? [])];
@@ -248,9 +259,14 @@ export default function AdminCatalogPage() {
                       </div>
                     </td>
                     <td className="px-5 py-4">
-                      <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium border ${getCategoryStyle(item.category)}`}>
-                        {item.category}
-                      </span>
+                      <div className="flex flex-col gap-0.5">
+                        <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium border ${getCategoryStyle(item.category)}`}>
+                          {item.category}
+                        </span>
+                        {item.subCategory && (
+                          <span className="text-[10px] text-[var(--text-subtle)] pl-1 truncate max-w-[140px]">{item.subCategory}</span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-1.5 text-[var(--text-muted)]">
@@ -354,6 +370,10 @@ export default function AdminCatalogPage() {
                 <Label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Category *</Label>
                 <Input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="rounded-xl" />
               </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Sub-Category</Label>
+              <Input value={form.subCategory} onChange={(e) => setForm({ ...form, subCategory: e.target.value })} className="rounded-xl" placeholder="e.g. Desking Series - DeskPro 1" />
             </div>
             <div className="grid grid-cols-3 gap-4">
               <div className="space-y-1.5">

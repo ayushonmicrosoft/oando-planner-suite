@@ -14,6 +14,7 @@ export interface CatalogProduct {
   id: string;
   name: string;
   category: string;
+  subCategory?: string | null;
   widthCm: number;
   depthCm: number;
   heightCm: number;

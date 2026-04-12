@@ -8,5 +8,6 @@
 
 export type ListCatalogItemsParams = {
   category?: string;
+  subCategory?: string;
   search?: string;
 };

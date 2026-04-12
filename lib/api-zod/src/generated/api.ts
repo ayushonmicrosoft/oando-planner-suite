@@ -20,6 +20,7 @@ export const HealthCheckResponse = zod.object({
  */
 export const ListCatalogItemsQueryParams = zod.object({
   category: zod.coerce.string().optional(),
+  subCategory: zod.coerce.string().optional(),
   search: zod.coerce.string().optional(),
 });
 
@@ -27,6 +28,7 @@ export const ListCatalogItemsResponseItem = zod.object({
   id: zod.string(),
   name: zod.string(),
   category: zod.string(),
+  subCategory: zod.string().nullable(),
   widthCm: zod.number(),
   depthCm: zod.number(),
   heightCm: zod.number(),
@@ -50,6 +52,7 @@ export const GetCatalogItemResponse = zod.object({
   id: zod.string(),
   name: zod.string(),
   category: zod.string(),
+  subCategory: zod.string().nullable(),
   widthCm: zod.number(),
   depthCm: zod.number(),
   heightCm: zod.number(),

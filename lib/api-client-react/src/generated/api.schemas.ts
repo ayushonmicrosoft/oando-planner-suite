@@ -222,49 +222,6 @@ export interface Project {
   updatedAt: string;
 }
 
-export interface BoquItem {
-  catalogId: string;
-  name: string;
-  category: string;
-  quantity: number;
-  widthCm: number;
-  depthCm: number;
-  heightCm: number;
-  unitPrice: number;
-  totalPrice: number;
-}
-
-export interface QuotePreview {
-  planId: number;
-  planName: string;
-  items: BoquItem[];
-  subtotal: number;
-  gst: number;
-  total: number;
-}
-
-export interface CreateQuoteBody {
-  clientName: string;
-  clientCompany: string;
-  clientEmail?: string;
-  projectName: string;
-}
-
-export interface Quote {
-  id: number;
-  planId: number;
-  clientName: string;
-  clientCompany: string;
-  clientEmail: string;
-  projectName: string;
-  itemsJson: string;
-  subtotal: number;
-  gst: number;
-  total: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
 export interface ProjectWithStats {
   id: number;
   name: string;
@@ -323,6 +280,49 @@ export interface UpdateProjectBody {
   clientId?: number | null;
   status?: string;
   notes?: string;
+}
+
+export interface BoquItem {
+  catalogId: string;
+  name: string;
+  category: string;
+  quantity: number;
+  widthCm: number;
+  depthCm: number;
+  heightCm: number;
+  unitPrice: number;
+  totalPrice: number;
+}
+
+export interface QuotePreview {
+  planId: number;
+  planName: string;
+  items: BoquItem[];
+  subtotal: number;
+  gst: number;
+  total: number;
+}
+
+export interface CreateQuoteBody {
+  clientName: string;
+  clientCompany: string;
+  clientEmail?: string;
+  projectName: string;
+}
+
+export interface Quote {
+  id: number;
+  planId: number;
+  clientName: string;
+  clientCompany: string;
+  clientEmail: string;
+  projectName: string;
+  itemsJson: string;
+  subtotal: number;
+  gst: number;
+  total: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface QuoteSummary {

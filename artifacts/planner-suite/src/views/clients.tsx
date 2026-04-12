@@ -8,6 +8,8 @@ import {
   useGetClient,
   useListProjects,
   getListClientsQueryKey,
+  getGetClientQueryOptions,
+  getListProjectsQueryOptions,
 } from '@workspace/api-client-react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -70,12 +72,15 @@ export default function Clients() {
   const [notes, setNotes] = useState('');
 
   const [selectedClientId, setSelectedClientId] = useState<number | null>(null);
+  const clientOpts = getGetClientQueryOptions(selectedClientId || 0);
   const { data: selectedClient } = useGetClient(selectedClientId || 0, {
-    query: { enabled: !!selectedClientId },
+    query: { ...clientOpts, enabled: !!selectedClientId },
   });
+  const projectParams = selectedClientId ? { clientId: selectedClientId } : undefined;
+  const projOpts = getListProjectsQueryOptions(projectParams);
   const { data: clientProjects } = useListProjects(
-    selectedClientId ? { clientId: selectedClientId } : undefined,
-    { query: { enabled: !!selectedClientId } }
+    projectParams,
+    { query: { ...projOpts, enabled: !!selectedClientId } }
   );
 
   const handleCreate = () => {

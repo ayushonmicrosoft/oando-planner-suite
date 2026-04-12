@@ -144,7 +144,7 @@ router.patch(
     const [updated] = await db
       .update(catalogItemsTable)
       .set(updates)
-      .where(eq(catalogItemsTable.id, id))
+      .where(eq(catalogItemsTable.id, String(id)))
       .returning();
 
     if (!updated) {
@@ -165,7 +165,7 @@ router.delete(
 
     const [deleted] = await db
       .delete(catalogItemsTable)
-      .where(eq(catalogItemsTable.id, id))
+      .where(eq(catalogItemsTable.id, String(id)))
       .returning();
 
     if (!deleted) {

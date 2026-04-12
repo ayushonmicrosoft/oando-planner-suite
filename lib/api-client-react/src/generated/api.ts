@@ -1463,56 +1463,6 @@ export const getCreateClientMutationOptions = <
     TContext
   >;
   request?: SecondParameter<typeof customFetch>;
-}) => {
-  return getCreateClientMutationOptions_impl(options);
-};
-
-/**
- * @summary Generate a quote/BOQ from a plan
- */
-export const getCreateQuoteUrl = (id: number) => {
-  return `/api/plans/${id}/quote`;
-};
-
-export const createQuote = async (
-  id: number,
-  createQuoteBody: CreateQuoteBody,
-  options?: RequestInit,
-): Promise<Quote> => {
-  return customFetch<Quote>(getCreateQuoteUrl(id), {
-    ...options,
-    method: "POST",
-    headers: { "Content-Type": "application/json", ...options?.headers },
-    body: JSON.stringify(createQuoteBody),
-  });
-};
-
-export const getCreateQuoteMutationOptions = <
-  TError = ErrorType<ErrorResponse>,
-  TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof createQuote>>,
-    TError,
-    { id: number; data: BodyType<CreateQuoteBody> },
-    TContext
-  >;
-  request?: SecondParameter<typeof customFetch>;
-}) => {
-  return getCreateQuoteMutationOptions_impl(options);
-};
-
-const getCreateClientMutationOptions_impl = <
-  TError = ErrorType<unknown>,
-  TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof createClient>>,
-    TError,
-    { data: BodyType<CreateClientBody> },
-    TContext
-  >;
-  request?: SecondParameter<typeof customFetch>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof createClient>>,
   TError,
@@ -1540,43 +1490,6 @@ const getCreateClientMutationOptions_impl = <
   return { mutationFn, ...mutationOptions };
 };
 
-const getCreateQuoteMutationOptions_impl = <
-  TError = ErrorType<ErrorResponse>,
-  TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof createQuote>>,
-    TError,
-    { id: number; data: BodyType<CreateQuoteBody> },
-    TContext
-  >;
-  request?: SecondParameter<typeof customFetch>;
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof createQuote>>,
-  TError,
-  { id: number; data: BodyType<CreateQuoteBody> },
-  TContext
-> => {
-  const mutationKey = ["createQuote"];
-  const { mutation: mutationOptions, request: requestOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, request: undefined };
-
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof createQuote>>,
-    { id: number; data: BodyType<CreateQuoteBody> }
-  > = (props) => {
-    const { id, data } = props ?? {};
-
-    return createQuote(id, data, requestOptions);
-  };
-
-  return { mutationFn, ...mutationOptions };
-};
 export type CreateClientMutationResult = NonNullable<
   Awaited<ReturnType<typeof createClient>>
 >;
@@ -1744,12 +1657,6 @@ export const getUpdateClientMutationOptions = <
     const { id, data } = props ?? {};
 
     return updateClient(id, data, requestOptions);
-    Awaited<ReturnType<typeof createQuote>>,
-    { id: number; data: BodyType<CreateQuoteBody> }
-  > = (props) => {
-    const { id, data } = props ?? {};
-
-    return createQuote(id, data, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
@@ -1765,16 +1672,6 @@ export type UpdateClientMutationError = ErrorType<ErrorResponse>;
  * @summary Update a client
  */
 export const useUpdateClient = <
-export type CreateQuoteMutationResult = NonNullable<
-  Awaited<ReturnType<typeof createQuote>>
->;
-export type CreateQuoteMutationBody = BodyType<CreateQuoteBody>;
-export type CreateQuoteMutationError = ErrorType<ErrorResponse>;
-
-/**
- * @summary Generate a quote/BOQ from a plan
- */
-export const useCreateQuote = <
   TError = ErrorType<ErrorResponse>,
   TContext = unknown,
 >(options?: {
@@ -1782,9 +1679,6 @@ export const useCreateQuote = <
     Awaited<ReturnType<typeof updateClient>>,
     TError,
     { id: number; data: BodyType<UpdateClientBody> },
-    Awaited<ReturnType<typeof createQuote>>,
-    TError,
-    { id: number; data: BodyType<CreateQuoteBody> },
     TContext
   >;
   request?: SecondParameter<typeof customFetch>;
@@ -1905,26 +1799,6 @@ export const listProjects = async (
   options?: RequestInit,
 ): Promise<ProjectWithStats[]> => {
   return customFetch<ProjectWithStats[]>(getListProjectsUrl(params), {
-  Awaited<ReturnType<typeof createQuote>>,
-  TError,
-  { id: number; data: BodyType<CreateQuoteBody> },
-  TContext
-> => {
-  return useMutation(getCreateQuoteMutationOptions(options));
-};
-
-/**
- * @summary Preview BOQ items extracted from a plan
- */
-export const getPreviewQuoteUrl = (id: number) => {
-  return `/api/plans/${id}/quote/preview`;
-};
-
-export const previewQuote = async (
-  id: number,
-  options?: RequestInit,
-): Promise<QuotePreview> => {
-  return customFetch<QuotePreview>(getPreviewQuoteUrl(id), {
     ...options,
     method: "GET",
   });
@@ -1958,44 +1832,6 @@ export const getListProjectsQueryOptions = <
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
     Awaited<ReturnType<typeof listProjects>>,
-    TError,
-    TData
-  > & { queryKey: QueryKey };
-};
-
-export const getPreviewQuoteQueryKey = (id: number) => {
-  return [`/api/plans/${id}/quote/preview`] as const;
-};
-
-export const getPreviewQuoteQueryOptions = <
-  TData = Awaited<ReturnType<typeof previewQuote>>,
-  TError = ErrorType<ErrorResponse>,
->(
-  id: number,
-  options?: {
-    query?: UseQueryOptions<
-      Awaited<ReturnType<typeof previewQuote>>,
-      TError,
-      TData
-    >;
-    request?: SecondParameter<typeof customFetch>;
-  },
-) => {
-  const { query: queryOptions, request: requestOptions } = options ?? {};
-
-  const queryKey = queryOptions?.queryKey ?? getPreviewQuoteQueryKey(id);
-
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof previewQuote>>> = ({
-    signal,
-  }) => previewQuote(id, { signal, ...requestOptions });
-
-  return {
-    queryKey,
-    queryFn,
-    enabled: !!id,
-    ...queryOptions,
-  } as UseQueryOptions<
-    Awaited<ReturnType<typeof previewQuote>>,
     TError,
     TData
   > & { queryKey: QueryKey };
@@ -2167,9 +2003,11 @@ export const getGetProjectQueryOptions = <
     queryFn,
     enabled: !!id,
     ...queryOptions,
-  } as UseQueryOptions<Awaited<ReturnType<typeof getProject>>, TError, TData> & {
-    queryKey: QueryKey;
-  };
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getProject>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
 };
 
 export type GetProjectQueryResult = NonNullable<
@@ -2196,38 +2034,6 @@ export function useGetProject<
   },
 ): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
   const queryOptions = getGetProjectQueryOptions(id, options);
-
-  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
-    queryKey: QueryKey;
-  };
-
-  return { ...query, queryKey: queryOptions.queryKey };
-}
-
-export type PreviewQuoteQueryResult = NonNullable<
-  Awaited<ReturnType<typeof previewQuote>>
->;
-export type PreviewQuoteQueryError = ErrorType<ErrorResponse>;
-
-/**
- * @summary Preview BOQ items extracted from a plan
- */
-
-export function usePreviewQuote<
-  TData = Awaited<ReturnType<typeof previewQuote>>,
-  TError = ErrorType<ErrorResponse>,
->(
-  id: number,
-  options?: {
-    query?: UseQueryOptions<
-      Awaited<ReturnType<typeof previewQuote>>,
-      TError,
-      TData
-    >;
-    request?: SecondParameter<typeof customFetch>;
-  },
-): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-  const queryOptions = getPreviewQuoteQueryOptions(id, options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;
@@ -2406,6 +2212,182 @@ export const useDeleteProject = <
 > => {
   return useMutation(getDeleteProjectMutationOptions(options));
 };
+
+/**
+ * @summary Generate a quote/BOQ from a plan
+ */
+export const getCreateQuoteUrl = (id: number) => {
+  return `/api/plans/${id}/quote`;
+};
+
+export const createQuote = async (
+  id: number,
+  createQuoteBody: CreateQuoteBody,
+  options?: RequestInit,
+): Promise<Quote> => {
+  return customFetch<Quote>(getCreateQuoteUrl(id), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createQuoteBody),
+  });
+};
+
+export const getCreateQuoteMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createQuote>>,
+    TError,
+    { id: number; data: BodyType<CreateQuoteBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createQuote>>,
+  TError,
+  { id: number; data: BodyType<CreateQuoteBody> },
+  TContext
+> => {
+  const mutationKey = ["createQuote"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createQuote>>,
+    { id: number; data: BodyType<CreateQuoteBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return createQuote(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateQuoteMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createQuote>>
+>;
+export type CreateQuoteMutationBody = BodyType<CreateQuoteBody>;
+export type CreateQuoteMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Generate a quote/BOQ from a plan
+ */
+export const useCreateQuote = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createQuote>>,
+    TError,
+    { id: number; data: BodyType<CreateQuoteBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createQuote>>,
+  TError,
+  { id: number; data: BodyType<CreateQuoteBody> },
+  TContext
+> => {
+  return useMutation(getCreateQuoteMutationOptions(options));
+};
+
+/**
+ * @summary Preview BOQ items extracted from a plan
+ */
+export const getPreviewQuoteUrl = (id: number) => {
+  return `/api/plans/${id}/quote/preview`;
+};
+
+export const previewQuote = async (
+  id: number,
+  options?: RequestInit,
+): Promise<QuotePreview> => {
+  return customFetch<QuotePreview>(getPreviewQuoteUrl(id), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getPreviewQuoteQueryKey = (id: number) => {
+  return [`/api/plans/${id}/quote/preview`] as const;
+};
+
+export const getPreviewQuoteQueryOptions = <
+  TData = Awaited<ReturnType<typeof previewQuote>>,
+  TError = ErrorType<ErrorResponse>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof previewQuote>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getPreviewQuoteQueryKey(id);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof previewQuote>>> = ({
+    signal,
+  }) => previewQuote(id, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof previewQuote>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type PreviewQuoteQueryResult = NonNullable<
+  Awaited<ReturnType<typeof previewQuote>>
+>;
+export type PreviewQuoteQueryError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Preview BOQ items extracted from a plan
+ */
+
+export function usePreviewQuote<
+  TData = Awaited<ReturnType<typeof previewQuote>>,
+  TError = ErrorType<ErrorResponse>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof previewQuote>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getPreviewQuoteQueryOptions(id, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
  * @summary Get a saved quote
  */
 export const getGetQuoteUrl = (id: number) => {

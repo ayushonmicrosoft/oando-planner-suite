@@ -6,6 +6,7 @@ import {
   useGetCatalogItem,
   useListCatalogItems,
   getGetCatalogItemQueryKey,
+  getListCatalogItemsQueryOptions,
 } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -185,10 +186,12 @@ export default function CatalogDetail() {
     },
   });
 
+  const relatedOpts = getListCatalogItemsQueryOptions({ category: item?.category });
   const { data: relatedItems } = useListCatalogItems(
     { category: item?.category },
     {
       query: {
+        ...relatedOpts,
         enabled: !!item?.category,
       },
     }

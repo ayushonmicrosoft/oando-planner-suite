@@ -32,6 +32,7 @@ import {
   Layers, ChevronUp, ChevronDown, Search, Eye, EyeOff,
   AlertCircle, RefreshCw, Crosshair, ChevronRight, BarChart3, FileSpreadsheet,
   PenTool, History, Wand2, AlertTriangle, CheckCircle2,
+  Minus, Square, CircleIcon, Type, PencilRuler,
 } from 'lucide-react';
 import { PlannerBreadcrumb } from '@/components/planner/PlannerBreadcrumb';
 import { PlanBackgroundLayers } from '@/components/plan-background-layers';
@@ -143,6 +144,22 @@ function computeAlignmentGuides(
     if (!seen.has(key)) { seen.add(key); unique.push(g); }
   }
   return unique;
+}
+
+type DrawToolType = 'select' | 'draw-line' | 'draw-rect' | 'draw-ellipse' | 'draw-text';
+
+interface DrawnShape {
+  id: string;
+  type: 'line' | 'rect' | 'ellipse' | 'text';
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+  stroke: string;
+  fill: string;
+  strokeWidth: number;
+  text?: string;
+  fontSize?: number;
 }
 
 function FurnitureShape({
@@ -396,6 +413,21 @@ export default function CanvasPlanner() {
   const [autoLayoutCapacity, setAutoLayoutCapacity] = useState(6);
   const [autoLayoutResult, setAutoLayoutResult] = useState<AutoLayoutResponse | null>(null);
   const generateAutoLayout = useGenerateAutoLayout();
+
+  const [drawTool, setDrawTool] = useState<DrawToolType>('select');
+  const [drawnShapes, setDrawnShapes] = useState<DrawnShape[]>([]);
+  const [drawStroke, setDrawStroke] = useState('#1e293b');
+  const [drawFill, setDrawFill] = useState('transparent');
+  const [drawStrokeWidth, setDrawStrokeWidth] = useState(2);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [drawStart, setDrawStart] = useState<{ x: number; y: number } | null>(null);
+  const [drawCurrent, setDrawCurrent] = useState<{ x: number; y: number } | null>(null);
+  const [pendingTextPos, setPendingTextPos] = useState<{ x: number; y: number } | null>(null);
+  const [pendingTextValue, setPendingTextValue] = useState('');
+  const [selectedDrawShapeId, setSelectedDrawShapeId] = useState<string | null>(null);
+  const [drawSidebarOpen, setDrawSidebarOpen] = useState(false);
+
+  const isDrawMode = drawTool !== 'select';
 
   const categorySummary = useMemo(() => {
     const counts: Record<string, number> = {};

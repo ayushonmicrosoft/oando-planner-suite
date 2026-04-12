@@ -331,7 +331,7 @@ export function useCanvasPlanner(initialRoomWidthCm = 500, initialRoomDepthCm = 
     deleteItems,
     duplicateItems,
     clearAll,
-    bringToFront,
+      bringToFront,
     sendToBack,
     toggleLock,
     undo,

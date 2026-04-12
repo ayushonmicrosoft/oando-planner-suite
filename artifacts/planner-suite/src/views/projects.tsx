@@ -41,18 +41,19 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Plus, FolderOpen, Clock, FileText, Trash2, Loader2, AlertCircle, RefreshCw, Building2, Users } from 'lucide-react';
+import { Plus, FolderOpen, Clock, FileText, Trash2, Loader2, AlertCircle, RefreshCw, Building2, Users, ArrowRight, CalendarDays } from 'lucide-react';
 import { format } from 'date-fns';
 import { useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 
-const statusColors: Record<string, string> = {
-  active: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
-  completed: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
-  archived: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400',
-  on_hold: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
+const statusConfig: Record<string, { label: string; className: string; dot: string }> = {
+  active: { label: 'Active', className: 'bg-emerald-500/[0.08] text-emerald-700 dark:text-emerald-400 border-emerald-500/20', dot: 'bg-emerald-500' },
+  completed: { label: 'Completed', className: 'bg-blue-500/[0.08] text-blue-700 dark:text-blue-400 border-blue-500/20', dot: 'bg-blue-500' },
+  archived: { label: 'Archived', className: 'bg-gray-500/[0.08] text-gray-600 dark:text-gray-400 border-gray-500/20', dot: 'bg-gray-400' },
+  on_hold: { label: 'On Hold', className: 'bg-amber-500/[0.08] text-amber-700 dark:text-amber-400 border-amber-500/20', dot: 'bg-amber-500' },
 };
 
 export default function Projects() {
@@ -127,16 +128,24 @@ export default function Projects() {
     return a.localeCompare(b);
   });
 
+  const totalProjects = (projects || []).length;
+  const activeCount = (projects || []).filter(p => p.status === 'active').length;
+
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-6 animate-in fade-in duration-500">
-      <div className="flex items-center justify-between">
+    <div className="p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in duration-500">
+      <div className="flex items-start justify-between">
         <div>
+          <p className="text-[10px] uppercase tracking-[0.12em] font-semibold text-muted-foreground mb-1">Management</p>
           <h1 className="text-3xl font-bold tracking-tight">Projects</h1>
-          <p className="text-muted-foreground mt-1">Manage your office planning projects</p>
+          <p className="text-muted-foreground mt-1.5 text-sm">
+            {totalProjects > 0
+              ? `${totalProjects} project${totalProjects !== 1 ? 's' : ''} · ${activeCount} active`
+              : 'Manage your office planning projects'}
+          </p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="gap-2">
+            <Button className="gap-2 shadow-sm">
               <Plus className="w-4 h-4" /> New Project
             </Button>
           </DialogTrigger>
@@ -224,81 +233,106 @@ export default function Projects() {
           </CardContent>
         </Card>
       ) : (projects || []).length === 0 ? (
-        <Card className="bg-muted/30 border-dashed">
-          <CardContent className="flex flex-col items-center justify-center h-48 text-center text-muted-foreground">
-            <FolderOpen className="w-12 h-12 mb-4 opacity-20" />
-            <p className="text-lg font-medium">No projects yet</p>
-            <p className="text-sm mt-1">Create your first project to organize your plans.</p>
-            <Button className="mt-4 gap-2" onClick={() => setDialogOpen(true)}>
+        <Card className="border-dashed border-2">
+          <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+            <div className="w-16 h-16 rounded-2xl bg-primary/[0.06] flex items-center justify-center mb-5">
+              <FolderOpen className="w-8 h-8 text-primary/40" />
+            </div>
+            <p className="text-lg font-semibold">No projects yet</p>
+            <p className="text-sm text-muted-foreground mt-1.5 max-w-sm">Create your first project to organize your plans and keep track of client work.</p>
+            <Button className="mt-6 gap-2" onClick={() => setDialogOpen(true)}>
               <Plus className="w-4 h-4" /> Create Project
             </Button>
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-8">
+        <div className="space-y-10">
           {sortedGroups.map(([groupName, groupProjects]) => (
             <div key={groupName}>
-              <div className="flex items-center gap-2 mb-4">
-                {groupName === 'Unassigned' ? (
-                  <FolderOpen className="w-5 h-5 text-muted-foreground" />
-                ) : (
-                  <Building2 className="w-5 h-5 text-primary" />
-                )}
-                <h2 className="text-xl font-semibold">{groupName}</h2>
-                <Badge variant="secondary" className="ml-1">{groupProjects!.length}</Badge>
+              <div className="flex items-center gap-3 mb-4">
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${groupName === 'Unassigned' ? 'bg-muted' : 'bg-primary/[0.06]'}`}>
+                  {groupName === 'Unassigned' ? (
+                    <FolderOpen className="w-4 h-4 text-muted-foreground" />
+                  ) : (
+                    <Building2 className="w-4 h-4 text-primary" />
+                  )}
+                </div>
+                <div>
+                  <h2 className="text-base font-semibold">{groupName}</h2>
+                  <p className="text-xs text-muted-foreground">{groupProjects!.length} project{groupProjects!.length !== 1 ? 's' : ''}</p>
+                </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {groupProjects!.map((project) => (
-                  <Card key={project.id} className="hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => router.push(`/projects/${project.id}`)}>
-                    <CardHeader className="pb-2">
-                      <div className="flex justify-between items-start">
-                        <CardTitle className="text-base">{project.name}</CardTitle>
-                        <Badge className={statusColors[project.status] || statusColors.active} variant="outline">
-                          {project.status.replace('_', ' ')}
-                        </Badge>
-                      </div>
-                      {project.clientName && (
-                        <p className="text-sm text-muted-foreground flex items-center gap-1.5">
-                          <Users className="w-3.5 h-3.5" /> {project.clientName}
-                        </p>
-                      )}
-                    </CardHeader>
-                    <CardContent className="pb-2 text-sm text-muted-foreground flex justify-between">
-                      <div className="flex items-center gap-1">
-                        <FileText className="w-4 h-4" /> {project.planCount} plan{project.planCount !== 1 ? 's' : ''}
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Clock className="w-4 h-4" /> {format(new Date(project.updatedAt), 'MMM d, yyyy')}
-                      </div>
-                    </CardContent>
-                    <CardFooter className="pt-2">
-                      <div className="flex gap-2 w-full" onClick={(e) => e.stopPropagation()}>
-                        <Button variant="secondary" className="flex-1" onClick={() => router.push(`/projects/${project.id}`)}>
-                          View Details
-                        </Button>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Delete project?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                This will delete "{project.name}". Plans in this project will be unassigned but not deleted.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => handleDelete(project.id, project.name)}>Delete</AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </div>
-                    </CardFooter>
-                  </Card>
-                ))}
+                {groupProjects!.map((project) => {
+                  const sc = statusConfig[project.status] || statusConfig.active;
+                  return (
+                    <Card
+                      key={project.id}
+                      className="group hover:shadow-md transition-all duration-200 cursor-pointer border-border/60 hover:border-border"
+                      onClick={() => router.push(`/projects/${project.id}`)}
+                    >
+                      <CardHeader className="pb-3">
+                        <div className="flex justify-between items-start gap-2">
+                          <CardTitle className="text-base leading-snug">{project.name}</CardTitle>
+                          <Badge variant="outline" className={`${sc.className} text-[10px] font-medium shrink-0 gap-1.5`}>
+                            <span className={`w-1.5 h-1.5 rounded-full ${sc.dot}`} />
+                            {sc.label}
+                          </Badge>
+                        </div>
+                        {project.clientName && (
+                          <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-1">
+                            <Users className="w-3 h-3 opacity-60" /> {project.clientName}
+                          </p>
+                        )}
+                      </CardHeader>
+                      <CardContent className="pb-3">
+                        <Separator className="mb-3" />
+                        <div className="flex items-center justify-between text-xs text-muted-foreground">
+                          <div className="flex items-center gap-1.5">
+                            <FileText className="w-3.5 h-3.5 opacity-60" />
+                            <span>{project.planCount} plan{project.planCount !== 1 ? 's' : ''}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <CalendarDays className="w-3.5 h-3.5 opacity-60" />
+                            <span>{format(new Date(project.updatedAt), 'MMM d, yyyy')}</span>
+                          </div>
+                        </div>
+                      </CardContent>
+                      <CardFooter className="pt-0 pb-3">
+                        <div className="flex gap-2 w-full" onClick={(e) => e.stopPropagation()}>
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            className="flex-1 text-xs gap-1.5 group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
+                            onClick={() => router.push(`/projects/${project.id}`)}
+                          >
+                            View Details
+                            <ArrowRight className="w-3 h-3" />
+                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive">
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Delete project?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  This will delete "{project.name}". Plans in this project will be unassigned but not deleted.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleDelete(project.id, project.name)}>Delete</AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      </CardFooter>
+                    </Card>
+                  );
+                })}
               </div>
             </div>
           ))}

@@ -7,8 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Download, Save, Loader2, FileText } from "lucide-react";
+import { ArrowLeft, Download, Save, Loader2, FileText, Receipt, Building2, User, Mail, Briefcase, Hash } from "lucide-react";
 import { jsPDF } from "jspdf";
 
 interface BoquItem {
@@ -265,162 +267,191 @@ export default function QuoteBuilder() {
 
   if (isError || !preview) {
     return (
-      <div className="p-8 max-w-4xl mx-auto text-center space-y-4">
-        <FileText className="w-12 h-12 text-muted-foreground mx-auto opacity-40" />
-        <h2 className="text-xl font-semibold">Plan not found</h2>
-        <p className="text-muted-foreground">We could not load the plan data for this quote.</p>
-        <Button variant="outline" onClick={() => router.push("/plans")}>
-          <ArrowLeft className="w-4 h-4 mr-2" /> Back to Plans
-        </Button>
+      <div className="p-8 max-w-4xl mx-auto">
+        <Card className="border-dashed border-2">
+          <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+            <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mb-5">
+              <FileText className="w-8 h-8 text-muted-foreground/40" />
+            </div>
+            <p className="text-lg font-semibold">Plan not found</p>
+            <p className="text-sm text-muted-foreground mt-1.5 max-w-sm">We could not load the plan data for this quote.</p>
+            <Button variant="outline" className="mt-6 gap-2" onClick={() => router.push("/plans")}>
+              <ArrowLeft className="w-4 h-4" /> Back to Plans
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="p-8 max-w-5xl mx-auto space-y-6 animate-in fade-in duration-500">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => router.push("/plans")}>
+    <div className="p-8 max-w-5xl mx-auto space-y-8 animate-in fade-in duration-500">
+      <div className="flex items-start justify-between">
+        <div className="flex items-start gap-4">
+          <Button variant="ghost" size="icon" className="mt-1 shrink-0" onClick={() => router.push("/plans")}>
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div>
+            <p className="text-[10px] uppercase tracking-[0.12em] font-semibold text-muted-foreground mb-1">Data</p>
             <h1 className="text-2xl font-bold tracking-tight">Quote Builder</h1>
-            <p className="text-muted-foreground text-sm">
+            <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1.5">
+              <Receipt className="w-3.5 h-3.5 opacity-60" />
               Plan: <span className="font-medium text-foreground">{preview.planName}</span>
+              {savedQuoteId && (
+                <Badge variant="secondary" className="ml-2 text-[10px] font-mono">
+                  Q-{String(savedQuoteId).padStart(4, "0")}
+                </Badge>
+              )}
             </p>
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={handleExportPdf} disabled={items.length === 0}>
-            <Download className="w-4 h-4 mr-2" /> Export PDF
+          <Button variant="outline" className="shadow-sm gap-2" onClick={handleExportPdf} disabled={items.length === 0}>
+            <Download className="w-4 h-4" /> Export PDF
           </Button>
-          <Button onClick={handleSave} disabled={createQuote.isPending || items.length === 0}>
+          <Button className="shadow-sm gap-2" onClick={handleSave} disabled={createQuote.isPending || items.length === 0}>
             {createQuote.isPending ? (
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              <Loader2 className="w-4 h-4 animate-spin" />
             ) : (
-              <Save className="w-4 h-4 mr-2" />
+              <Save className="w-4 h-4" />
             )}
             Save Quote
           </Button>
         </div>
       </div>
 
-      <Card>
-        <CardHeader className="bg-slate-800 text-white rounded-t-lg">
+      <Card className="overflow-hidden border-border/60">
+        <CardHeader className="bg-slate-800 text-white rounded-t-lg py-5">
           <div className="flex justify-between items-start">
             <div>
-              <CardTitle className="text-xl">One&Only</CardTitle>
+              <CardTitle className="text-xl font-bold">One&Only</CardTitle>
               <p className="text-sm text-slate-300 mt-1">Office Furniture Solutions</p>
             </div>
-            <div className="text-right text-sm">
-              <p className="font-semibold text-lg">QUOTATION</p>
-              <p className="text-slate-300">
+            <div className="text-right">
+              <p className="text-[10px] uppercase tracking-[0.12em] font-semibold text-slate-400 mb-1">Quotation</p>
+              <p className="text-sm text-slate-300">
                 {new Date().toLocaleDateString("en-IN", { year: "numeric", month: "long", day: "numeric" })}
               </p>
               {savedQuoteId && (
-                <p className="text-slate-300">Quote #: Q-{String(savedQuoteId).padStart(4, "0")}</p>
+                <p className="text-xs text-slate-400 mt-0.5 font-mono">Q-{String(savedQuoteId).padStart(4, "0")}</p>
               )}
             </div>
           </div>
         </CardHeader>
 
-        <CardContent className="p-6 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-muted/50 rounded-lg">
-            <div className="space-y-3">
-              <h3 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground">Client Details</h3>
-              <div className="space-y-2">
-                <div>
-                  <Label htmlFor="clientCompany">Company Name *</Label>
+        <CardContent className="p-6 space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <p className="text-[10px] uppercase tracking-[0.12em] font-semibold text-muted-foreground">Client Details</p>
+              <div className="space-y-3 bg-muted/20 rounded-lg p-4 border border-border/40">
+                <div className="space-y-1.5">
+                  <Label htmlFor="clientCompany" className="text-xs flex items-center gap-1.5">
+                    <Building2 className="w-3 h-3 opacity-60" /> Company Name *
+                  </Label>
                   <Input
                     id="clientCompany"
                     value={clientCompany}
                     onChange={(e) => setClientCompany(e.target.value)}
                     placeholder="Acme Corp"
+                    className="h-9"
                   />
                 </div>
-                <div>
-                  <Label htmlFor="clientName">Contact Person *</Label>
+                <div className="space-y-1.5">
+                  <Label htmlFor="clientName" className="text-xs flex items-center gap-1.5">
+                    <User className="w-3 h-3 opacity-60" /> Contact Person *
+                  </Label>
                   <Input
                     id="clientName"
                     value={clientName}
                     onChange={(e) => setClientName(e.target.value)}
                     placeholder="John Doe"
+                    className="h-9"
                   />
                 </div>
-                <div>
-                  <Label htmlFor="clientEmail">Email</Label>
+                <div className="space-y-1.5">
+                  <Label htmlFor="clientEmail" className="text-xs flex items-center gap-1.5">
+                    <Mail className="w-3 h-3 opacity-60" /> Email
+                  </Label>
                   <Input
                     id="clientEmail"
                     type="email"
                     value={clientEmail}
                     onChange={(e) => setClientEmail(e.target.value)}
                     placeholder="john@acme.com"
+                    className="h-9"
                   />
                 </div>
               </div>
             </div>
-            <div className="space-y-3">
-              <h3 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground">Project Details</h3>
-              <div className="space-y-2">
-                <div>
-                  <Label htmlFor="projectName">Project Name *</Label>
+            <div className="space-y-4">
+              <p className="text-[10px] uppercase tracking-[0.12em] font-semibold text-muted-foreground">Project Details</p>
+              <div className="space-y-3 bg-muted/20 rounded-lg p-4 border border-border/40">
+                <div className="space-y-1.5">
+                  <Label htmlFor="projectName" className="text-xs flex items-center gap-1.5">
+                    <Briefcase className="w-3 h-3 opacity-60" /> Project Name *
+                  </Label>
                   <Input
                     id="projectName"
                     value={projectName}
                     onChange={(e) => setProjectName(e.target.value)}
                     placeholder="HQ Office Redesign"
+                    className="h-9"
                   />
                 </div>
-                <div>
-                  <Label>Plan Reference</Label>
-                  <Input value={preview.planName} disabled />
+                <div className="space-y-1.5">
+                  <Label className="text-xs flex items-center gap-1.5">
+                    <Hash className="w-3 h-3 opacity-60" /> Plan Reference
+                  </Label>
+                  <Input value={preview.planName} disabled className="h-9 bg-muted/50" />
                 </div>
               </div>
             </div>
           </div>
 
           <div>
-            <h3 className="font-semibold text-lg mb-3">Bill of Quantities</h3>
+            <p className="text-[10px] uppercase tracking-[0.12em] font-semibold text-muted-foreground mb-3">Bill of Quantities</p>
             {items.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
-                <FileText className="w-10 h-10 mx-auto mb-3 opacity-30" />
-                <p>No items found in this plan.</p>
-                <p className="text-sm mt-1">Add furniture to your plan first, then generate a quote.</p>
+              <div className="text-center py-16 bg-muted/10 rounded-lg border border-dashed border-border/60">
+                <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center mx-auto mb-3">
+                  <FileText className="w-6 h-6 text-muted-foreground/40" />
+                </div>
+                <p className="font-medium text-sm">No items found in this plan</p>
+                <p className="text-xs text-muted-foreground mt-1">Add furniture to your plan first, then generate a quote.</p>
               </div>
             ) : (
-              <div className="border rounded-lg overflow-hidden">
+              <div className="border rounded-lg overflow-hidden border-border/60">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="bg-slate-800 text-white">
-                      <th className="px-3 py-2.5 text-left font-medium">#</th>
-                      <th className="px-3 py-2.5 text-left font-medium">Item</th>
-                      <th className="px-3 py-2.5 text-left font-medium">Category</th>
-                      <th className="px-3 py-2.5 text-center font-medium">Qty</th>
-                      <th className="px-3 py-2.5 text-left font-medium">Dimensions (W×D×H)</th>
-                      <th className="px-3 py-2.5 text-right font-medium">Unit Price</th>
-                      <th className="px-3 py-2.5 text-right font-medium">Total</th>
+                      <th className="px-4 py-3 text-left text-[10px] uppercase tracking-[0.08em] font-semibold">#</th>
+                      <th className="px-4 py-3 text-left text-[10px] uppercase tracking-[0.08em] font-semibold">Item</th>
+                      <th className="px-4 py-3 text-left text-[10px] uppercase tracking-[0.08em] font-semibold">Category</th>
+                      <th className="px-4 py-3 text-center text-[10px] uppercase tracking-[0.08em] font-semibold">Qty</th>
+                      <th className="px-4 py-3 text-left text-[10px] uppercase tracking-[0.08em] font-semibold">Dimensions</th>
+                      <th className="px-4 py-3 text-right text-[10px] uppercase tracking-[0.08em] font-semibold">Unit Price</th>
+                      <th className="px-4 py-3 text-right text-[10px] uppercase tracking-[0.08em] font-semibold">Total</th>
                     </tr>
                   </thead>
                   {Object.entries(groupedByCategory).map(([category, categoryItems]) => (
                     <tbody key={category}>
-                      <tr className="bg-muted/30">
-                        <td colSpan={7} className="px-3 py-1.5 font-semibold text-xs uppercase tracking-wider text-muted-foreground">
-                          {category}
+                      <tr className="bg-muted/20 border-t">
+                        <td colSpan={7} className="px-4 py-2">
+                          <span className="text-[10px] uppercase tracking-[0.12em] font-semibold text-muted-foreground">{category}</span>
                         </td>
                       </tr>
                       {categoryItems.map((item, idx) => {
                         const globalIdx = items.indexOf(item);
                         return (
-                          <tr key={`${item.catalogId}-${idx}`} className="border-t hover:bg-muted/20 transition-colors">
-                            <td className="px-3 py-2 text-muted-foreground">{globalIdx + 1}</td>
-                            <td className="px-3 py-2 font-medium">{item.name}</td>
-                            <td className="px-3 py-2 text-muted-foreground">{item.category}</td>
-                            <td className="px-3 py-2 text-center font-mono">{item.quantity}</td>
-                            <td className="px-3 py-2 font-mono text-xs">
+                          <tr key={`${item.catalogId}-${idx}`} className="border-t border-border/40 hover:bg-muted/30 transition-colors">
+                            <td className="px-4 py-2.5 text-muted-foreground text-xs">{globalIdx + 1}</td>
+                            <td className="px-4 py-2.5 font-medium text-sm">{item.name}</td>
+                            <td className="px-4 py-2.5 text-muted-foreground text-xs">{item.category}</td>
+                            <td className="px-4 py-2.5 text-center font-mono text-xs">{item.quantity}</td>
+                            <td className="px-4 py-2.5 font-mono text-xs text-muted-foreground">
                               {Math.round(item.widthCm)}×{Math.round(item.depthCm)}×{Math.round(item.heightCm)} cm
                             </td>
-                            <td className="px-3 py-2 text-right font-mono">{formatCurrency(item.unitPrice)}</td>
-                            <td className="px-3 py-2 text-right font-mono font-medium">{formatCurrency(item.totalPrice)}</td>
+                            <td className="px-4 py-2.5 text-right font-mono text-xs">{formatCurrency(item.unitPrice)}</td>
+                            <td className="px-4 py-2.5 text-right font-mono text-xs font-semibold">{formatCurrency(item.totalPrice)}</td>
                           </tr>
                         );
                       })}
@@ -433,7 +464,7 @@ export default function QuoteBuilder() {
 
           {items.length > 0 && (
             <div className="flex justify-end">
-              <div className="w-72 space-y-2 border rounded-lg p-4 bg-muted/30">
+              <div className="w-80 space-y-3 border rounded-lg p-5 bg-muted/10 border-border/60">
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Subtotal</span>
                   <span className="font-mono">{formatCurrency(subtotal)}</span>
@@ -442,17 +473,23 @@ export default function QuoteBuilder() {
                   <span className="text-muted-foreground">GST (18%)</span>
                   <span className="font-mono">{formatCurrency(gst)}</span>
                 </div>
-                <div className="border-t pt-2 mt-2">
-                  <div className="flex justify-between text-lg font-bold">
-                    <span>Grand Total</span>
-                    <span className="font-mono">{formatCurrency(total)}</span>
-                  </div>
+                <Separator />
+                <div className="flex justify-between items-center">
+                  <span className="text-base font-semibold">Grand Total</span>
+                  <span className="text-lg font-bold font-mono">{formatCurrency(total)}</span>
                 </div>
               </div>
             </div>
           )}
         </CardContent>
       </Card>
+
+      {items.length > 0 && (
+        <div className="text-xs text-muted-foreground text-center space-y-0.5 pb-4">
+          <p>This quotation is valid for 30 days from the date of issue.</p>
+          <p>Prices are inclusive of delivery and installation within city limits. Terms: 50% advance, 50% on delivery.</p>
+        </div>
+      )}
     </div>
   );
 }

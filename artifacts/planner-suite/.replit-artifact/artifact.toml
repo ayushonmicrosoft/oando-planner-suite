@@ -18,13 +18,23 @@ localPort = 24140
 run = "pnpm --filter @workspace/planner-suite run dev"
 
 [services.production]
-build = [ "pnpm", "--filter", "@workspace/planner-suite", "run", "build" ]
-publicDir = "artifacts/planner-suite/dist/public"
-serve = "static"
 
-[[services.production.rewrites]]
-from = "/*"
-to = "/index.html"
+[services.production.build]
+args = ["pnpm", "--filter", "@workspace/planner-suite", "run", "build"]
+
+[services.production.build.env]
+NODE_ENV = "production"
+
+[services.production.run]
+args = ["node", "artifacts/planner-suite/.next/standalone/artifacts/planner-suite/server.js"]
+
+[services.production.run.env]
+PORT = "24140"
+NODE_ENV = "production"
+HOSTNAME = "0.0.0.0"
+
+[services.production.health.startup]
+path = "/"
 
 [services.env]
 PORT = "24140"

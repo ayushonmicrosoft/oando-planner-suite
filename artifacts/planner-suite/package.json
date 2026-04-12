@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "next dev --turbopack -p ${PORT:-3000} -H 0.0.0.0",
-    "build": "next build",
+    "build": "next build && cp -r public .next/standalone/artifacts/planner-suite/public && cp -r .next/static .next/standalone/artifacts/planner-suite/.next/static",
     "start": "next start -p ${PORT:-3000} -H 0.0.0.0",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },

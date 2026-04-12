@@ -1,13 +1,18 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { createClient } from "@/lib/supabase/client";
-import type { User } from "@supabase/supabase-js";
+import { authClient } from "@/lib/auth-client";
 
 type UserRole = "user" | "admin";
-
 type PlanTier = "free" | "pro";
 type SubscriptionStatus = "active" | "cancelled" | "past_due" | "expired" | "pending" | null;
+
+interface AuthUser {
+  id: string;
+  name: string;
+  email: string;
+  image: string | null;
+}
 
 interface DbProfile {
   id: string;
@@ -21,19 +26,12 @@ interface DbProfile {
 }
 
 export function useAuth() {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [profile, setProfile] = useState<DbProfile | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [profileLoaded, setProfileLoaded] = useState(false);
-  const supabase = createClient();
 
-  const syncAndFetchProfile = useCallback(async (session: { access_token: string } | null) => {
-    if (!session) {
-      setProfile(null);
-      setProfileLoaded(true);
-      return;
-    }
-
+  const syncAndFetchProfile = useCallback(async () => {
     try {
       const apiBase = typeof window !== "undefined"
         ? `${window.location.origin}/api`
@@ -41,14 +39,12 @@ export function useAuth() {
 
       await fetch(`${apiBase}/users/sync`, {
         method: "POST",
-        headers: {
-          "Authorization": `Bearer ${session.access_token}`,
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
       });
 
       const res = await fetch(`${apiBase}/users/me`, {
-        headers: { "Authorization": `Bearer ${session.access_token}` },
+        credentials: "include",
       });
 
       if (res.ok) {
@@ -62,60 +58,73 @@ export function useAuth() {
   }, []);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      setIsLoaded(true);
-      if (!session) {
+    async function loadSession() {
+      try {
+        const { data } = await authClient.getSession();
+        if (data?.user) {
+          setUser(data.user as AuthUser);
+          setIsLoaded(true);
+          await syncAndFetchProfile();
+        } else {
+          setUser(null);
+          setIsLoaded(true);
+          setProfileLoaded(true);
+        }
+      } catch {
+        setUser(null);
+        setIsLoaded(true);
         setProfileLoaded(true);
       }
-      syncAndFetchProfile(session);
-    });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      setIsLoaded(true);
-      syncAndFetchProfile(session);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
+    }
+    loadSession();
+  }, [syncAndFetchProfile]);
 
   const signOut = useCallback(async () => {
-    await supabase.auth.signOut();
+    await authClient.signOut();
+    setUser(null);
     setProfile(null);
     window.location.href = "/";
   }, []);
 
-  const signInWithProvider = useCallback(
-    async (provider: "google" | "azure" | "github") => {
-      const redirectTo = `${window.location.origin}/auth/callback`;
-      await supabase.auth.signInWithOAuth({
-        provider,
-        options: { redirectTo },
-      });
-    },
-    []
-  );
-
   const signInWithEmail = useCallback(
     async (email: string, password: string) => {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
+      const { data, error } = await authClient.signIn.email({ email, password });
+      if (error) throw new Error(error.message || "Invalid email or password");
+      if (data?.user) {
+        setUser(data.user as AuthUser);
+        await syncAndFetchProfile();
+      }
     },
-    []
+    [syncAndFetchProfile]
   );
 
   const signUpWithEmail = useCallback(
     async (email: string, password: string) => {
-      const redirectTo = `${window.location.origin}/auth/callback`;
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await authClient.signUp.email({
         email,
         password,
-        options: { emailRedirectTo: redirectTo },
+        name: email.split("@")[0],
       });
-      if (error) throw error;
+      if (error) throw new Error(error.message || "Failed to create account");
+      if (data?.user) {
+        setUser(data.user as AuthUser);
+        await syncAndFetchProfile();
+      }
+    },
+    [syncAndFetchProfile]
+  );
+
+  const signInWithProvider = useCallback(
+    async (provider: "google" | "azure" | "github") => {
+      const providerMap: Record<string, string> = {
+        google: "google",
+        azure: "microsoft",
+        github: "github",
+      };
+      await authClient.signIn.social({
+        provider: providerMap[provider] as any,
+        callbackURL: "/",
+      });
     },
     []
   );

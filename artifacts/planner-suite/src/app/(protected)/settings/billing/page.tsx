@@ -8,28 +8,21 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useSubscription } from "@/hooks/use-subscription";
-import { createClient } from "@/lib/supabase/client";
 
 export default function BillingPage() {
   const { planTier, isPro, subscriptionStatus, currentPeriodEnd, isLoading, refetch } = useSubscription();
   const [cancelling, setCancelling] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const router = useRouter();
-  const supabase = createClient();
 
   const handleCancel = async () => {
     setCancelling(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
-
       const apiBase = `${window.location.origin}/api`;
       const res = await fetch(`${apiBase}/billing/cancel`, {
         method: "POST",
-        headers: {
-          "Authorization": `Bearer ${session.access_token}`,
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
       });
 
       if (res.ok) {

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { createClient } from "@/lib/supabase/client";
 
 export type PlanTier = "free" | "pro";
 export type SubscriptionStatus = "active" | "cancelled" | "past_due" | "expired" | "pending" | null;
@@ -25,22 +24,15 @@ interface UseSubscriptionReturn {
 export function useSubscription(): UseSubscriptionReturn {
   const [billing, setBilling] = useState<BillingInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const supabase = createClient();
 
   const fetchBilling = useCallback(async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        setIsLoading(false);
-        return;
-      }
-
       const apiBase = typeof window !== "undefined"
         ? `${window.location.origin}/api`
         : "/api";
 
       const res = await fetch(`${apiBase}/billing`, {
-        headers: { "Authorization": `Bearer ${session.access_token}` },
+        credentials: "include",
       });
 
       if (res.ok) {

@@ -10,17 +10,11 @@ router.post(
   "/users/sync",
   asyncHandler(async (req, res) => {
     const userId = (req as any).userId as string;
-    const supaUser = (req as any).user;
+    const authUser = (req as any).user;
 
-    const email = supaUser.email ?? "";
-    const displayName =
-      supaUser.user_metadata?.full_name ??
-      supaUser.user_metadata?.name ??
-      email.split("@")[0];
-    const avatarUrl =
-      supaUser.user_metadata?.avatar_url ??
-      supaUser.user_metadata?.picture ??
-      null;
+    const email = authUser.email ?? "";
+    const displayName = authUser.name ?? email.split("@")[0];
+    const avatarUrl = authUser.image ?? null;
 
     const [existingById] = await db
       .select()
@@ -50,9 +44,10 @@ router.post(
           .returning();
         res.json(migrated);
       } else {
+        const isAdmin = email === "ayush@oando.co.in";
         const [created] = await db
           .insert(usersTable)
-          .values({ id: userId, email, displayName, avatarUrl, role: "user" })
+          .values({ id: userId, email, displayName, avatarUrl, role: isAdmin ? "admin" : "user" })
           .returning();
         res.status(201).json(created);
       }

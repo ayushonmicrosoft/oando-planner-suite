@@ -1,8 +1,10 @@
 import express, { type Express, type Request, type Response, type NextFunction } from "express";
 import cors from "cors";
 import pinoHttp from "pino-http";
+import { toNodeHandler } from "better-auth/node";
 import router from "./routes";
 import { logger } from "./lib/logger";
+import { auth } from "./lib/auth";
 import { seedDatabase } from "./lib/seed";
 import { errorHandler } from "./middlewares/error-handler";
 
@@ -29,6 +31,9 @@ app.use(
 );
 
 app.use(cors({ credentials: true, origin: true }));
+
+app.all("/api/auth/{*splat}", toNodeHandler(auth));
+
 app.use("/api/webhooks/razorpay", express.json({
   limit: "2mb",
   verify: (req: any, _res, buf) => {

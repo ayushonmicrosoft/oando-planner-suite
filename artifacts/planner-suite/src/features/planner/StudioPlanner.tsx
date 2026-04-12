@@ -1,3 +1,5 @@
+"use client";
+
 import { Suspense, lazy, useCallback, useEffect, useRef } from "react";
 import type { Editor, TLComponents, TLUiOverrides } from "tldraw";
 import "tldraw/tldraw.css";

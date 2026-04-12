@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useState, useCallback } from "react";
 import { usePlannerStore } from "./planner-store";
 import { Box, Settings2, Ruler, Palette, RotateCw, Move, Eye, EyeOff, Lock, Unlock, Layers, ChevronDown, ChevronRight, Trash2, Copy, Type, MoveUp, MoveDown } from "lucide-react";

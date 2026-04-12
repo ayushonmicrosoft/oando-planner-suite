@@ -1,8 +1,8 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
-
-const BASE = import.meta.env.BASE_URL;
 
 interface HeroProps {
   onGetStarted: () => void;
@@ -13,7 +13,7 @@ export default function Hero({ onGetStarted }: HeroProps) {
     <section className="relative overflow-hidden min-h-[70vh] flex items-center">
       <div className="absolute inset-0">
         <img
-          src={`${BASE}hero/titan-hero.webp`}
+          src={`/hero/titan-hero.webp`}
           alt="Workspace by One&Only"
           className="w-full h-full object-cover"
         />

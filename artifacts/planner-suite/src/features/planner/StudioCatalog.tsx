@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useMemo, useCallback } from "react";
 import { Search, X, ChevronRight, Plus, Package, Star, Armchair, Table2, MonitorSmartphone, Archive, BookOpen, Puzzle, LayoutGrid, GripVertical } from "lucide-react";
 import { usePlannerStore, type CatalogProduct } from "./planner-store";

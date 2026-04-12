@@ -1,4 +1,5 @@
-const BASE = import.meta.env.BASE_URL;
+"use client";
+
 
 const logos = [
   { name: "L&T", file: "LandT.webp" },
@@ -25,7 +26,7 @@ export default function ClientLogos() {
           {[...logos, ...logos].map((logo, i) => (
             <div key={i} className="flex items-center justify-center px-8 shrink-0">
               <img
-                src={`${BASE}ClientLogos/${logo.file}`}
+                src={`/ClientLogos/${logo.file}`}
                 alt={logo.name}
                 className="h-10 w-auto opacity-50 hover:opacity-100 transition-opacity grayscale hover:grayscale-0"
                 loading="lazy"

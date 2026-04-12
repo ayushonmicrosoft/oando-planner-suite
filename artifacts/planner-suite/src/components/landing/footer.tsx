@@ -1,4 +1,5 @@
-const BASE = import.meta.env.BASE_URL;
+"use client";
+
 
 export default function Footer() {
   return (
@@ -6,7 +7,7 @@ export default function Footer() {
       <div className="max-w-[1200px] mx-auto px-5">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
-            <img src={`${BASE}logo-v2-white.webp`} alt="One&Only" className="h-6 w-auto" />
+            <img src={`/logo-v2-white.webp`} alt="One&Only" className="h-6 w-auto" />
           </div>
           <div className="flex flex-wrap gap-6 text-sm">
             <span>Floor Plans</span>

@@ -1,3 +1,5 @@
+"use client";
+
 import { formatDistanceToNow } from "date-fns";
 import {
   AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle,

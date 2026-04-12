@@ -1,13 +1,16 @@
-import { Link, useLocation } from 'wouter';
+"use client";
+
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { LayoutDashboard, FileSignature, Grid3X3, Box, Library, FolderOpen, Activity, Pencil, LayoutGrid, Shapes, ImagePlus, LayoutTemplate, LogOut, Settings, ChevronDown, Map, DraftingCompass, Layers3 } from 'lucide-react';
 import { Sidebar, SidebarContent, SidebarHeader, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider, SidebarFooter } from '@/components/ui/sidebar';
 import { useHealthCheck, getHealthCheckQueryKey } from '@workspace/api-client-react';
-import { useUser, useClerk } from '@clerk/react';
+import { useUser, useClerk } from '@clerk/nextjs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
-  const [location] = useLocation();
+  const location = usePathname();
   const { data: health, isError } = useHealthCheck({ query: { queryKey: getHealthCheckQueryKey(), refetchInterval: 30000 } });
   const { user, isLoaded } = useUser();
   const { signOut } = useClerk();
@@ -67,7 +70,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                     Settings
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => signOut({ redirectUrl: window.location.origin + import.meta.env.BASE_URL })}>
+                  <DropdownMenuItem onClick={() => signOut({ redirectUrl: window.location.origin + "/" })}>
                     <LogOut className="w-4 h-4 mr-2" />
                     Log Out
                   </DropdownMenuItem>
@@ -75,7 +78,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               </DropdownMenu>
             ) : (
               <div className="flex items-center gap-2.5 font-bold text-lg tracking-tight">
-                <img src={`${import.meta.env.BASE_URL}logo-v2-white.webp`} alt="One&Only" className="h-6 w-auto" />
+                <img src={"/logo-v2-white.webp"} alt="One&Only" className="h-6 w-auto" />
                 <span className="text-sidebar-foreground">One&Only</span>
               </div>
             )}

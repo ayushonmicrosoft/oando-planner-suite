@@ -1,3 +1,5 @@
+"use client";
+
 interface ThumbnailItem {
   x: number;
   y: number;

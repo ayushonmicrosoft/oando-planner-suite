@@ -22,8 +22,7 @@ function isUnauthorizedError(error: unknown): boolean {
 
 function handleUnauthorized(error: unknown) {
   if (isUnauthorizedError(error)) {
-    const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
-    const signInPath = `${basePath}/sign-in`;
+    const signInPath = `/sign-in`;
     if (!window.location.pathname.startsWith(signInPath)) {
       window.location.href = signInPath;
     }

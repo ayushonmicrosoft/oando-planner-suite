@@ -1,3 +1,5 @@
+"use client";
+
 import { Component, type ReactNode } from "react";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -42,7 +44,7 @@ export class ErrorBoundary extends Component<Props, State> {
               <p className="text-muted-foreground text-sm">
                 An unexpected error occurred while loading this section. Please try again.
               </p>
-              {this.state.error && import.meta.env.DEV && (
+              {this.state.error && process.env.NODE_ENV !== 'production' && (
                 <pre className="text-xs text-muted-foreground bg-muted p-3 rounded-md w-full overflow-auto max-h-24">
                   {this.state.error.message}
                 </pre>

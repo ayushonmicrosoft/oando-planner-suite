@@ -1,3 +1,5 @@
+"use client";
+
 import { useCallback, useState } from "react";
 import {
   Undo2, Redo2, Grid3X3, MousePointer2, Pencil, Hand, Eraser,
@@ -12,7 +14,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { usePlannerStore, type CanvasToolMode } from "./planner-store";
 import { cn } from "@/lib/utils";
-import { useLocation } from "wouter";
+import { useRouter } from "next/navigation";
 
 const TOOL_MAP: Record<string, string> = {
   select: "select",
@@ -90,7 +92,7 @@ export function StudioToolbar() {
     showGrid, toggleGrid, show3D, toggle3D, showMinimap, toggleMinimap,
     zoom, setZoom,
   } = usePlannerStore();
-  const [, setLocation] = useLocation();
+  const router = useRouter();
   const [showExportMenu, setShowExportMenu] = useState(false);
 
   const handleUndo = () => editor?.undo();
@@ -221,7 +223,7 @@ export function StudioToolbar() {
   return (
     <div className="absolute top-0 left-0 right-0 z-30 flex h-12 items-center border-b bg-white/95 backdrop-blur-sm px-2 shadow-sm">
       <button
-        onClick={() => setLocation("/")}
+        onClick={() => router.push("/")}
         className="flex h-8 w-8 items-center justify-center rounded-md text-[#1B2940]/60 hover:bg-[#1F3653]/10 hover:text-[#1F3653] mr-1"
         title="Back to Dashboard"
       >
@@ -229,7 +231,7 @@ export function StudioToolbar() {
       </button>
 
       <div className="flex items-center gap-0.5 mr-2">
-        <img src={`${import.meta.env.BASE_URL}logo-v2-white.webp`} alt="" className="h-5 w-auto invert opacity-80" />
+        <img src={`/logo-v2-white.webp`} alt="" className="h-5 w-auto invert opacity-80" />
       </div>
 
       <button

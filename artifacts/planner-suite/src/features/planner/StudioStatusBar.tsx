@@ -1,3 +1,5 @@
+"use client";
+
 import { usePlannerStore } from "./planner-store";
 import { Circle, Square, MousePointer2, Pencil, Hand, Eraser, Type, Frame, StickyNote, ArrowUpRight, Minus, Highlighter } from "lucide-react";
 import { cn } from "@/lib/utils";

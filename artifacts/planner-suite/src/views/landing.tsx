@@ -15,24 +15,24 @@ export default function Landing() {
   return (
     <div className="min-h-screen bg-[#070D12]">
       <header>
-        <nav className="fixed top-0 left-0 right-0 z-50 bg-[#070D12]/60 backdrop-blur-xl border-b border-white/[0.04]" aria-label="Main navigation">
+        <nav className="fixed top-0 left-0 right-0 z-50 bg-[#070D12]/70 backdrop-blur-2xl border-b border-white/[0.04] transition-all duration-300" aria-label="Main navigation">
           <div className="max-w-[1200px] mx-auto px-5 h-16 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <img src={"/logo-v2-white.webp"} alt="One&Only" className="h-6 w-auto" width={120} height={24} />
             </div>
-            <div className="hidden md:flex items-center gap-8 text-[13px] text-white/50 font-medium">
-              <button onClick={handleGetStarted} className="hover:text-white transition-colors">Planner</button>
-              <button onClick={handleGetStarted} className="hover:text-white transition-colors">Products</button>
-              <button onClick={handleGetStarted} className="hover:text-white transition-colors">Solutions</button>
-              <button onClick={handleGetStarted} className="hover:text-white transition-colors">Portfolio</button>
+            <div className="hidden md:flex items-center gap-8 text-[13px] text-white/40 font-medium">
+              <button onClick={handleGetStarted} className="hover:text-white/80 transition-colors duration-300">Planner</button>
+              <button onClick={handleGetStarted} className="hover:text-white/80 transition-colors duration-300">Products</button>
+              <button onClick={handleGetStarted} className="hover:text-white/80 transition-colors duration-300">Solutions</button>
+              <button onClick={handleGetStarted} className="hover:text-white/80 transition-colors duration-300">Portfolio</button>
             </div>
             <div className="flex items-center gap-3">
-              <button onClick={() => router.push("/sign-up")} className="text-[13px] text-white/60 hover:text-white transition-colors font-medium px-4 py-1.5">
+              <button onClick={() => router.push("/sign-up")} className="text-[13px] text-white/50 hover:text-white transition-colors duration-300 font-medium px-4 py-1.5">
                 Sign In
               </button>
               <button
                 onClick={() => router.push("/sign-up")}
-                className="text-[13px] bg-white text-[#0B1324] px-5 py-2 rounded-full hover:bg-white/90 transition-colors font-semibold"
+                className="text-[13px] bg-white text-[#0B1324] px-5 py-2 rounded-full hover:bg-white/90 transition-all duration-300 font-semibold shadow-[0_0_20px_rgba(255,255,255,0.08)]"
               >
                 Get Started
               </button>

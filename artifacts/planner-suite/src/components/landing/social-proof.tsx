@@ -27,10 +27,10 @@ const testimonials = [
 ];
 
 const stats = [
-  { value: "120+", label: "Organisations" },
-  { value: "259+", label: "Projects Delivered" },
-  { value: "15+", label: "Years Experience" },
-  { value: "18+", label: "Sectors Served" },
+  { value: "120+", label: "Organisations", color: "from-[#5488B6] to-[#77A2C9]" },
+  { value: "259+", label: "Projects Delivered", color: "from-emerald-400 to-emerald-300" },
+  { value: "15+", label: "Years Experience", color: "from-amber-400 to-amber-300" },
+  { value: "18+", label: "Sectors Served", color: "from-violet-400 to-violet-300" },
 ];
 
 const reviews = [
@@ -60,10 +60,14 @@ export default function SocialProof() {
   }, []);
 
   return (
-    <section className="py-24 lg:py-32 bg-[#0A1018]" id="testimonials" aria-label="Testimonials and social proof">
-      <div className="max-w-[1200px] mx-auto px-5">
+    <section className="py-28 lg:py-36 bg-[#0A1018] relative" id="testimonials" aria-label="Testimonials and social proof">
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#5488B6]/[0.03] rounded-full blur-[150px]" />
+      </div>
+
+      <div className="max-w-[1200px] mx-auto px-5 relative">
         <motion.div
-          className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-20"
+          className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-24"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -71,8 +75,8 @@ export default function SocialProof() {
         >
           {stats.map((s) => (
             <div key={s.label} className="text-center">
-              <div className="text-4xl md:text-5xl font-bold bg-gradient-to-b from-white to-white/50 bg-clip-text text-transparent">{s.value}</div>
-              <div className="text-sm text-white/30 mt-2 font-medium tracking-wide">{s.label}</div>
+              <div className={`text-4xl md:text-[56px] font-bold bg-gradient-to-b ${s.color} bg-clip-text text-transparent leading-tight`}>{s.value}</div>
+              <div className="text-sm text-white/25 mt-3 font-medium tracking-wide">{s.label}</div>
             </div>
           ))}
         </motion.div>
@@ -85,18 +89,19 @@ export default function SocialProof() {
           transition={{ duration: 0.6 }}
         >
           <p className="text-sm font-medium tracking-[0.2em] uppercase text-[#5488B6] mb-4">Testimonials</p>
-          <h2 className="text-[32px] md:text-[44px] font-semibold text-white mb-4 tracking-[-0.02em]">
+          <h2 className="text-[32px] md:text-[44px] font-bold text-white mb-4 tracking-[-0.02em]">
             Trusted by Leading Enterprises
           </h2>
-          <p className="text-[17px] text-white/40">
+          <p className="text-[17px] text-white/35">
             From L&amp;T to Tata Motors — see how top organisations plan their workspaces.
           </p>
         </motion.div>
 
         <div className="max-w-[800px] mx-auto mb-20">
-          <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-8 md:p-12 min-h-[220px] backdrop-blur-sm">
+          <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-8 md:p-12 min-h-[220px] backdrop-blur-sm relative overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#5488B6]/20 to-transparent" />
             <div className="flex items-start gap-3 mb-6">
-              <svg className="w-8 h-8 text-[#5488B6]/30 shrink-0" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <svg className="w-8 h-8 text-[#5488B6]/20 shrink-0" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/>
               </svg>
             </div>
@@ -108,12 +113,12 @@ export default function SocialProof() {
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.4 }}
               >
-                <blockquote className="text-[17px] md:text-[19px] text-white/60 leading-relaxed italic mb-8">
+                <blockquote className="text-[17px] md:text-[19px] text-white/55 leading-relaxed italic mb-8">
                   &ldquo;{testimonials[active].quote}&rdquo;
                 </blockquote>
                 <div>
                   <div className="font-semibold text-white text-[15px]">{testimonials[active].name}</div>
-                  <div className="text-[13px] text-white/30 mt-0.5">{testimonials[active].title}</div>
+                  <div className="text-[13px] text-white/25 mt-1">{testimonials[active].title}</div>
                 </div>
               </motion.div>
             </AnimatePresence>
@@ -137,7 +142,7 @@ export default function SocialProof() {
           {reviews.map((review, i) => (
             <motion.div
               key={i}
-              className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 hover:bg-white/[0.04] transition-all duration-300"
+              className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 hover:bg-white/[0.04] hover:border-white/[0.10] transition-all duration-500"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -145,7 +150,7 @@ export default function SocialProof() {
             >
               <StarRating count={review.stars} />
               <h3 className="font-semibold text-white text-[15px] mt-4 mb-2">{review.title}</h3>
-              <p className="text-[13px] text-white/40 leading-relaxed mb-4">{review.text}</p>
+              <p className="text-[13px] text-white/35 leading-relaxed mb-4">{review.text}</p>
               <p className="text-[12px] text-white/20 font-medium">{review.reviewer}</p>
             </motion.div>
           ))}

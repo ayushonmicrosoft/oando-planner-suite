@@ -87,7 +87,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .animate-hero-pan {
+  .animate-hero-pan,
+  .animate-marquee,
+  .animate-marquee-reverse {
     animation: none;
   }
 }

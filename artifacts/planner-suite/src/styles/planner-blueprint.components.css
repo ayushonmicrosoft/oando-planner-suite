@@ -1,0 +1,291 @@
+/* Workspace Planner component styles */
+.planner-shell {
+  position: relative;
+  overflow: hidden;
+  background: var(--planner-shell-bg);
+}
+
+.planner-shell-card {
+  border: 1px solid var(--planner-shell-border);
+  background: var(--planner-panel-strong);
+  box-shadow:
+    var(--planner-shell-glow),
+    var(--planner-shell-shadow);
+  backdrop-filter: none;
+}
+
+.planner-surface {
+  border: 1px solid var(--planner-panel-border);
+  background: var(--planner-panel-bg);
+  box-shadow: var(--planner-panel-shadow);
+  backdrop-filter: none;
+}
+
+.planner-shell-chip {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--planner-shell-muted);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.planner-rail-section {
+  border: 1px solid color-mix(in srgb, white 10%, transparent);
+  background: color-mix(in srgb, var(--surface-inverse-soft) 80%, black);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.planner-shell-stat {
+  border: 1px solid color-mix(in srgb, white 8%, transparent);
+  background: var(--planner-shell-stat);
+  color: var(--planner-shell-text);
+  backdrop-filter: blur(16px);
+}
+
+.planner-stage {
+  border: 1px solid var(--planner-stage-border);
+  background: var(--planner-stage-bg);
+  box-shadow: var(--planner-stage-shadow);
+}
+
+.planner-shell .planner-surface {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--surface-inverse-soft) 88%, black) 0%,
+    color-mix(in srgb, var(--surface-inverse) 94%, black) 100%
+  );
+}
+
+.planner-toolbar-band {
+  display: flex;
+  justify-content: stretch;
+  width: 100%;
+}
+
+.planner-workspace {
+  position: relative;
+  order: 1;
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  flex-direction: column;
+  overflow-y: auto;
+  background: transparent;
+}
+
+.planner-stage-layout {
+  position: relative;
+  display: flex;
+  flex: 1;
+  align-items: stretch;
+  justify-content: stretch;
+  min-height: clamp(420px, calc(100dvh - 240px), 760px);
+  padding: 0 16px 24px;
+  overflow: hidden;
+}
+
+.planner-stage-shell {
+  position: relative;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  align-items: stretch;
+  justify-content: stretch;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--planner-stage-border);
+  border-radius: 32px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.015));
+  box-shadow: 0 28px 80px rgba(1, 5, 10, 0.24);
+}
+
+.planner-stage-grid {
+  background: var(--planner-stage-grid);
+}
+
+.planner-stage-viewport {
+  position: relative;
+  display: flex;
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 30px;
+  background: radial-gradient(circle at top, rgba(46, 58, 71, 0.92) 0%, rgba(22, 30, 40, 0.96) 40%, rgba(8, 12, 18, 0.98) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 24px 60px rgba(1, 5, 10, 0.28);
+}
+
+.planner-stage-viewport::before {
+  content: "";
+  position: absolute;
+  inset: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.planner-stage-topbar,
+.planner-stage-bottombar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  padding-left: 20px;
+  padding-right: 20px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+.planner-stage-topbar {
+  top: 0;
+  align-items: flex-start;
+  padding-top: 20px;
+}
+
+.planner-stage-bottombar {
+  bottom: 0;
+  align-items: flex-end;
+  padding-bottom: 20px;
+}
+
+.planner-stage-topline {
+  position: absolute;
+  top: 20px;
+  left: 24px;
+  right: 24px;
+  z-index: 2;
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.12), transparent);
+  pointer-events: none;
+}
+
+.planner-stage-canvas-pad {
+  position: absolute;
+  inset: 0;
+  padding: 0;
+}
+
+.planner-stage-canvas-pad--2d,
+.planner-stage-canvas-pad--3d {
+  padding-top: 64px;
+}
+
+.planner-utility-panel {
+  border: 1px solid var(--planner-panel-border);
+  background: var(--planner-utility-panel);
+  box-shadow: var(--planner-panel-shadow);
+}
+
+.prop-input {
+  width: 100%;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--planner-input-border);
+  border-radius: 0.75rem;
+  background: linear-gradient(
+    180deg,
+    var(--planner-input-bg-top) 0%,
+    var(--planner-input-bg-bottom) 100%
+  );
+  color: var(--planner-input-text);
+  font-size: 0.8125rem;
+  outline: none;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s,
+    transform 0.15s;
+}
+
+.prop-input:focus {
+  border-color: var(--planner-input-focus);
+  box-shadow: var(--focus-ring);
+  transform: translateY(-1px);
+}
+
+.icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+  border-radius: 0.75rem;
+  color: var(--planner-icon);
+  transition: all 0.15s;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+}
+
+.icon-btn:hover {
+  background-color: var(--planner-icon-hover-bg);
+  color: var(--planner-icon-hover-text);
+}
+
+@media (min-width: 640px) {
+  .planner-stage-layout {
+    min-height: clamp(520px, calc(100dvh - 250px), 820px);
+    padding: 0 24px 28px;
+  }
+
+  .planner-stage-shell {
+    border-radius: 36px;
+  }
+
+  .planner-stage-topbar,
+  .planner-stage-bottombar {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  .planner-stage-topbar {
+    padding-top: 24px;
+  }
+
+  .planner-stage-bottombar {
+    padding-bottom: 24px;
+  }
+
+  .planner-stage-canvas-pad {
+    padding: 0;
+  }
+
+  .planner-stage-canvas-pad--2d,
+  .planner-stage-canvas-pad--3d {
+    padding-top: 72px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .planner-stage-layout {
+    min-height: clamp(620px, calc(100dvh - 240px), 900px);
+    padding: 0 48px 48px;
+    max-width: 1600px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .planner-stage-canvas-pad {
+    padding: 0;
+  }
+
+  .planner-stage-canvas-pad--2d,
+  .planner-stage-canvas-pad--3d {
+    padding-top: 80px;
+  }
+}

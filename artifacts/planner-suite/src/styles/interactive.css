@@ -1,0 +1,106 @@
+/* ── interactive.css ── */
+/* Manages arbitrary transition durations, interactive hover state timings, and bespoke animations */
+
+@utility duration-fast {
+  transition-duration: var(--motion-fast);
+}
+
+@utility duration-base {
+  transition-duration: var(--motion-base);
+}
+
+@utility duration-slow {
+  transition-duration: var(--motion-slow);
+}
+
+@utility ease-standard {
+  transition-timing-function: var(--ease-standard);
+}
+
+@utility hover-text-subtle {
+  &:hover {
+    color: var(--text-subtle);
+  }
+}
+
+@utility hover-text-muted {
+  &:hover {
+    color: var(--text-muted);
+  }
+}
+
+@utility hover-text-strong {
+  &:hover {
+    color: var(--text-strong);
+  }
+}
+
+/* ── Keyframes (imported from legacy theme-overrides) ── */
+
+@keyframes fadein {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes hero-pan {
+  0% { transform: scale(1.02) translate3d(0, 0, 0); }
+  50% { transform: scale(1.08) translate3d(-1.2%, -1%, 0); }
+  100% { transform: scale(1.12) translate3d(-2%, -1.6%, 0); }
+}
+
+@keyframes marquee-left {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes marquee-right {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── Animation utilities ── */
+
+@utility animate-marquee {
+  animation: marquee-left 90s linear infinite;
+  will-change: transform;
+}
+
+@utility animate-marquee-reverse {
+  animation: marquee-right 90s linear infinite;
+  will-change: transform;
+}
+
+@utility animate-hero-pan {
+  animation: hero-pan 12s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-hero-pan {
+    animation: none;
+  }
+}
+
+@utility animate-fadein {
+  animation: fadein 0.25s ease-out both;
+}
+
+/* scale-103 — Tailwind doesn't include this by default */
+.hover\:scale-103:hover {
+  transform: scale(1.03);
+}
+
+.group:hover .group-hover\:scale-103 {
+  transform: scale(1.03);
+}

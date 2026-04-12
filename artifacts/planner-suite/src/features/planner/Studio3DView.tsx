@@ -142,17 +142,17 @@ export function Studio3DView() {
   return (
     <div className="absolute top-12 right-0 bottom-8 z-25 w-[50%] min-w-[400px] border-l bg-white shadow-2xl flex flex-col">
       <div className="flex items-center justify-between px-3 py-2 border-b bg-white">
-        <span className="text-xs font-bold text-[#1F3653]">3D Preview</span>
+        <span className="text-xs font-bold text-navy">3D Preview</span>
         <div className="flex items-center gap-1">
-          <button onClick={toggle3D} className="h-7 w-7 flex items-center justify-center rounded-md hover:bg-[#1F3653]/10">
-            <X className="h-3.5 w-3.5 text-[#1B2940]/50" />
+          <button onClick={toggle3D} className="h-7 w-7 flex items-center justify-center rounded-md hover:bg-navy/10">
+            <X className="h-3.5 w-3.5 text-navy-text/50" />
           </button>
         </div>
       </div>
-      <div className="flex-1 bg-gradient-to-b from-[#e8edf2] to-[#d0d8e2]">
+      <div className="flex-1 bg-gradient-to-b from-brand-canvas to-brand-border-light">
         <Suspense fallback={
           <div className="flex h-full items-center justify-center">
-            <Loader2 className="h-6 w-6 animate-spin text-[#1F3653]/30" />
+            <Loader2 className="h-6 w-6 animate-spin text-navy/30" />
           </div>
         }>
           <Canvas shadows gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping }}>
@@ -160,7 +160,7 @@ export function Studio3DView() {
           </Canvas>
         </Suspense>
       </div>
-      <div className="px-3 py-1.5 border-t bg-white text-[10px] text-[#1B2940]/40 flex items-center gap-4">
+      <div className="px-3 py-1.5 border-t bg-white text-[10px] text-navy-text/40 flex items-center gap-4">
         <span>Orbit: drag</span>
         <span>Zoom: scroll</span>
         <span>Pan: right-drag</span>

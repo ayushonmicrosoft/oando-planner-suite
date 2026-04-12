@@ -8,7 +8,7 @@ interface CTAProps {
 
 export default function CTA({ onGetStarted }: CTAProps) {
   return (
-    <section className="py-20 lg:py-28 bg-gradient-to-r from-[#0B1324] to-[#1F3653] relative overflow-hidden">
+    <section className="py-20 lg:py-28 bg-gradient-to-r from-navy-dark to-navy relative overflow-hidden">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-10 left-1/4 w-40 h-40 bg-white/5 rounded-full blur-2xl" />
         <div className="absolute bottom-10 right-1/4 w-60 h-60 bg-white/5 rounded-full blur-3xl" />
@@ -33,7 +33,7 @@ export default function CTA({ onGetStarted }: CTAProps) {
             <Button
               size="lg"
               onClick={onGetStarted}
-              className="text-[16px] px-8 py-3 h-auto gap-2 bg-white text-[#1F3653] hover:bg-white/90 rounded-full shadow-lg"
+              className="text-[16px] px-8 py-3 h-auto gap-2 bg-white text-navy hover:bg-white/90 rounded-full shadow-lg"
             >
               Start Designing Now <ArrowRight className="w-5 h-5" />
             </Button>

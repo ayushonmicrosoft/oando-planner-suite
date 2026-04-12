@@ -14,7 +14,7 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-background">
-      <nav className="sticky top-0 z-50 bg-[#0B1324]/95 backdrop-blur-md border-b border-white/10">
+      <nav className="sticky top-0 z-50 bg-navy-dark/95 backdrop-blur-md border-b border-white/10">
         <div className="max-w-[1200px] mx-auto px-5 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <img src={"/logo-v2-white.webp"} alt="One&Only" className="h-7 w-auto" />
@@ -31,7 +31,7 @@ export default function Landing() {
             </button>
             <button
               onClick={() => router.push("/sign-up")}
-              className="text-sm bg-white text-[#1F3653] px-5 py-2 rounded-full hover:bg-white/90 transition-colors font-medium"
+              className="text-sm bg-white text-navy px-5 py-2 rounded-full hover:bg-white/90 transition-colors font-medium"
             >
               Guided Planner
             </button>

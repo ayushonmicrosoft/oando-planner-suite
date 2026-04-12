@@ -144,26 +144,26 @@ export function StudioCatalog() {
     <div className="absolute top-12 left-0 bottom-8 z-20 w-[300px] border-r bg-white flex flex-col shadow-lg">
       <div className="px-3 pt-3 pb-2 border-b space-y-2">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-bold text-[#1F3653] flex items-center gap-1.5">
+          <h3 className="text-sm font-bold text-navy flex items-center gap-1.5">
             <Package className="h-4 w-4" />
             Furniture Catalog
           </h3>
-          <span className="text-[10px] font-semibold text-[#1B2940]/40 bg-[#1F3653]/5 px-2 py-0.5 rounded-full">
+          <span className="text-[10px] font-semibold text-navy-text/40 bg-navy/5 px-2 py-0.5 rounded-full">
             {totalCount} items
           </span>
         </div>
         <div className="relative">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#1B2940]/30" />
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-navy-text/30" />
           <input
             type="text"
             placeholder="Search furniture..."
             value={catalogSearch}
             onChange={(e) => setCatalogSearch(e.target.value)}
-            className="w-full h-8 pl-8 pr-8 text-xs rounded-lg border bg-[#f8f9fb] outline-none focus:border-[#1F3653] focus:bg-white transition-all"
+            className="w-full h-8 pl-8 pr-8 text-xs rounded-lg border bg-brand-surface outline-none focus:border-navy focus:bg-white transition-all"
           />
           {catalogSearch && (
             <button onClick={() => setCatalogSearch("")} className="absolute right-2 top-1/2 -translate-y-1/2">
-              <X className="h-3 w-3 text-[#1B2940]/30 hover:text-[#1B2940]/60" />
+              <X className="h-3 w-3 text-navy-text/30 hover:text-navy-text/60" />
             </button>
           )}
         </div>
@@ -174,7 +174,7 @@ export function StudioCatalog() {
           onClick={() => setCatalogTab("all")}
           className={cn(
             "px-2 py-1 rounded-md text-[10px] font-semibold whitespace-nowrap transition-all flex items-center gap-1",
-            catalogTab === "all" ? "bg-[#1F3653] text-white" : "bg-[#1F3653]/5 text-[#1B2940]/60 hover:bg-[#1F3653]/10"
+            catalogTab === "all" ? "bg-navy text-white" : "bg-navy/5 text-navy-text/60 hover:bg-navy/10"
           )}
         >
           <LayoutGrid className="h-3 w-3" /> All
@@ -188,7 +188,7 @@ export function StudioCatalog() {
               onClick={() => setCatalogTab(catalogTab === cat ? "all" : cat)}
               className={cn(
                 "px-2 py-1 rounded-md text-[10px] font-semibold whitespace-nowrap transition-all flex items-center gap-1",
-                catalogTab === cat ? "text-white" : "text-[#1B2940]/60 hover:bg-[#1F3653]/10",
+                catalogTab === cat ? "text-white" : "text-navy-text/60 hover:bg-navy/10",
               )}
               style={catalogTab === cat ? { background: meta.color } : { background: `${meta.color}08` }}
             >
@@ -201,12 +201,12 @@ export function StudioCatalog() {
       <div className="flex-1 overflow-y-auto p-2">
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
-            <div className="h-6 w-6 border-2 border-[#1F3653]/20 border-t-[#1F3653] rounded-full animate-spin" />
+            <div className="h-6 w-6 border-2 border-navy/20 border-t-navy rounded-full animate-spin" />
           </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-12">
-            <Package className="h-8 w-8 mx-auto text-[#1B2940]/15 mb-2" />
-            <p className="text-xs text-[#1B2940]/40">No items found</p>
+            <Package className="h-8 w-8 mx-auto text-navy-text/15 mb-2" />
+            <p className="text-xs text-navy-text/40">No items found</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-1.5">
@@ -219,19 +219,19 @@ export function StudioCatalog() {
                 className={cn(
                   "relative flex flex-col items-center p-2 rounded-xl border transition-all text-center group",
                   hoveredItem === item.id
-                    ? "border-[#1F3653]/30 bg-[#1F3653]/5 shadow-sm -translate-y-0.5"
-                    : "border-transparent hover:border-[#1F3653]/15 hover:bg-[#f8f9fb]"
+                    ? "border-navy/30 bg-navy/5 shadow-sm -translate-y-0.5"
+                    : "border-transparent hover:border-navy/15 hover:bg-brand-surface"
                 )}
               >
                 <FurnitureTopView item={item} size={56} />
-                <span className="mt-1.5 text-[11px] font-medium text-[#1B2940] leading-tight line-clamp-2 w-full">
+                <span className="mt-1.5 text-[11px] font-medium text-navy-text leading-tight line-clamp-2 w-full">
                   {item.name}
                 </span>
-                <span className="text-[9px] text-[#1B2940]/40 mt-0.5">
+                <span className="text-[9px] text-navy-text/40 mt-0.5">
                   {item.widthCm}×{item.depthCm} cm
                 </span>
                 {hoveredItem === item.id && (
-                  <div className="absolute -top-1 -right-1 bg-[#1F3653] text-white rounded-full p-0.5 shadow-md">
+                  <div className="absolute -top-1 -right-1 bg-navy text-white rounded-full p-0.5 shadow-md">
                     <Plus className="h-3 w-3" />
                   </div>
                 )}

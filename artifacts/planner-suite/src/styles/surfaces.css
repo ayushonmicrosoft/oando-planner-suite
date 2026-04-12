@@ -1,0 +1,42 @@
+/* ── surfaces.css ── */
+/* Manages complex background overlays, glassmorphism, and explicit opacities that shouldn't be hardcoded in TSX */
+
+@utility surface-canvas-soft {
+  background: var(--surface-canvas-soft);
+}
+
+@utility surface-overlay-08 {
+  background: var(--overlay-panel-08);
+}
+
+@utility surface-overlay-12 {
+  background: var(--overlay-panel-12);
+}
+
+@utility surface-overlay-24 {
+  background: var(--overlay-inverse-24);
+}
+
+@utility surface-overlay-92 {
+  background: var(--overlay-panel-92);
+}
+
+@utility surface-overlay-95 {
+  background: var(--overlay-panel-95);
+}
+
+@utility surface-overlay-inverse-12 {
+  background: var(--overlay-inverse-12);
+}
+
+@utility hover-surface-08 {
+  &:hover {
+    background: var(--overlay-panel-08);
+  }
+}
+
+@utility bg-hover-soft {
+  &:hover {
+    background: var(--surface-hover-soft);
+  }
+}

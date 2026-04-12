@@ -1,0 +1,14 @@
+:root {
+  --planner-compat-page:
+    radial-gradient(circle at top, rgba(255, 255, 255, 0.98) 0%, rgba(245, 247, 250, 0.98) 38%, rgba(230, 236, 243, 0.92) 100%);
+  --planner-compat-panel: color-mix(in srgb, var(--surface-glass-strong) 92%, white 8%);
+  --planner-compat-panel-strong: color-mix(in srgb, var(--surface-panel) 86%, white 14%);
+  --planner-compat-border: color-mix(in srgb, var(--border-accent) 58%, var(--border-soft) 42%);
+  --planner-compat-border-strong: color-mix(in srgb, var(--color-primary) 18%, var(--border-soft) 82%);
+  --planner-compat-glow: color-mix(in srgb, var(--color-primary) 12%, transparent);
+  --planner-compat-accent: var(--color-accent);
+  --planner-compat-accent-soft: color-mix(in srgb, var(--color-accent-soft) 72%, white 28%);
+  --planner-compat-text: var(--text-body);
+  --planner-compat-text-strong: var(--text-heading);
+  --planner-compat-text-muted: var(--text-muted);
+}

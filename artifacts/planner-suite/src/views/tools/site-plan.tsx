@@ -101,7 +101,7 @@ export default function SitePlan() {
 
   return (
     <div className="flex flex-col h-screen font-sans">
-      <div className="bg-[#111] text-white px-3 flex items-center gap-2 text-[13px] shrink-0 h-10">
+      <div className="bg-navy-dark text-white px-3 flex items-center gap-2 text-[13px] shrink-0 h-10">
         <b className="text-[15px]">Site Plan</b>
         <span className="text-gray-600">|</span>
         <SaveLoadToolbar plannerType="oando-site-plan" moduleName="Site Plan" getCanvasState={getCanvasState} loadCanvasState={loadCanvasState} onNew={() => { setItems([]); setSelectedId(null); }} hasUnsavedChanges={() => items.length > 0} currentPlanId={currentPlanId} setCurrentPlanId={setCurrentPlanId} currentPlanName={currentPlanName} setCurrentPlanName={setCurrentPlanName} clearAutoSave={autoSave.clearAutoSave} />

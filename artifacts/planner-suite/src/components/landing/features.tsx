@@ -6,19 +6,19 @@ const features = [
     icon: Grid3X3,
     title: "2D Canvas Planner",
     desc: "Drag-and-drop furniture onto a Konva-powered canvas. Resize, rotate, and snap to grid with transform handles.",
-    color: "text-[#1F3653] bg-[#1F3653]/10",
+    color: "text-navy bg-navy/10",
   },
   {
     icon: FileSignature,
     title: "Blueprint Wizard",
     desc: "Step-by-step guided room setup. Choose dimensions, select furniture by category, auto-generate a bill of quantities.",
-    color: "text-[#2d4a6b] bg-[#2d4a6b]/10",
+    color: "text-navy-mid bg-navy-mid/10",
   },
   {
     icon: Pencil,
     title: "CAD Drawing",
     desc: "Vector drawing with lines, rectangles, ellipses, text and measurement tools. Professional-grade precision.",
-    color: "text-[#3d5a7b] bg-[#3d5a7b]/10",
+    color: "text-navy-light bg-navy-light/10",
   },
   {
     icon: LayoutGrid,
@@ -30,25 +30,25 @@ const features = [
     icon: Shapes,
     title: "Custom Shapes",
     desc: "25+ categorized shapes for walls, furniture, electrical, plumbing and safety elements. Full drag, resize, rotate.",
-    color: "text-[#4a3d6b] bg-[#4a3d6b]/10",
+    color: "text-cat-purple bg-cat-purple/10",
   },
   {
     icon: Map,
     title: "Site Plan Designer",
     desc: "Create outdoor site plans with buildings, parking lots, roads, landscaping, and utility elements on a scaled grid.",
-    color: "text-[#2d5a3d] bg-[#2d5a3d]/10",
+    color: "text-cat-green bg-cat-green/10",
   },
   {
     icon: ImagePlus,
     title: "Import & Scale",
     desc: "Upload existing blueprints, calibrate scale, and annotate over imported images with lines and measurements.",
-    color: "text-[#6b5a3d] bg-[#6b5a3d]/10",
+    color: "text-cat-amber bg-cat-amber/10",
   },
   {
     icon: Box,
     title: "3D Viewer",
     desc: "Visualize any plan in interactive 3D. First-person walkthrough and orbit mode with real-time rendering.",
-    color: "text-[#3d5a6b] bg-[#3d5a6b]/10",
+    color: "text-cat-teal bg-cat-teal/10",
   },
 ];
 
@@ -75,7 +75,7 @@ export default function Features() {
           {features.map((f, i) => (
             <motion.div
               key={f.title}
-              className="bg-card border rounded-xl p-6 hover:shadow-lg hover:border-[#1F3653]/30 transition-all duration-300 group"
+              className="bg-card border rounded-xl p-6 hover:shadow-lg hover:border-navy/30 transition-all duration-300 group"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}

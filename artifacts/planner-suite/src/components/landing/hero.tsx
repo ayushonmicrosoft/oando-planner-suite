@@ -17,7 +17,7 @@ export default function Hero({ onGetStarted }: HeroProps) {
           alt="Workspace by One&Only"
           className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0B1324]/90 via-[#0B1324]/70 to-[#0B1324]/40" />
+        <div className="absolute inset-0 bg-gradient-to-r from-navy-dark/90 via-navy-dark/70 to-navy-dark/40" />
       </div>
 
       <div className="max-w-[1200px] mx-auto px-5 py-20 lg:py-32 relative w-full">
@@ -39,7 +39,7 @@ export default function Hero({ onGetStarted }: HeroProps) {
               <Button
                 size="lg"
                 onClick={onGetStarted}
-                className="text-[15px] px-7 py-3 h-auto gap-2 bg-[#1F3653] text-white hover:bg-[#1F3653]/90 rounded-full border border-white/10"
+                className="text-[15px] px-7 py-3 h-auto gap-2 bg-navy text-white hover:bg-navy/90 rounded-full border border-white/10"
               >
                 Explore Products
               </Button>

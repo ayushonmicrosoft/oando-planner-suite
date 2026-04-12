@@ -26,17 +26,17 @@ export function StudioStatusBar() {
   const selectedCount = editor?.getSelectedShapeIds().length || 0;
 
   return (
-    <div className="absolute bottom-0 left-0 right-0 z-30 flex h-8 items-center border-t bg-white/95 backdrop-blur-sm px-3 text-[10px] text-[#1B2940]/50">
+    <div className="absolute bottom-0 left-0 right-0 z-30 flex h-8 items-center border-t bg-white/95 backdrop-blur-sm px-3 text-[10px] text-navy-text/50">
       <div className="flex items-center gap-1.5 mr-4">
-        <ToolIcon className="h-3 w-3 text-[#1F3653]" />
-        <span className="font-semibold text-[#1F3653]">{toolMeta.label}</span>
+        <ToolIcon className="h-3 w-3 text-navy" />
+        <span className="font-semibold text-navy">{toolMeta.label}</span>
       </div>
 
-      <div className="h-3 w-px bg-[#1B2940]/10 mx-2" />
+      <div className="h-3 w-px bg-navy-text/10 mx-2" />
 
       <span>{shapeCount} shape{shapeCount !== 1 ? "s" : ""}</span>
       {selectedCount > 0 && (
-        <span className="ml-2 text-[#1F3653] font-semibold">{selectedCount} selected</span>
+        <span className="ml-2 text-navy font-semibold">{selectedCount} selected</span>
       )}
 
       <div className="flex-1" />
@@ -45,7 +45,7 @@ export function StudioStatusBar() {
         X: {Math.round(cursorPos.x)} Y: {Math.round(cursorPos.y)}
       </span>
 
-      <div className="h-3 w-px bg-[#1B2940]/10 mx-2" />
+      <div className="h-3 w-px bg-navy-text/10 mx-2" />
 
       <div className="flex items-center gap-1">
         {showGrid && (
@@ -56,7 +56,7 @@ export function StudioStatusBar() {
         )}
       </div>
 
-      <div className="h-3 w-px bg-[#1B2940]/10 mx-2" />
+      <div className="h-3 w-px bg-navy-text/10 mx-2" />
 
       <span className="font-semibold tabular-nums">{zoom}%</span>
     </div>

@@ -32,11 +32,11 @@ const FILL_OPTIONS = [
 function Section({ title, icon: Icon, children, defaultOpen = true }: { title: string; icon?: React.ComponentType<{ className?: string }>; children: React.ReactNode; defaultOpen?: boolean }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="border-b border-[#1F3653]/5">
-      <button onClick={() => setOpen(!open)} className="flex items-center gap-2 w-full px-3 py-2 hover:bg-[#f8f9fb] transition-colors">
-        {open ? <ChevronDown className="h-3 w-3 text-[#1B2940]/30" /> : <ChevronRight className="h-3 w-3 text-[#1B2940]/30" />}
-        {Icon && <Icon className="h-3.5 w-3.5 text-[#1F3653]/60" />}
-        <span className="text-[11px] font-semibold text-[#1B2940]/50 uppercase tracking-wider">{title}</span>
+    <div className="border-b border-navy/5">
+      <button onClick={() => setOpen(!open)} className="flex items-center gap-2 w-full px-3 py-2 hover:bg-brand-surface transition-colors">
+        {open ? <ChevronDown className="h-3 w-3 text-navy-text/30" /> : <ChevronRight className="h-3 w-3 text-navy-text/30" />}
+        {Icon && <Icon className="h-3.5 w-3.5 text-navy/60" />}
+        <span className="text-[11px] font-semibold text-navy-text/50 uppercase tracking-wider">{title}</span>
       </button>
       {open && <div className="px-3 pb-3 space-y-2">{children}</div>}
     </div>
@@ -46,7 +46,7 @@ function Section({ title, icon: Icon, children, defaultOpen = true }: { title: s
 function PropRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex items-center gap-2">
-      <span className="text-[10px] text-[#1B2940]/40 w-6 shrink-0 text-right">{label}</span>
+      <span className="text-[10px] text-navy-text/40 w-6 shrink-0 text-right">{label}</span>
       {children}
     </div>
   );
@@ -59,9 +59,9 @@ function NumInput({ value, onChange, unit }: { value: number; onChange: (v: numb
         type="number"
         value={Math.round(value)}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full h-7 px-2 text-xs rounded-md border bg-white outline-none focus:border-[#1F3653] text-[#1B2940]"
+        className="w-full h-7 px-2 text-xs rounded-md border bg-white outline-none focus:border-navy text-navy-text"
       />
-      {unit && <span className="text-[9px] text-[#1B2940]/30 ml-1">{unit}</span>}
+      {unit && <span className="text-[9px] text-navy-text/30 ml-1">{unit}</span>}
     </div>
   );
 }
@@ -106,24 +106,24 @@ export function StudioInspector() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowLayers(false)}
-            className={cn("text-[11px] font-semibold px-2 py-1 rounded-md", !showLayers ? "bg-[#1F3653] text-white" : "text-[#1B2940]/50 hover:bg-[#1F3653]/5")}
+            className={cn("text-[11px] font-semibold px-2 py-1 rounded-md", !showLayers ? "bg-navy text-white" : "text-navy-text/50 hover:bg-navy/5")}
           >
             Properties
           </button>
           <button
             onClick={() => setShowLayers(true)}
-            className={cn("text-[11px] font-semibold px-2 py-1 rounded-md flex items-center gap-1", showLayers ? "bg-[#1F3653] text-white" : "text-[#1B2940]/50 hover:bg-[#1F3653]/5")}
+            className={cn("text-[11px] font-semibold px-2 py-1 rounded-md flex items-center gap-1", showLayers ? "bg-navy text-white" : "text-navy-text/50 hover:bg-navy/5")}
           >
             <Layers className="h-3 w-3" /> Layers
           </button>
         </div>
-        <span className="text-[10px] text-[#1B2940]/30">{selected.length ? `${selected.length} sel` : ""}</span>
+        <span className="text-[10px] text-navy-text/30">{selected.length ? `${selected.length} sel` : ""}</span>
       </div>
 
       {showLayers ? (
         <div className="flex-1 overflow-y-auto">
           {allShapes.length === 0 ? (
-            <div className="text-center py-12 text-xs text-[#1B2940]/30">No shapes on canvas</div>
+            <div className="text-center py-12 text-xs text-navy-text/30">No shapes on canvas</div>
           ) : (
             <div className="py-1">
               {[...allShapes].reverse().map((s) => {
@@ -134,15 +134,15 @@ export function StudioInspector() {
                     key={s.id}
                     onClick={() => editor?.setSelectedShapes([s])}
                     className={cn(
-                      "flex items-center gap-2 w-full px-3 py-1.5 text-left text-xs hover:bg-[#1F3653]/5 transition-colors",
-                      isSelected && "bg-[#1F3653]/10"
+                      "flex items-center gap-2 w-full px-3 py-1.5 text-left text-xs hover:bg-navy/5 transition-colors",
+                      isSelected && "bg-navy/10"
                     )}
                   >
-                    <div className="w-4 h-4 rounded border border-[#1F3653]/20 bg-[#1F3653]/5 flex items-center justify-center">
-                      <Box className="h-2.5 w-2.5 text-[#1F3653]/60" />
+                    <div className="w-4 h-4 rounded border border-navy/20 bg-navy/5 flex items-center justify-center">
+                      <Box className="h-2.5 w-2.5 text-navy/60" />
                     </div>
-                    <span className="flex-1 truncate text-[#1B2940]">{sp?.text || s.type}</span>
-                    <span className="text-[9px] text-[#1B2940]/30 capitalize">{s.type}</span>
+                    <span className="flex-1 truncate text-navy-text">{sp?.text || s.type}</span>
+                    <span className="text-[9px] text-navy-text/30 capitalize">{s.type}</span>
                   </button>
                 );
               })}
@@ -153,12 +153,12 @@ export function StudioInspector() {
         <div className="flex-1 overflow-y-auto">
           <Section title="Element" icon={Box}>
             <div className="flex items-center gap-2">
-              <div className="flex h-8 items-center gap-2 px-2 bg-[#f8f9fb] rounded-lg flex-1">
-                <Box className="h-3.5 w-3.5 text-[#1F3653]/60" />
-                <span className="text-xs font-medium text-[#1B2940] capitalize">{shape.type}</span>
+              <div className="flex h-8 items-center gap-2 px-2 bg-brand-surface rounded-lg flex-1">
+                <Box className="h-3.5 w-3.5 text-navy/60" />
+                <span className="text-xs font-medium text-navy-text capitalize">{shape.type}</span>
               </div>
-              <button onClick={() => editor?.duplicateShapes([shape.id])} className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-[#1F3653]/10" title="Duplicate">
-                <Copy className="h-3.5 w-3.5 text-[#1B2940]/50" />
+              <button onClick={() => editor?.duplicateShapes([shape.id])} className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-navy/10" title="Duplicate">
+                <Copy className="h-3.5 w-3.5 text-navy-text/50" />
               </button>
               <button onClick={() => editor?.deleteShapes([shape.id])} className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-red-50" title="Delete">
                 <Trash2 className="h-3.5 w-3.5 text-red-400" />
@@ -186,8 +186,8 @@ export function StudioInspector() {
                 <PropRow label="H"><NumInput value={props.h} onChange={(v) => updateProps({ h: v })} /></PropRow>
               </div>
               <div className="flex items-center gap-1 mt-1">
-                <span className="text-[9px] text-[#1B2940]/30">Real size:</span>
-                <span className="text-[9px] font-medium text-[#1F3653]">{Math.round(props.w / 2)}×{Math.round(props.h / 2)} cm</span>
+                <span className="text-[9px] text-navy-text/30">Real size:</span>
+                <span className="text-[9px] font-medium text-navy">{Math.round(props.w / 2)}×{Math.round(props.h / 2)} cm</span>
               </div>
             </Section>
           )}
@@ -199,7 +199,7 @@ export function StudioInspector() {
                 value={props.text || ""}
                 onChange={(e) => updateProps({ text: e.target.value })}
                 placeholder="Enter label..."
-                className="w-full h-7 px-2 text-xs rounded-md border bg-white outline-none focus:border-[#1F3653]"
+                className="w-full h-7 px-2 text-xs rounded-md border bg-white outline-none focus:border-navy"
               />
             </Section>
           )}
@@ -207,13 +207,13 @@ export function StudioInspector() {
           {props?.color !== undefined && (
             <Section title="Style" icon={Palette}>
               <div>
-                <span className="text-[10px] text-[#1B2940]/40 mb-1 block">Color</span>
+                <span className="text-[10px] text-navy-text/40 mb-1 block">Color</span>
                 <div className="flex flex-wrap gap-1">
                   {COLOR_OPTIONS.map((c) => (
                     <button
                       key={c.value}
                       onClick={() => updateProps({ color: c.value })}
-                      className={cn("w-6 h-6 rounded-md border-2 transition-all", props.color === c.value ? "border-[#1F3653] scale-110" : "border-transparent hover:border-[#1F3653]/30")}
+                      className={cn("w-6 h-6 rounded-md border-2 transition-all", props.color === c.value ? "border-navy scale-110" : "border-transparent hover:border-navy/30")}
                       style={{ background: c.bg }}
                       title={c.value}
                     />
@@ -222,14 +222,14 @@ export function StudioInspector() {
               </div>
               {props?.fill !== undefined && (
                 <div className="mt-2">
-                  <span className="text-[10px] text-[#1B2940]/40 mb-1 block">Fill</span>
+                  <span className="text-[10px] text-navy-text/40 mb-1 block">Fill</span>
                   <div className="flex gap-1">
                     {FILL_OPTIONS.map((f) => (
                       <button
                         key={f.value}
                         onClick={() => updateProps({ fill: f.value })}
                         className={cn("px-2 py-1 text-[10px] font-medium rounded-md border transition-all",
-                          props.fill === f.value ? "bg-[#1F3653] text-white border-[#1F3653]" : "border-[#1F3653]/10 text-[#1B2940]/60 hover:bg-[#1F3653]/5"
+                          props.fill === f.value ? "bg-navy text-white border-navy" : "border-navy/10 text-navy-text/60 hover:bg-navy/5"
                         )}
                       >
                         {f.label}
@@ -243,10 +243,10 @@ export function StudioInspector() {
 
           <Section title="Arrange" icon={Layers} defaultOpen={false}>
             <div className="flex gap-1">
-              <button onClick={() => editor?.bringForward([shape.id])} className="flex-1 flex items-center justify-center gap-1 h-7 rounded-md border text-[10px] font-medium hover:bg-[#1F3653]/5">
+              <button onClick={() => editor?.bringForward([shape.id])} className="flex-1 flex items-center justify-center gap-1 h-7 rounded-md border text-[10px] font-medium hover:bg-navy/5">
                 <MoveUp className="h-3 w-3" /> Forward
               </button>
-              <button onClick={() => editor?.sendBackward([shape.id])} className="flex-1 flex items-center justify-center gap-1 h-7 rounded-md border text-[10px] font-medium hover:bg-[#1F3653]/5">
+              <button onClick={() => editor?.sendBackward([shape.id])} className="flex-1 flex items-center justify-center gap-1 h-7 rounded-md border text-[10px] font-medium hover:bg-navy/5">
                 <MoveDown className="h-3 w-3" /> Backward
               </button>
             </div>
@@ -255,13 +255,13 @@ export function StudioInspector() {
       ) : selected.length > 1 ? (
         <div className="flex-1 flex items-center justify-center p-6">
           <div className="text-center">
-            <div className="text-3xl font-bold text-[#1F3653] mb-1">{selected.length}</div>
-            <p className="text-xs text-[#1B2940]/40">shapes selected</p>
+            <div className="text-3xl font-bold text-navy mb-1">{selected.length}</div>
+            <p className="text-xs text-navy-text/40">shapes selected</p>
             <div className="flex gap-1 mt-3 justify-center">
               <button onClick={() => editor?.deleteShapes(selected.map((s) => s.id))} className="px-3 py-1.5 rounded-md bg-red-50 text-red-500 text-[10px] font-semibold hover:bg-red-100">
                 Delete All
               </button>
-              <button onClick={() => editor?.duplicateShapes(selected.map((s) => s.id))} className="px-3 py-1.5 rounded-md bg-[#1F3653]/5 text-[#1F3653] text-[10px] font-semibold hover:bg-[#1F3653]/10">
+              <button onClick={() => editor?.duplicateShapes(selected.map((s) => s.id))} className="px-3 py-1.5 rounded-md bg-navy/5 text-navy text-[10px] font-semibold hover:bg-navy/10">
                 Duplicate All
               </button>
             </div>
@@ -269,7 +269,7 @@ export function StudioInspector() {
         </div>
       ) : (
         <div className="flex-1 flex items-center justify-center p-6">
-          <div className="text-center text-[#1B2940]/20">
+          <div className="text-center text-navy-text/20">
             <Settings2 className="h-10 w-10 mx-auto mb-3 opacity-40" />
             <p className="text-xs font-medium">Select a shape</p>
             <p className="text-[10px] mt-1 opacity-60">Click any element on the canvas to inspect and edit its properties</p>

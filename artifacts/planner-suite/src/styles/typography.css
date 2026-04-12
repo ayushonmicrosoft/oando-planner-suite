@@ -1,0 +1,302 @@
+@theme {
+  --font-display: var(--font-cisco-sans), "Cisco Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-sans: var(--font-helvetica-neue), "Helvetica Neue", var(--font-cisco-sans), "Cisco Sans", Helvetica, Arial, sans-serif;
+  --font-weight-display-light: 300;
+  --font-weight-display-regular: 400;
+  --font-weight-copy-regular: 400;
+  --font-weight-copy-medium: 500;
+  --font-weight-copy-semibold: 600;
+
+  --type-label-size: 0.72rem;
+  --type-title-sm-size: clamp(1.12rem, 1.04rem + 0.24vw, 1.28rem);
+  --type-title-lg-size: clamp(2rem, 2.3vw, 2.8rem);
+  --type-display-size: clamp(4rem, 6.2vw, 5.6rem);
+  --type-body-size: 1rem;
+  --type-body-lg-size: clamp(1rem, 0.99rem + 0.14vw, 1.06rem);
+  --type-card-title-size: clamp(1.12rem, 1.05rem + 0.22vw, 1.28rem);
+  --type-project-title-size: clamp(1.24rem, 1.08rem + 0.44vw, 1.62rem);
+  --type-project-display-size: clamp(2.2rem, 3.2vw, 3.5rem);
+  --type-partner-title-size: clamp(1.95rem, 2.1vw, 2.65rem);
+  --type-letter-tight: -0.05em;
+  --type-letter-title: -0.04em;
+  --type-letter-copy: -0.008em;
+  --type-letter-label: 0.05em;
+  --type-letter-label-wide: 0.11em;
+  --type-letter-widest: 0.14em;
+  --type-letter-ultra: 0.18em;
+  --type-letter-max: 0.2em;
+  --type-caption-size: 0.625rem;
+  --type-caption-lg-size: 0.6875rem;
+  --type-xs-size: 0.75rem;
+  --type-sm-size: 0.8125rem;
+  --type-leading-display: 0.94;
+  --type-leading-title: 1.08;
+  --type-leading-h3: 1.14;
+  --type-leading-copy: 1.52;
+  --type-leading-copy-sm: 1.6;
+}
+
+/* ── Display / H1 ── */
+@utility typ-h1 {
+  font-family: var(--font-display);
+  font-size: var(--type-display-size);
+  font-weight: var(--font-weight-display-light);
+  letter-spacing: var(--type-letter-tight);
+  line-height: var(--type-leading-display);
+  font-kerning: normal;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+@utility typ-display {
+  font-family: var(--font-display);
+  font-size: var(--type-display-size);
+  font-weight: var(--font-weight-display-light);
+  letter-spacing: var(--type-letter-tight);
+  line-height: var(--type-leading-display);
+  font-kerning: normal;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+@utility hero-title {
+  font-family: var(--font-display);
+  font-size: var(--type-display-size);
+  font-weight: var(--font-weight-display-light);
+  letter-spacing: var(--type-letter-tight);
+  line-height: var(--type-leading-display);
+  font-kerning: normal;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+@utility typ-section-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 4vw, 2.75rem);
+  font-weight: 300;
+  letter-spacing: -0.04em;
+  line-height: 1.08;
+  font-kerning: normal;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+@utility typ-section-subtitle {
+  font-family: var(--font-sans);
+  font-size: var(--type-body-lg-size);
+  font-weight: var(--font-weight-copy-regular);
+  letter-spacing: var(--type-letter-copy);
+  line-height: var(--type-leading-copy);
+  color: var(--text-body-muted);
+}
+
+
+/* ── H3 ── */
+@utility typ-h3 {
+  font-family: var(--font-display);
+  font-size: var(--type-title-sm-size);
+  font-weight: var(--font-weight-display-regular);
+  letter-spacing: -0.038em;
+  line-height: var(--type-leading-h3);
+  font-kerning: normal;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+/* ── Lead / body-lg ── */
+@utility typ-lead {
+  font-family: var(--font-sans);
+  font-size: var(--type-body-lg-size);
+  font-weight: var(--font-weight-copy-regular);
+  letter-spacing: var(--type-letter-copy);
+  line-height: var(--type-leading-copy);
+}
+
+@utility home-copy {
+  font-family: var(--font-sans);
+  font-size: var(--type-body-lg-size);
+  font-weight: var(--font-weight-copy-regular);
+  letter-spacing: var(--type-letter-copy);
+  line-height: var(--type-leading-copy);
+}
+
+@utility hero-subtitle {
+  font-family: var(--font-sans);
+  font-size: var(--type-body-lg-size);
+  font-weight: var(--font-weight-copy-regular);
+  letter-spacing: var(--type-letter-copy);
+  line-height: var(--type-leading-copy);
+}
+
+@utility page-copy {
+  font-family: var(--font-sans);
+  font-size: var(--type-body-lg-size);
+  font-weight: var(--font-weight-copy-regular);
+  letter-spacing: var(--type-letter-copy);
+  line-height: var(--type-leading-copy);
+}
+
+/* ── Body small ── */
+@utility page-copy-sm {
+  font-family: var(--font-sans);
+  font-size: var(--type-body-size);
+  font-weight: var(--font-weight-copy-regular);
+  letter-spacing: var(--type-letter-copy);
+  line-height: var(--type-leading-copy-sm);
+}
+
+@utility typ-body-sm {
+  font-family: var(--font-sans);
+  font-size: var(--type-body-size);
+  font-weight: var(--font-weight-copy-regular);
+  letter-spacing: var(--type-letter-copy);
+  line-height: var(--type-leading-copy-sm);
+}
+
+/* ── Captions ── */
+@utility typ-caption {
+  font-family: var(--font-sans);
+  font-size: var(--type-caption-size);
+  font-weight: var(--font-weight-copy-regular);
+  letter-spacing: var(--type-letter-copy);
+  line-height: 1.25;
+}
+
+@utility typ-caption-lg {
+  font-family: var(--font-sans);
+  font-size: var(--type-caption-lg-size);
+  font-weight: var(--font-weight-copy-regular);
+  letter-spacing: var(--type-letter-copy);
+  line-height: 1.3;
+}
+
+@utility catalog-card__description {
+  font-family: var(--font-sans);
+  font-size: var(--type-body-size);
+  font-weight: var(--font-weight-copy-regular);
+  letter-spacing: var(--type-letter-copy);
+  line-height: var(--type-leading-copy-sm);
+}
+
+/* ── Nav ── */
+@utility typ-nav {
+  font-family: var(--font-sans);
+  font-size: var(--type-body-size);
+  font-weight: var(--font-weight-copy-medium);
+  letter-spacing: 0.01em;
+  line-height: 1.4;
+}
+
+@utility typ-nav-sm {
+  font-family: var(--font-sans);
+  font-size: var(--type-body-size);
+  font-weight: var(--font-weight-copy-medium);
+  letter-spacing: 0.02em;
+  line-height: 1.4;
+}
+
+@utility typ-micro {
+  font-family: var(--font-sans);
+  font-size: var(--type-body-size);
+  font-weight: var(--font-weight-copy-semibold);
+  letter-spacing: 0.08em;
+  line-height: 1.4;
+}
+
+/* ── Label / eyebrow ── */
+@utility typ-label {
+  font-family: var(--font-sans);
+  font-size: var(--type-label-size);
+  font-weight: var(--font-weight-copy-medium);
+  letter-spacing: 0.11em;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+@utility typ-eyebrow {
+  font-family: var(--font-sans);
+  font-size: var(--type-label-size);
+  font-weight: var(--font-weight-copy-medium);
+  letter-spacing: 0.11em;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+@utility typ-overline {
+  font-family: var(--font-sans);
+  font-size: var(--type-label-size);
+  font-weight: var(--font-weight-copy-medium);
+  letter-spacing: 0.11em;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+@utility typ-chip {
+  font-family: var(--font-sans);
+  font-size: var(--type-label-size);
+  font-weight: var(--font-weight-copy-medium);
+  letter-spacing: 0.11em;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+@utility home-kicker {
+  font-family: var(--font-sans);
+  font-size: var(--type-label-size);
+  font-weight: var(--font-weight-copy-medium);
+  letter-spacing: 0.11em;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+@utility catalog-card__eyebrow {
+  font-family: var(--font-sans);
+  font-size: var(--type-label-size);
+  font-weight: var(--font-weight-copy-medium);
+  letter-spacing: 0.11em;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+/* ── Tracking Tokens (replaces custom -[] values) ── */
+@utility tracking-ultra {
+  letter-spacing: var(--type-letter-ultra);
+}
+
+@utility tracking-max {
+  letter-spacing: var(--type-letter-max);
+}
+
+/* ── CTA ── */
+@utility typ-cta {
+  font-family: var(--font-sans);
+  font-size: var(--type-body-size);
+  font-weight: var(--font-weight-copy-semibold);
+  letter-spacing: 0.04em;
+  line-height: 1.3;
+}
+
+/* ── Stat ── */
+@utility typ-stat {
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 5vw, 4.2rem);
+  font-weight: var(--font-weight-display-light);
+  letter-spacing: -0.06em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Accent styles ── */
+@utility home-heading__accent {
+  color: var(--color-ocean-boat-blue-500);
+  font-style: normal;
+  font-weight: var(--font-weight-display-regular);
+  letter-spacing: inherit;
+}
+
+@utility hero-accent {
+  color: var(--color-primary);
+  font-weight: var(--font-weight-display-regular);
+}
+
+/* Accessibility patterns: label placeholder aria-label */

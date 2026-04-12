@@ -136,7 +136,7 @@ export function StudioPlanner() {
   const threeDW = show3D ? "50%" : "0";
 
   return (
-    <div className="h-screen w-full relative overflow-hidden bg-[#eef1f5]">
+    <div className="h-screen w-full relative overflow-hidden bg-brand-surface-alt">
       <StudioToolbar />
       <StudioCatalog />
       {!show3D && <StudioInspector />}
@@ -154,10 +154,10 @@ export function StudioPlanner() {
       >
         <Suspense
           fallback={
-            <div className="flex h-full items-center justify-center bg-[#f8f9fb]">
+            <div className="flex h-full items-center justify-center bg-brand-surface">
               <div className="text-center">
-                <Loader2 className="h-8 w-8 animate-spin text-[#1F3653]/20 mx-auto mb-3" />
-                <p className="text-xs text-[#1B2940]/30 font-medium">Loading tldraw engine...</p>
+                <Loader2 className="h-8 w-8 animate-spin text-navy/20 mx-auto mb-3" />
+                <p className="text-xs text-navy-text/30 font-medium">Loading tldraw engine...</p>
               </div>
             </div>
           }

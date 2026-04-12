@@ -1,0 +1,38 @@
+/* ── borders-radii.css ── */
+/* Consolidates specific border radii and border color usages mapped from former arbitrary values */
+
+@utility rounded-blob {
+  border-radius: var(--radius-blob); /* 2rem */
+}
+
+@utility rounded-huge {
+  border-radius: var(--radius-huge); /* 1.75rem */
+}
+
+@utility rounded-giant {
+  border-radius: var(--radius-giant); /* 1.6rem */
+}
+
+@utility border-theme-inverse {
+  border-color: var(--border-inverse);
+}
+
+@utility border-theme-soft {
+  border-color: var(--border-soft);
+}
+
+@utility border-danger-soft {
+  border-color: rgba(239, 68, 68, 0.2); /* Mapped from border-red-500/20 */
+}
+
+@utility hover-border-subtle {
+  &:hover {
+    border-color: var(--border-muted); /* Mapped from hover:border-slate-400 */
+  }
+}
+
+@utility hover-border-primary {
+  &:hover {
+    border-color: var(--color-primary); /* Mapped from hover:border-blue-400 */
+  }
+}

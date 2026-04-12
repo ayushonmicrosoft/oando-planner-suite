@@ -19,7 +19,7 @@ const PLANNERS = [
     href: "/planner/blueprint",
     icon: Layers3,
     badge: "Guided",
-    badgeColor: "bg-[#1F3653]/10 text-[#1F3653]",
+    badgeColor: "bg-navy/10 text-navy",
     description: "Step-by-step guided room setup with category-based furniture selection and bill of quantities.",
     features: ["4-step workflow", "BOQ generation", "Room presets", "PDF export"],
   },
@@ -46,7 +46,7 @@ export default function PlannersHub() {
   const router = useRouter();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#f8f9fb] to-white">
+    <div className="min-h-screen bg-gradient-to-b from-brand-surface to-white">
       <div className="max-w-6xl mx-auto px-6 py-12">
         <motion.header
           className="mb-12"
@@ -54,13 +54,13 @@ export default function PlannersHub() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#1F3653]/50 mb-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-navy/50 mb-3">
             Planner Hub
           </p>
-          <h1 className="text-4xl font-semibold tracking-tight text-[#1B2940]">
+          <h1 className="text-4xl font-semibold tracking-tight text-navy-text">
             All planners in one place.
           </h1>
-          <p className="mt-3 text-lg text-[#1B2940]/60 max-w-2xl">
+          <p className="mt-3 text-lg text-navy-text/60 max-w-2xl">
             Open the live planner, the blueprint wizard, or the classic canvas.
             Pick the tool that fits your workflow.
           </p>
@@ -73,13 +73,13 @@ export default function PlannersHub() {
               <motion.button
                 key={planner.href}
                 onClick={() => router.push(planner.href)}
-                className="group flex min-h-[280px] flex-col rounded-2xl border border-[#1F3653]/10 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#1F3653]/30 hover:shadow-lg text-left"
+                className="group flex min-h-[280px] flex-col rounded-2xl border border-navy/10 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-navy/30 hover:shadow-lg text-left"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1, duration: 0.5 }}
               >
                 <div className="flex items-start justify-between gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-[#1F3653]/10 bg-[#1F3653]/5 text-[#1F3653]">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-navy/10 bg-navy/5 text-navy">
                     <Icon className="h-5 w-5" />
                   </div>
                   <span className={`rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-wider ${planner.badgeColor}`}>
@@ -87,23 +87,23 @@ export default function PlannersHub() {
                   </span>
                 </div>
 
-                <h2 className="mt-5 text-xl font-semibold tracking-tight text-[#1B2940] transition-colors group-hover:text-[#1F3653]">
+                <h2 className="mt-5 text-xl font-semibold tracking-tight text-navy-text transition-colors group-hover:text-navy">
                   {planner.title}
                 </h2>
-                <p className="mt-2 flex-1 text-sm leading-6 text-[#1B2940]/60">
+                <p className="mt-2 flex-1 text-sm leading-6 text-navy-text/60">
                   {planner.description}
                 </p>
 
                 <ul className="mt-4 space-y-1.5">
                   {planner.features.map((f) => (
-                    <li key={f} className="flex items-center gap-2 text-xs text-[#1B2940]/50">
-                      <div className="w-1 h-1 rounded-full bg-[#1F3653]/30" />
+                    <li key={f} className="flex items-center gap-2 text-xs text-navy-text/50">
+                      <div className="w-1 h-1 rounded-full bg-navy/30" />
                       {f}
                     </li>
                   ))}
                 </ul>
 
-                <div className="mt-5 flex items-center gap-2 text-sm font-medium text-[#1F3653] group-hover:gap-3 transition-all">
+                <div className="mt-5 flex items-center gap-2 text-sm font-medium text-navy group-hover:gap-3 transition-all">
                   Launch <ArrowRight className="h-4 w-4" />
                 </div>
               </motion.button>
@@ -116,18 +116,18 @@ export default function PlannersHub() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.5 }}
         >
-          <h2 className="text-2xl font-semibold text-[#1B2940] mb-6">Drawing Tools</h2>
+          <h2 className="text-2xl font-semibold text-navy-text mb-6">Drawing Tools</h2>
           <div className="grid gap-3 md:grid-cols-3 lg:grid-cols-5">
             {TOOLS.map((tool) => (
               <button
                 key={tool.href}
                 onClick={() => router.push(tool.href)}
-                className="flex flex-col items-start p-4 rounded-xl border border-[#1F3653]/10 bg-white hover:border-[#1F3653]/30 hover:shadow-sm transition-all text-left group"
+                className="flex flex-col items-start p-4 rounded-xl border border-navy/10 bg-white hover:border-navy/30 hover:shadow-sm transition-all text-left group"
               >
-                <h3 className="text-sm font-semibold text-[#1B2940] group-hover:text-[#1F3653] transition-colors">
+                <h3 className="text-sm font-semibold text-navy-text group-hover:text-navy transition-colors">
                   {tool.title}
                 </h3>
-                <p className="text-xs text-[#1B2940]/50 mt-1">{tool.desc}</p>
+                <p className="text-xs text-navy-text/50 mt-1">{tool.desc}</p>
               </button>
             ))}
           </div>

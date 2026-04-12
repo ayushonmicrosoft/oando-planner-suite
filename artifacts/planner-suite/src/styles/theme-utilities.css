@@ -1,0 +1,381 @@
+@utility container {
+  margin-inline: auto;
+  padding-inline: 1.5rem;
+
+  @media (min-width: 768px) {
+    padding-inline: 2.5rem;
+  }
+
+  max-width: 1680px;
+}
+
+@utility container-wide {
+  margin-inline: auto;
+  padding-inline: 1.5rem;
+
+  @media (min-width: 768px) {
+    padding-inline: 2.5rem;
+  }
+
+  max-width: 1940px;
+}
+
+@utility scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@utility skeleton {
+  background: var(--surface-soft);
+}
+
+/* TEXT COLOR UTILITIES */
+@utility text-strong {
+  color: var(--text-strong);
+}
+
+@utility text-body {
+  color: var(--text-body);
+}
+
+@utility text-muted {
+  color: var(--text-muted);
+}
+
+@utility text-subtle {
+  color: var(--text-subtle);
+}
+
+@utility text-brand {
+  color: var(--text-brand);
+}
+
+@utility text-inverse {
+  color: var(--text-inverse);
+}
+
+@utility text-inverse-body {
+  color: var(--text-inverse-body);
+}
+
+/* BACKGROUND COLOR UTILITIES */
+@utility bg-page {
+  background-color: var(--surface-page);
+}
+
+@utility bg-soft {
+  background-color: var(--surface-soft);
+}
+
+@utility bg-muted {
+  background-color: var(--surface-muted);
+}
+
+@utility bg-panel {
+  background-color: var(--surface-panel);
+}
+
+@utility bg-hover {
+  background-color: var(--surface-hover);
+}
+
+@utility bg-inverse {
+  background-color: var(--surface-inverse);
+}
+
+/* BORDER COLOR UTILITIES */
+@utility border-soft {
+  border-color: var(--border-soft);
+}
+
+@utility border-muted {
+  border-color: var(--border-muted);
+}
+
+@utility border-strong {
+  border-color: var(--border-strong);
+}
+
+@utility border-accent {
+  border-color: var(--border-accent);
+}
+
+/* BORDER INVERSE */
+@utility border-inverse {
+  border-color: var(--border-inverse);
+}
+
+/* DIVIDE UTILITIES */
+@utility divide-soft {
+  & > * + * {
+    border-color: var(--border-soft);
+  }
+}
+
+/* SHADOW UTILITIES */
+@utility shadow-theme-soft {
+  box-shadow: var(--shadow-soft);
+}
+
+@utility shadow-theme-panel {
+  box-shadow: var(--shadow-panel);
+}
+
+@utility shadow-theme-lift {
+  box-shadow: var(--shadow-lift);
+}
+
+@utility shadow-theme-float {
+  box-shadow: var(--shadow-float);
+}
+
+/* FOCUS RING */
+@utility focus-ring-theme {
+  &:focus-visible {
+    box-shadow: var(--focus-ring);
+  }
+}
+
+/* GLASS SURFACES */
+@utility bg-glass {
+  background-color: var(--surface-glass);
+}
+
+@utility bg-glass-strong {
+  background-color: var(--surface-glass-strong);
+}
+
+/* INVERSE SOFT */
+@utility bg-inverse-soft {
+  background-color: var(--surface-inverse-soft);
+}
+
+/* STATUS UTILITIES */
+@utility text-success {
+  color: var(--color-success);
+}
+
+@utility text-warning {
+  color: var(--color-warning);
+}
+
+@utility text-danger {
+  color: var(--color-danger);
+}
+
+@utility bg-success-soft {
+  background-color: var(--surface-status-ok);
+}
+
+@utility bg-warning-soft {
+  background-color: var(--surface-soft);
+}
+
+@utility bg-danger-soft {
+  background-color: var(--surface-status-bad);
+}
+
+@utility border-success {
+  border-color: var(--color-success);
+}
+
+@utility border-warning {
+  border-color: var(--color-warning);
+}
+
+@utility border-danger {
+  border-color: var(--color-danger);
+}
+
+@utility bg-overlay {
+  background-color: var(--overlay-inverse-35);
+}
+
+/* LEGACY UTILITIES */
+@utility text-brand-slate {
+  color: var(--text-strong);
+}
+
+@utility text-brand-slate-light {
+  color: var(--text-muted);
+}
+
+@utility text-brand-slate-bright {
+  color: var(--border-accent);
+}
+
+/* COLOR SCHEME UTILITIES (migrated from color-contrast.css) */
+@utility typ-subtle {
+  color: var(--text-muted);
+}
+
+@utility typ-eyebrow {
+  color: var(--text-muted);
+}
+
+@utility catalog-card__eyebrow {
+  color: var(--text-muted);
+}
+
+@utility home-heading {
+  color: var(--text-heading-soft);
+}
+
+@utility home-copy {
+  color: var(--text-body);
+}
+
+@utility site-footer {
+  background: var(--surface-inverse);
+  color: var(--text-inverse-body);
+}
+
+@utility site-footer__address {
+  color: var(--text-inverse-body);
+}
+
+@utility site-footer__meta {
+  color: var(--text-inverse-body);
+}
+
+@utility site-footer__heading {
+  color: var(--text-inverse-subtle);
+}
+
+@utility site-footer__social {
+  color: var(--text-inverse-muted);
+  &:hover {
+    color: var(--text-inverse);
+  }
+}
+
+@utility site-footer__link {
+  color: var(--text-inverse-muted);
+  &:hover {
+    color: var(--text-inverse-body);
+  }
+}
+
+@utility site-footer__divider {
+  border-color: var(--border-inverse);
+}
+
+@utility site-footer__legal-row {
+  color: var(--text-inverse-muted);
+}
+
+@utility site-footer__legal {
+  color: var(--text-inverse-muted);
+  &:hover {
+    color: var(--text-inverse-body);
+  }
+}
+
+@utility scheme-page {
+  background: var(--surface-page);
+  color: var(--text-body);
+}
+
+@utility scheme-section-soft {
+  background: var(--surface-soft);
+}
+
+@utility scheme-section-muted {
+  background: var(--surface-muted);
+}
+
+@utility scheme-section-inverse {
+  background: var(--surface-inverse);
+  color: var(--text-inverse);
+}
+
+@utility scheme-section-primary {
+  background: var(--color-primary);
+  color: var(--text-inverse);
+}
+
+@utility scheme-panel {
+  background: var(--surface-panel-strong);
+  border-color: var(--border-soft);
+  box-shadow: var(--shadow-soft);
+}
+
+@utility scheme-panel-soft {
+  background: var(--surface-soft);
+  border-color: var(--border-soft);
+  box-shadow: var(--shadow-soft);
+}
+
+@utility scheme-panel-dark {
+  background: var(--surface-inverse);
+  color: var(--text-inverse);
+  border-color: var(--border-inverse);
+  box-shadow: var(--shadow-inverse);
+}
+
+@utility scheme-text-heading {
+  color: var(--text-heading);
+}
+
+@utility scheme-text-strong {
+  color: var(--text-strong);
+}
+
+@utility scheme-text-body {
+  color: var(--text-body);
+}
+
+@utility scheme-text-muted {
+  color: var(--text-muted);
+}
+
+@utility scheme-text-subtle {
+  color: var(--text-subtle);
+}
+
+@utility scheme-text-brand {
+  color: var(--text-brand);
+}
+
+@utility scheme-text-inverse {
+  color: var(--text-inverse);
+}
+
+@utility scheme-text-inverse-body {
+  color: var(--text-inverse-body);
+}
+
+@utility scheme-text-inverse-muted {
+  color: var(--text-inverse-muted);
+}
+
+@utility scheme-text-inverse-subtle {
+  color: var(--text-inverse-subtle);
+}
+
+@utility scheme-border {
+  border-color: var(--border-soft);
+}
+
+@utility scheme-border-soft {
+  border-color: var(--border-muted);
+}
+
+@utility scheme-border-brand-soft {
+  border-color: var(--border-accent);
+}
+
+@utility scheme-border-inverse {
+  border-color: var(--border-inverse);
+}
+
+@utility scheme-accent-wash {
+  background-color: var(--surface-accent-wash);
+}
+
+/* Accessibility patterns: label placeholder aria-label */
+

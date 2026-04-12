@@ -51,7 +51,7 @@ function ToolBtn({
       className={cn(
         "flex items-center justify-center rounded-md transition-all",
         size === "sm" ? "h-7 w-7" : "h-8 w-8",
-        active ? "bg-[#1F3653] text-white shadow-sm" : "text-[#1B2940]/70 hover:bg-[#1F3653]/10 hover:text-[#1F3653]"
+        active ? "bg-navy text-white shadow-sm" : "text-navy-text/70 hover:bg-navy/10 hover:text-navy"
       )}
       title={`${label}${shortcut ? ` (${shortcut})` : ""}`}
     >
@@ -75,7 +75,7 @@ function ActionBtn({
       disabled={disabled}
       className={cn(
         "flex h-8 w-8 items-center justify-center rounded-md transition-all",
-        danger ? "text-red-500/70 hover:bg-red-50 hover:text-red-600" : "text-[#1B2940]/60 hover:bg-[#1F3653]/10 hover:text-[#1F3653]",
+        danger ? "text-red-500/70 hover:bg-red-50 hover:text-red-600" : "text-navy-text/60 hover:bg-navy/10 hover:text-navy",
         disabled && "opacity-30 pointer-events-none"
       )}
       title={label}
@@ -224,7 +224,7 @@ export function StudioToolbar() {
     <div className="absolute top-0 left-0 right-0 z-30 flex h-12 items-center border-b bg-white/95 backdrop-blur-sm px-2 shadow-sm">
       <button
         onClick={() => router.push("/")}
-        className="flex h-8 w-8 items-center justify-center rounded-md text-[#1B2940]/60 hover:bg-[#1F3653]/10 hover:text-[#1F3653] mr-1"
+        className="flex h-8 w-8 items-center justify-center rounded-md text-navy-text/60 hover:bg-navy/10 hover:text-navy mr-1"
         title="Back to Dashboard"
       >
         <ChevronLeft className="h-4 w-4" />
@@ -238,7 +238,7 @@ export function StudioToolbar() {
         onClick={toggleCatalog}
         className={cn(
           "flex h-8 w-8 items-center justify-center rounded-md transition-all mr-1",
-          showCatalog ? "bg-[#1F3653] text-white" : "text-[#1B2940]/50 hover:bg-[#1F3653]/10"
+          showCatalog ? "bg-navy text-white" : "text-navy-text/50 hover:bg-navy/10"
         )}
         title="Catalog (C)"
       >
@@ -247,14 +247,14 @@ export function StudioToolbar() {
 
       <Separator orientation="vertical" className="h-6 mx-1" />
 
-      <div className="flex items-center gap-0.5 rounded-lg border border-[#1F3653]/10 bg-[#f8f9fb] p-0.5">
+      <div className="flex items-center gap-0.5 rounded-lg border border-navy/10 bg-brand-surface p-0.5">
         <ToolBtn tool="select" icon={MousePointer2} label="Select" shortcut="V" />
         <ToolBtn tool="hand" icon={Hand} label="Pan" shortcut="H" />
       </div>
 
       <Separator orientation="vertical" className="h-6 mx-1" />
 
-      <div className="flex items-center gap-0.5 rounded-lg border border-[#1F3653]/10 bg-[#f8f9fb] p-0.5">
+      <div className="flex items-center gap-0.5 rounded-lg border border-navy/10 bg-brand-surface p-0.5">
         <ToolBtn tool="geo" icon={Square} label="Rectangle / Ellipse" shortcut="R" />
         <ToolBtn tool="line" icon={Minus} label="Line" shortcut="L" />
         <ToolBtn tool="arrow" icon={ArrowUpRight} label="Arrow" shortcut="A" />
@@ -286,7 +286,7 @@ export function StudioToolbar() {
         type="text"
         value={planName}
         onChange={(e) => setPlanName(e.target.value)}
-        className="h-7 w-44 rounded-md border bg-white px-2.5 text-xs font-medium text-[#1B2940] outline-none focus:border-[#1F3653] focus:ring-1 focus:ring-[#1F3653]/20 transition-all mr-2"
+        className="h-7 w-44 rounded-md border bg-white px-2.5 text-xs font-medium text-navy-text outline-none focus:border-navy focus:ring-1 focus:ring-navy/20 transition-all mr-2"
       />
 
       {isDirty && <span className="text-[10px] text-amber-500 font-semibold mr-2">UNSAVED</span>}
@@ -295,7 +295,7 @@ export function StudioToolbar() {
 
       <div className="flex items-center gap-0.5 mr-1">
         <ActionBtn icon={ZoomOut} label="Zoom Out" onClick={handleZoomOut} />
-        <button onClick={handleZoomReset} className="h-7 px-2 text-[11px] font-semibold text-[#1B2940]/60 hover:bg-[#1F3653]/10 rounded-md" title="Reset Zoom">
+        <button onClick={handleZoomReset} className="h-7 px-2 text-[11px] font-semibold text-navy-text/60 hover:bg-navy/10 rounded-md" title="Reset Zoom">
           {zoom}%
         </button>
         <ActionBtn icon={ZoomIn} label="Zoom In" onClick={handleZoomIn} />
@@ -306,14 +306,14 @@ export function StudioToolbar() {
 
       <button
         onClick={toggleGrid}
-        className={cn("flex h-8 w-8 items-center justify-center rounded-md transition-all", showGrid ? "bg-[#1F3653]/10 text-[#1F3653]" : "text-[#1B2940]/40 hover:bg-[#1F3653]/5")}
+        className={cn("flex h-8 w-8 items-center justify-center rounded-md transition-all", showGrid ? "bg-navy/10 text-navy" : "text-navy-text/40 hover:bg-navy/5")}
         title="Grid"
       >
         <Grid3X3 className="h-3.5 w-3.5" />
       </button>
       <button
         onClick={toggleMinimap}
-        className={cn("flex h-8 w-8 items-center justify-center rounded-md transition-all", showMinimap ? "bg-[#1F3653]/10 text-[#1F3653]" : "text-[#1B2940]/40 hover:bg-[#1F3653]/5")}
+        className={cn("flex h-8 w-8 items-center justify-center rounded-md transition-all", showMinimap ? "bg-navy/10 text-navy" : "text-navy-text/40 hover:bg-navy/5")}
         title="Minimap"
       >
         <MapIcon className="h-3.5 w-3.5" />
@@ -322,7 +322,7 @@ export function StudioToolbar() {
         onClick={toggle3D}
         className={cn(
           "flex h-8 items-center gap-1 px-2 rounded-md text-xs font-semibold transition-all",
-          show3D ? "bg-[#1F3653] text-white" : "text-[#1F3653]/70 hover:bg-[#1F3653]/10"
+          show3D ? "bg-navy text-white" : "text-navy/70 hover:bg-navy/10"
         )}
         title="3D View"
       >
@@ -335,7 +335,7 @@ export function StudioToolbar() {
       <div className="relative">
         <button
           onClick={() => setShowExportMenu(!showExportMenu)}
-          className="flex h-8 items-center gap-1.5 px-3 rounded-md text-xs font-semibold text-[#1F3653] hover:bg-[#1F3653]/10 transition-all"
+          className="flex h-8 items-center gap-1.5 px-3 rounded-md text-xs font-semibold text-navy hover:bg-navy/10 transition-all"
         >
           <Download className="h-3.5 w-3.5" />
           <span className="hidden lg:inline">Export</span>
@@ -344,14 +344,14 @@ export function StudioToolbar() {
           <>
             <div className="fixed inset-0 z-40" onClick={() => setShowExportMenu(false)} />
             <div className="absolute right-0 top-full mt-1 z-50 w-44 rounded-lg border bg-white shadow-xl py-1">
-              <button onClick={handleExportPng} className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-[#1F3653]/5 text-left">
-                <Image className="h-4 w-4 text-[#1F3653]" /> Export PNG
+              <button onClick={handleExportPng} className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-navy/5 text-left">
+                <Image className="h-4 w-4 text-navy" /> Export PNG
               </button>
-              <button onClick={handleExportSvg} className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-[#1F3653]/5 text-left">
-                <FileDown className="h-4 w-4 text-[#1F3653]" /> Export SVG
+              <button onClick={handleExportSvg} className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-navy/5 text-left">
+                <FileDown className="h-4 w-4 text-navy" /> Export SVG
               </button>
-              <button onClick={handleExportPdf} className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-[#1F3653]/5 text-left">
-                <FileText className="h-4 w-4 text-[#1F3653]" /> Export PDF
+              <button onClick={handleExportPdf} className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-navy/5 text-left">
+                <FileText className="h-4 w-4 text-navy" /> Export PDF
               </button>
             </div>
           </>
@@ -362,7 +362,7 @@ export function StudioToolbar() {
         onClick={toggleInspector}
         className={cn(
           "flex h-8 w-8 items-center justify-center rounded-md transition-all ml-1",
-          showInspector ? "bg-[#1F3653] text-white" : "text-[#1B2940]/50 hover:bg-[#1F3653]/10"
+          showInspector ? "bg-navy text-white" : "text-navy-text/50 hover:bg-navy/10"
         )}
         title="Inspector"
       >

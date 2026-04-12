@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
-import { Mail, Eye, EyeOff, LogIn, UserPlus, ArrowLeft } from "lucide-react";
+import { Mail, Eye, EyeOff, ArrowRight, ArrowLeft } from "lucide-react";
 
 export default function AuthPage() {
   const { signUpWithEmail, signInWithEmail } = useAuth();
@@ -41,63 +41,70 @@ export default function AuthPage() {
   const isSignIn = mode === "sign-in";
 
   return (
-    <div className="min-h-screen bg-[#070D12] flex">
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 via-[#070D12] to-cyan-600/10" />
-        <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle at 30% 40%, rgba(84,136,182,0.15) 0%, transparent 60%), radial-gradient(circle at 70% 80%, rgba(119,162,201,0.1) 0%, transparent 50%)' }} />
-
-        <div className="relative z-10 flex flex-col justify-between p-12 w-full">
-          <button onClick={() => router.push('/')} className="flex items-center gap-2 text-white/40 hover:text-white/70 transition-colors w-fit">
-            <ArrowLeft className="w-4 h-4" />
-            <img src="/logo-v2-white.webp" alt="One&Only" className="h-5 w-auto" />
-          </button>
-
-          <div className="max-w-md">
-            <h2 className="text-4xl font-bold tracking-[-0.03em] text-white leading-[1.15] mb-4">
-              Design your
-              <br />
-              <span className="bg-gradient-to-r from-[#5488B6] to-[#77A2C9] bg-clip-text text-transparent">perfect workspace</span>
-            </h2>
-            <p className="text-[15px] text-white/35 leading-relaxed">
-              Professional-grade office planning tools. From 2D floor plans to 3D walkthroughs — everything you need in one platform.
-            </p>
+    <div className="min-h-screen flex">
+      <div className="hidden lg:flex lg:w-[480px] xl:w-[560px] relative overflow-hidden bg-[var(--color-primary)]">
+        <div className="absolute inset-0 opacity-[0.07]" style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+        }} />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/20" />
+        <div className="relative z-10 flex flex-col justify-between p-10 text-white w-full">
+          <div>
+            <button onClick={() => router.push('/')} className="flex items-center gap-2 text-white/60 hover:text-white/90 transition-colors w-fit">
+              <ArrowLeft className="w-4 h-4" />
+              <img src="/logo-v2-white.webp" alt="One&Only" className="h-7" />
+            </button>
           </div>
-
-          <div className="flex items-center gap-6 text-[12px] text-white/20">
-            <span>2D Canvas</span>
-            <span className="w-1 h-1 rounded-full bg-white/10" />
-            <span>Blueprint Wizard</span>
-            <span className="w-1 h-1 rounded-full bg-white/10" />
-            <span>3D Viewer</span>
-            <span className="w-1 h-1 rounded-full bg-white/10" />
-            <span>CAD Tools</span>
+          <div className="space-y-6">
+            <h2 className="text-3xl font-bold leading-tight tracking-tight">
+              Plan spaces that<br />inspire great work.
+            </h2>
+            <p className="text-white/70 text-base leading-relaxed max-w-sm">
+              Professional office planning tools with 2D layouts, 3D visualization, furniture catalogs, and client-ready exports.
+            </p>
+            <div className="flex items-center gap-6 pt-4">
+              {[
+                { num: "500+", label: "Furniture items" },
+                { num: "50+", label: "Templates" },
+                { num: "PDF/SVG", label: "Export" },
+              ].map((stat) => (
+                <div key={stat.label}>
+                  <div className="text-xl font-bold">{stat.num}</div>
+                  <div className="text-xs text-white/50 uppercase tracking-wider">{stat.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="text-xs text-white/30">
+            &copy; {new Date().getFullYear()} One&Only. All rights reserved.
           </div>
         </div>
       </div>
 
-      <div className="flex-1 flex items-center justify-center p-6">
-        <div className="w-full max-w-[380px]">
+      <div className="flex-1 flex items-center justify-center bg-page px-6">
+        <div className="w-full max-w-[400px]">
           <div className="lg:hidden mb-8">
-            <button onClick={() => router.push('/')} className="flex items-center gap-2 text-white/40 hover:text-white/70 transition-colors mb-6">
-              <ArrowLeft className="w-4 h-4" />
-              <img src="/logo-v2-white.webp" alt="One&Only" className="h-5 w-auto" />
+            <button onClick={() => router.push('/')} className="flex items-center gap-2 mb-4">
+              <ArrowLeft className="w-4 h-4 text-[var(--text-muted)]" />
+              <img src="/logo-v2-white.webp" alt="One&Only" className="h-7 invert" />
             </button>
           </div>
 
           <div className="mb-8">
-            <h1 className="text-2xl font-bold tracking-[-0.03em] text-white mb-1.5">
+            <h1 className="text-2xl font-bold text-[var(--text-heading)] tracking-tight">
               {isSignIn ? "Welcome back" : "Create your account"}
             </h1>
-            <p className="text-[14px] text-white/35">
-              {isSignIn ? "Sign in to continue to One&Only" : "Get started with One&Only for free"}
+            <p className="text-sm text-[var(--text-muted)] mt-1.5">
+              {isSignIn ? "Sign in to continue to your workspace" : "Get started with your free account"}
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4 mb-6">
             <div>
-              <label htmlFor="email" className="text-[12px] font-medium text-white/40 uppercase tracking-[0.08em] block mb-2">Email</label>
+              <label htmlFor="email" className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider block mb-2">
+                Email Address
+              </label>
               <div className="relative">
-                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
+                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-subtle)]" />
                 <input
                   id="email"
                   type="email"
@@ -106,13 +113,14 @@ export default function AuthPage() {
                   placeholder="you@company.com"
                   required
                   autoComplete="email"
-                  className="w-full h-12 pl-11 pr-4 rounded-xl border border-white/[0.08] bg-white/[0.03] text-[14px] text-white placeholder:text-white/20 focus:outline-none focus:border-[#5488B6]/50 focus:bg-white/[0.05] transition-all"
+                  className="w-full h-12 pl-11 pr-4 rounded-xl border border-[var(--border-soft)] bg-white text-sm text-[var(--text-body)] placeholder:text-[var(--text-subtle)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] transition-all duration-200"
                 />
               </div>
             </div>
-
             <div>
-              <label htmlFor="password" className="text-[12px] font-medium text-white/40 uppercase tracking-[0.08em] block mb-2">Password</label>
+              <label htmlFor="password" className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider block mb-2">
+                Password
+              </label>
               <div className="relative">
                 <input
                   id="password"
@@ -123,12 +131,13 @@ export default function AuthPage() {
                   required
                   minLength={isSignIn ? undefined : 8}
                   autoComplete={isSignIn ? "current-password" : "new-password"}
-                  className="w-full h-12 pl-4 pr-12 rounded-xl border border-white/[0.08] bg-white/[0.03] text-[14px] text-white placeholder:text-white/20 focus:outline-none focus:border-[#5488B6]/50 focus:bg-white/[0.05] transition-all"
+                  className="w-full h-12 pl-4 pr-12 rounded-xl border border-[var(--border-soft)] bg-white text-sm text-[var(--text-body)] placeholder:text-[var(--text-subtle)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] transition-all duration-200"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/20 hover:text-white/50 transition-colors"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[var(--text-subtle)] hover:text-[var(--text-body)] transition-colors"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -136,31 +145,37 @@ export default function AuthPage() {
             </div>
 
             {error && (
-              <div className="rounded-lg bg-red-500/10 border border-red-500/20 px-4 py-3">
-                <p className="text-[13px] text-red-400">{error}</p>
+              <div className="flex items-start gap-2 p-3 rounded-lg bg-red-50 border border-red-100">
+                <p className="text-xs text-red-600 leading-relaxed">{error}</p>
               </div>
             )}
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full h-12 rounded-xl bg-white text-[#0B1324] font-semibold text-[14px] hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+              className="w-full h-12 rounded-xl bg-[var(--color-primary)] text-white text-sm font-semibold flex items-center justify-center gap-2 shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-lift)] hover:bg-[var(--color-primary-hover)] transition-all duration-200 disabled:opacity-50"
             >
-              {isSignIn ? (
-                <LogIn className="w-4 h-4" />
-              ) : (
-                <UserPlus className="w-4 h-4" />
-              )}
               {loading
                 ? (isSignIn ? "Signing in..." : "Creating account...")
-                : (isSignIn ? "Sign In" : "Create Account")
+                : (
+                  <>
+                    {isSignIn ? "Sign In" : "Create Account"}
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )
               }
             </button>
           </form>
 
-          <p className="text-center text-[13px] text-white/30">
+          <div className="relative mb-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-[var(--border-soft)]" />
+            </div>
+          </div>
+
+          <p className="text-center text-sm text-[var(--text-muted)]">
             {isSignIn ? "Don't have an account? " : "Already have an account? "}
-            <button onClick={toggleMode} className="text-[#77A2C9] font-medium hover:text-[#5488B6] transition-colors">
+            <button onClick={toggleMode} className="text-[var(--color-primary)] font-semibold hover:underline underline-offset-2 transition-colors">
               {isSignIn ? "Sign up" : "Sign in"}
             </button>
           </p>

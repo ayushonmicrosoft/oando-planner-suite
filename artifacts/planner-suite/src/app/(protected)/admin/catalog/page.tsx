@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { Loader2, Search, Plus, Pencil, Trash2, X } from "lucide-react";
+import { Loader2, Search, Plus, Pencil, Trash2, Package, MoreHorizontal, Ruler } from "lucide-react";
 import { useListCatalogItems, getListCatalogItemsQueryKey } from "@workspace/api-client-react";
 import { adminCreateCatalogItem, adminUpdateCatalogItem, adminDeleteCatalogItem } from "@/lib/admin-api";
 import { useToast } from "@/hooks/use-toast";
@@ -26,8 +25,14 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface CatalogItem {
   id: string;
@@ -58,6 +63,20 @@ const emptyForm = {
   price: "",
 };
 
+const categoryColors: Record<string, string> = {
+  desk: "bg-blue-50 text-blue-700 border-blue-200",
+  chair: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  table: "bg-violet-50 text-violet-700 border-violet-200",
+  storage: "bg-amber-50 text-amber-700 border-amber-200",
+  sofa: "bg-rose-50 text-rose-700 border-rose-200",
+  partition: "bg-slate-50 text-slate-700 border-slate-200",
+};
+
+function getCategoryStyle(cat: string) {
+  const key = cat.toLowerCase();
+  return categoryColors[key] || "bg-gray-50 text-gray-700 border-gray-200";
+}
+
 export default function AdminCatalogPage() {
   const { data: items, isLoading } = useListCatalogItems();
   const [search, setSearch] = useState("");
@@ -65,6 +84,7 @@ export default function AdminCatalogPage() {
   const [editingItem, setEditingItem] = useState<CatalogItem | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<CatalogItem | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const { toast } = useToast();
   const qc = useQueryClient();
@@ -132,6 +152,7 @@ export default function AdminCatalogPage() {
 
   const handleDelete = async (id: string) => {
     setDeletingId(id);
+    setDeleteTarget(null);
     try {
       await adminDeleteCatalogItem(id);
       toast({ title: "Item deleted" });
@@ -149,10 +170,12 @@ export default function AdminCatalogPage() {
       item.category.toLowerCase().includes(search.toLowerCase())
   ) ?? [];
 
+  const categories = [...new Set((items as CatalogItem[] | undefined)?.map((i) => i.category) ?? [])];
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+        <Loader2 className="w-8 h-8 animate-spin text-[var(--text-subtle)]" />
       </div>
     );
   }
@@ -161,94 +184,132 @@ export default function AdminCatalogPage() {
     <div className="space-y-6 max-w-6xl">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Catalog Management</h1>
-          <p className="text-muted-foreground">Manage furniture catalog items</p>
+          <h1 className="text-2xl font-bold text-[var(--text-heading)] tracking-tight">Catalog Management</h1>
+          <p className="text-[var(--text-muted)] mt-1">Manage furniture catalog items</p>
         </div>
-        <Button onClick={openCreate}>
-          <Plus className="w-4 h-4 mr-2" />
+        <Button onClick={openCreate} className="gap-2 rounded-xl shadow-sm">
+          <Plus className="w-4 h-4" />
           Add Item
         </Button>
       </div>
 
-      <div className="flex items-center gap-2">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Search catalog..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9"
-          />
+      <div className="flex items-center gap-3 flex-wrap">
+        <div className="flex items-center gap-2 text-sm">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--surface-accent-wash)] text-[var(--text-muted)]">
+            <Package className="w-3.5 h-3.5" />
+            {(items as CatalogItem[] | undefined)?.length ?? 0} items
+          </span>
+          <span className="text-[var(--text-subtle)]">&middot;</span>
+          <span className="text-sm text-[var(--text-subtle)]">{categories.length} categories</span>
         </div>
-        <span className="text-sm text-muted-foreground">{filtered.length} items</span>
       </div>
 
-      <Card>
+      <div className="flex items-center gap-2">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-subtle)]" />
+          <Input
+            placeholder="Search by name or category..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-10 h-10 rounded-xl border-[var(--border-soft)] bg-white"
+          />
+        </div>
+        <span className="text-sm text-[var(--text-subtle)]">{filtered.length} results</span>
+      </div>
+
+      <Card className="border-[var(--border-soft)] overflow-hidden">
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b bg-muted/50">
-                  <th className="text-left p-3 font-medium">Name</th>
-                  <th className="text-left p-3 font-medium">Category</th>
-                  <th className="text-left p-3 font-medium">Dimensions (cm)</th>
-                  <th className="text-left p-3 font-medium">Price</th>
-                  <th className="text-left p-3 font-medium">Color</th>
-                  <th className="text-right p-3 font-medium">Actions</th>
+                <tr className="border-b border-[var(--border-soft)] bg-[var(--surface-soft)]">
+                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Item</th>
+                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Category</th>
+                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Dimensions</th>
+                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Price</th>
+                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Color</th>
+                  <th className="text-right px-5 py-3.5 text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-[var(--border-soft)]">
                 {filtered.map((item) => (
-                  <tr key={item.id} className="border-b last:border-0 hover:bg-muted/30">
-                    <td className="p-3 font-medium">{item.name}</td>
-                    <td className="p-3">
-                      <Badge variant="outline">{item.category}</Badge>
-                    </td>
-                    <td className="p-3 text-muted-foreground">
-                      {item.widthCm} × {item.depthCm} × {item.heightCm}
-                    </td>
-                    <td className="p-3 text-muted-foreground">
-                      {item.price != null ? `$${item.price.toFixed(2)}` : "—"}
-                    </td>
-                    <td className="p-3 text-muted-foreground">{item.color || "—"}</td>
-                    <td className="p-3 text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        <Button variant="ghost" size="sm" onClick={() => openEdit(item)}>
-                          <Pencil className="w-3 h-3" />
-                        </Button>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button variant="ghost" size="sm" disabled={deletingId === item.id}>
-                              {deletingId === item.id ? (
-                                <Loader2 className="w-3 h-3 animate-spin" />
-                              ) : (
-                                <Trash2 className="w-3 h-3 text-destructive" />
-                              )}
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Delete &ldquo;{item.name}&rdquo;?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                This will permanently remove this item from the catalog.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => handleDelete(item.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                                Delete
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                  <tr key={item.id} className="hover:bg-[var(--surface-hover)] transition-colors duration-150">
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-[var(--surface-accent-wash)] shrink-0">
+                          <Package className="w-4 h-4 text-[var(--text-muted)]" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-medium text-sm text-[var(--text-strong)] truncate">{item.name}</p>
+                          {item.description && (
+                            <p className="text-xs text-[var(--text-subtle)] truncate max-w-[200px]">{item.description}</p>
+                          )}
+                        </div>
                       </div>
+                    </td>
+                    <td className="px-5 py-4">
+                      <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium border ${getCategoryStyle(item.category)}`}>
+                        {item.category}
+                      </span>
+                    </td>
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-1.5 text-[var(--text-muted)]">
+                        <Ruler className="w-3.5 h-3.5 text-[var(--text-subtle)]" />
+                        <span className="text-sm">{item.widthCm} &times; {item.depthCm} &times; {item.heightCm}</span>
+                      </div>
+                    </td>
+                    <td className="px-5 py-4">
+                      {item.price != null ? (
+                        <span className="text-sm font-medium text-[var(--text-strong)]">${item.price.toFixed(2)}</span>
+                      ) : (
+                        <span className="text-sm text-[var(--text-subtle)]">&mdash;</span>
+                      )}
+                    </td>
+                    <td className="px-5 py-4">
+                      {item.color ? (
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 rounded-full border border-[var(--border-soft)]" style={{ backgroundColor: item.color.startsWith("#") ? item.color : undefined }} />
+                          <span className="text-sm text-[var(--text-muted)]">{item.color}</span>
+                        </div>
+                      ) : (
+                        <span className="text-sm text-[var(--text-subtle)]">&mdash;</span>
+                      )}
+                    </td>
+                    <td className="px-5 py-4 text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0" aria-label="Item actions">
+                            <MoreHorizontal className="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-40">
+                          <DropdownMenuItem onClick={() => openEdit(item)}>
+                            <Pencil className="w-4 h-4 mr-2" />
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={() => setDeleteTarget(item)}
+                            className="text-destructive focus:text-destructive"
+                            disabled={deletingId === item.id}
+                          >
+                            {deletingId === item.id ? (
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            ) : (
+                              <Trash2 className="w-4 h-4 mr-2" />
+                            )}
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </td>
                   </tr>
                 ))}
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="p-8 text-center text-muted-foreground">
-                      No catalog items found.
+                    <td colSpan={6} className="px-5 py-12 text-center">
+                      <Package className="w-8 h-8 mx-auto text-[var(--text-subtle)] mb-2" />
+                      <p className="text-sm text-[var(--text-muted)]">No catalog items found.</p>
                     </td>
                   </tr>
                 )}
@@ -258,6 +319,26 @@ export default function AdminCatalogPage() {
         </CardContent>
       </Card>
 
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete &ldquo;{deleteTarget?.name}&rdquo;?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently remove this item from the catalog.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteTarget && handleDelete(deleteTarget.id)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -266,59 +347,59 @@ export default function AdminCatalogPage() {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label>Name *</Label>
-                <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+                <Label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Name *</Label>
+                <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="rounded-xl" />
               </div>
               <div className="space-y-1.5">
-                <Label>Category *</Label>
-                <Input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} />
+                <Label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Category *</Label>
+                <Input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="rounded-xl" />
               </div>
             </div>
             <div className="grid grid-cols-3 gap-4">
               <div className="space-y-1.5">
-                <Label>Width (cm) *</Label>
-                <Input type="number" value={form.widthCm} onChange={(e) => setForm({ ...form, widthCm: e.target.value })} />
+                <Label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Width (cm) *</Label>
+                <Input type="number" value={form.widthCm} onChange={(e) => setForm({ ...form, widthCm: e.target.value })} className="rounded-xl" />
               </div>
               <div className="space-y-1.5">
-                <Label>Depth (cm) *</Label>
-                <Input type="number" value={form.depthCm} onChange={(e) => setForm({ ...form, depthCm: e.target.value })} />
+                <Label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Depth (cm) *</Label>
+                <Input type="number" value={form.depthCm} onChange={(e) => setForm({ ...form, depthCm: e.target.value })} className="rounded-xl" />
               </div>
               <div className="space-y-1.5">
-                <Label>Height (cm) *</Label>
-                <Input type="number" value={form.heightCm} onChange={(e) => setForm({ ...form, heightCm: e.target.value })} />
+                <Label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Height (cm) *</Label>
+                <Input type="number" value={form.heightCm} onChange={(e) => setForm({ ...form, heightCm: e.target.value })} className="rounded-xl" />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label>Color</Label>
-                <Input value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} />
+                <Label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Color</Label>
+                <Input value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} className="rounded-xl" />
               </div>
               <div className="space-y-1.5">
-                <Label>Shape</Label>
-                <Input value={form.shape} onChange={(e) => setForm({ ...form, shape: e.target.value })} />
+                <Label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Shape</Label>
+                <Input value={form.shape} onChange={(e) => setForm({ ...form, shape: e.target.value })} className="rounded-xl" />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label>Price</Label>
-                <Input type="number" step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} />
+                <Label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Price</Label>
+                <Input type="number" step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} className="rounded-xl" />
               </div>
               <div className="space-y-1.5">
-                <Label>Seat Count</Label>
-                <Input type="number" value={form.seatCount} onChange={(e) => setForm({ ...form, seatCount: e.target.value })} />
+                <Label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Seat Count</Label>
+                <Input type="number" value={form.seatCount} onChange={(e) => setForm({ ...form, seatCount: e.target.value })} className="rounded-xl" />
               </div>
             </div>
             <div className="space-y-1.5">
-              <Label>Description</Label>
-              <Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+              <Label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Description</Label>
+              <Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="rounded-xl" />
             </div>
             <div className="space-y-1.5">
-              <Label>Image URL</Label>
-              <Input value={form.imageUrl} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} />
+              <Label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Image URL</Label>
+              <Input value={form.imageUrl} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} className="rounded-xl" />
             </div>
             <div className="flex justify-end gap-2 pt-2">
-              <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
-              <Button onClick={handleSave} disabled={saving}>
+              <Button variant="outline" onClick={() => setDialogOpen(false)} className="rounded-xl">Cancel</Button>
+              <Button onClick={handleSave} disabled={saving} className="rounded-xl">
                 {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                 {editingItem ? "Save Changes" : "Create Item"}
               </Button>

@@ -1,5 +1,5 @@
 {
-  "buildCommand": "pnpm --filter @workspace/planner-suite run build && cp -r artifacts/planner-suite/build output",
+  "buildCommand": "pnpm --filter @workspace/planner-suite run build",
   "outputDirectory": "output",
   "installCommand": "pnpm install",
   "framework": null,

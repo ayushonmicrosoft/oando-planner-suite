@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useCallback, useState, useMemo } from "react";
 import type { Editor, TLRecord, TLStoreEventInfo, RecordId } from "tldraw";
+import { storeHasRecord, storeRemoveRecords } from "./tldraw-compat";
 import * as Y from "yjs";
 import { WebsocketProvider } from "y-websocket";
 import type { Awareness } from "y-protocols/awareness";
@@ -108,14 +109,14 @@ export function useCollaboration({ planId, editor, userName }: UseCollaborationO
               toAdd.push(value);
             }
           } else if (change.action === "delete") {
-            if (currentEditor.store.has(key as RecordId<TLRecord>)) {
+            if (storeHasRecord(currentEditor, key)) {
               toRemove.push(key as RecordId<TLRecord>);
             }
           }
         });
 
         if (toAdd.length > 0) currentEditor.store.put(toAdd);
-        if (toRemove.length > 0) currentEditor.store.remove(toRemove);
+        if (toRemove.length > 0) storeRemoveRecords(currentEditor, toRemove);
       } finally {
         suppressRemoteRef.current = false;
       }

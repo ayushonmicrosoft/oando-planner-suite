@@ -27,7 +27,8 @@ router.get(
   "/clients",
   asyncHandler(async (req, res) => {
     const userId = (req as any).userId as string;
-    const search = req.query.search as string | undefined;
+    const rawSearch = Array.isArray(req.query.search) ? req.query.search[0] : req.query.search;
+    const search = typeof rawSearch === "string" ? rawSearch.replace(/[%_\\]/g, "\\$&") : undefined;
 
     let whereClause = eq(clientsTable.userId, userId);
 

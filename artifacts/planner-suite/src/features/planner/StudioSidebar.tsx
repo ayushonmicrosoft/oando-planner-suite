@@ -8,9 +8,11 @@ import {
 import { usePlannerStore, type CanvasToolMode, type LabelUnit } from "./planner-store";
 import { cn } from "@/lib/utils";
 
+import type { LucideProps } from "lucide-react";
+
 const ARCH_TOOLS: {
   tool: CanvasToolMode;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: React.ComponentType<LucideProps>;
   label: string;
   shortcut?: string;
   tldrawTool?: string;

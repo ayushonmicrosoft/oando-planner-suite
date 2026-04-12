@@ -28,6 +28,7 @@
     "razorpay": "^2.9.6",
     "ws": "^8.20.0",
     "y-protocols": "^1.0.7",
+    "zod": "catalog:",
     "yjs": "^13.6.30"
   },
   "devDependencies": {

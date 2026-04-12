@@ -3,8 +3,24 @@ import { eq, sql } from "drizzle-orm";
 import { db, templatesTable, plansTable } from "@workspace/db";
 import { asyncHandler } from "../middlewares/async-handler";
 import { requireAdmin } from "../middlewares/require-admin";
+import { z } from "zod";
 
 const router: IRouter = Router();
+
+const UseTemplateBody = z.object({
+  name: z.string().trim().min(1).max(200).optional(),
+});
+
+const UpdateTemplateBody = z.object({
+  name: z.string().trim().min(1).max(200).optional(),
+  description: z.string().trim().max(2000).optional(),
+  category: z.string().trim().min(1).max(100).optional(),
+  roomWidthCm: z.number().positive().max(100000).optional(),
+  roomDepthCm: z.number().positive().max(100000).optional(),
+  layoutJson: z.string().min(1).max(10_000_000).optional(),
+  furnitureCount: z.number().int().min(0).max(10000).optional(),
+  thumbnailSvg: z.string().max(1_000_000).optional(),
+});
 
 router.get(
   "/templates",
@@ -84,7 +100,13 @@ router.post(
       items: layoutData.items || [],
     });
 
-    const planName = req.body?.name || `${template.name} Plan`;
+    const parsed = UseTemplateBody.safeParse(req.body ?? {});
+    if (!parsed.success) {
+      res.status(400).json({ error: "Invalid request body: " + parsed.error.message, status: 400 });
+      return;
+    }
+
+    const planName = parsed.data?.name || `${template.name} Plan`;
 
     const [[plan]] = await Promise.all([
       db
@@ -116,17 +138,23 @@ router.patch(
   requireAdmin,
   asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const { name, description, category, roomWidthCm, roomDepthCm, layoutJson, furnitureCount, thumbnailSvg } = req.body;
+
+    const parsed = UpdateTemplateBody.safeParse(req.body ?? {});
+    if (!parsed.success) {
+      res.status(400).json({ error: "Invalid update data: " + parsed.error.message, status: 400 });
+      return;
+    }
 
     const updates: Record<string, unknown> = {};
-    if (name !== undefined) updates.name = name;
-    if (description !== undefined) updates.description = description;
-    if (category !== undefined) updates.category = category;
-    if (roomWidthCm !== undefined) updates.roomWidthCm = Number(roomWidthCm);
-    if (roomDepthCm !== undefined) updates.roomDepthCm = Number(roomDepthCm);
-    if (layoutJson !== undefined) updates.layoutJson = layoutJson;
-    if (furnitureCount !== undefined) updates.furnitureCount = Number(furnitureCount);
-    if (thumbnailSvg !== undefined) updates.thumbnailSvg = thumbnailSvg;
+    const data = parsed.data;
+    if (data.name !== undefined) updates.name = data.name;
+    if (data.description !== undefined) updates.description = data.description;
+    if (data.category !== undefined) updates.category = data.category;
+    if (data.roomWidthCm !== undefined) updates.roomWidthCm = data.roomWidthCm;
+    if (data.roomDepthCm !== undefined) updates.roomDepthCm = data.roomDepthCm;
+    if (data.layoutJson !== undefined) updates.layoutJson = data.layoutJson;
+    if (data.furnitureCount !== undefined) updates.furnitureCount = data.furnitureCount;
+    if (data.thumbnailSvg !== undefined) updates.thumbnailSvg = data.thumbnailSvg;
 
     if (Object.keys(updates).length === 0) {
       res.status(400).json({ error: "No fields to update", status: 400 });

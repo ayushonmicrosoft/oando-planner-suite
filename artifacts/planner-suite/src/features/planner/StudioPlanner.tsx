@@ -3,6 +3,12 @@
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef } from "react";
 import type { Editor, TLComponents, TLUiOverrides } from "tldraw";
 import "tldraw/tldraw.css";
+import {
+  storeGetDocumentSnapshot,
+  storeLoadDocumentSnapshot,
+  editorOn,
+  editorOff,
+} from "./tldraw-compat";
 import { usePlannerStore, type CanvasToolMode } from "./planner-store";
 import { StudioToolbar } from "./StudioToolbar";
 import { StudioSidebar } from "./StudioSidebar";
@@ -132,12 +138,11 @@ export function StudioPlanner() {
         }
       };
 
-      const eventName = "event" as Parameters<typeof editor.on>[0];
-      editor.on(eventName, handlePointer);
+      editorOn(editor, "event", handlePointer);
 
       return () => {
         unsubscribeStore();
-        editor.off(eventName, handlePointer);
+        editorOff(editor, "event", handlePointer);
       };
     },
     [setEditor]
@@ -230,12 +235,7 @@ export function StudioPlanner() {
         getCurrentDocument={() => {
           const editor = editorRef.current;
           if (!editor) return null;
-          try {
-            const snapshot = editor.store.getSnapshot("document");
-            return JSON.stringify(snapshot);
-          } catch {
-            return null;
-          }
+          return storeGetDocumentSnapshot(editor);
         }}
         onRestore={(documentJson) => {
           const editor = editorRef.current;
@@ -243,14 +243,7 @@ export function StudioPlanner() {
             window.location.reload();
             return;
           }
-          try {
-            const snapshot = JSON.parse(documentJson);
-            if (snapshot?.store && snapshot?.schema) {
-              editor.store.loadSnapshot(snapshot);
-            } else {
-              window.location.reload();
-            }
-          } catch {
+          if (!storeLoadDocumentSnapshot(editor, documentJson)) {
             window.location.reload();
           }
         }}

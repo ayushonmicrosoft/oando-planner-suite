@@ -219,10 +219,10 @@ export default function ProjectDetail({ projectId }: { projectId: number }) {
               <CardContent className="space-y-3">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-primary/[0.06] flex items-center justify-center text-primary font-semibold text-sm">
-                    {project.client.name.charAt(0).toUpperCase()}
+                    {(project.client.name ?? "").charAt(0).toUpperCase()}
                   </div>
                   <div>
-                    <p className="font-medium text-sm">{project.client.name}</p>
+                    <p className="font-medium text-sm">{project.client.name ?? ""}</p>
                     {project.client.company && (
                       <p className="text-xs text-muted-foreground">{project.client.company}</p>
                     )}

@@ -2,8 +2,25 @@ import { Router, type IRouter } from "express";
 import { eq, and, desc } from "drizzle-orm";
 import { db, plansTable, planSharesTable, planCommentsTable } from "@workspace/db";
 import { asyncHandler } from "../middlewares/async-handler";
+import { z } from "zod";
 
 const router: IRouter = Router();
+
+const AddCommentBody = z.object({
+  x: z.number().finite().min(0).max(10000),
+  y: z.number().finite().min(0).max(10000),
+  message: z.string().trim().min(1).max(2000),
+  authorName: z.string().trim().min(1).max(200),
+});
+
+const ApproveShareBody = z.object({
+  status: z.enum(["approved", "changes_requested"]),
+  note: z.string().trim().max(2000).nullish(),
+});
+
+function parseStringParam(raw: string | string[]): string {
+  return Array.isArray(raw) ? raw[0] : raw;
+}
 
 function isShareValid(share: typeof planSharesTable.$inferSelect): boolean {
   if (!share.isActive) return false;
@@ -14,7 +31,7 @@ function isShareValid(share: typeof planSharesTable.$inferSelect): boolean {
 router.get(
   "/share/:token",
   asyncHandler(async (req, res) => {
-    const { token } = req.params;
+    const token = parseStringParam(req.params.token);
 
     const [share] = await db
       .select()
@@ -74,7 +91,7 @@ router.get(
 router.post(
   "/share/:token/comments",
   asyncHandler(async (req, res) => {
-    const { token } = req.params;
+    const token = parseStringParam(req.params.token);
 
     const [share] = await db
       .select()
@@ -86,30 +103,9 @@ router.post(
       return;
     }
 
-    const { x, y, message, authorName } = req.body || {};
-
-    if (typeof x !== "number" || typeof y !== "number" || !isFinite(x) || !isFinite(y)) {
-      res.status(400).json({ error: "x and y must be finite numbers", status: 400 });
-      return;
-    }
-    if (x < 0 || x > 10000 || y < 0 || y > 10000) {
-      res.status(400).json({ error: "x and y must be between 0 and 10000", status: 400 });
-      return;
-    }
-    if (!message || typeof message !== "string" || !message.trim()) {
-      res.status(400).json({ error: "message is required", status: 400 });
-      return;
-    }
-    if (message.trim().length > 2000) {
-      res.status(400).json({ error: "message must be 2000 characters or less", status: 400 });
-      return;
-    }
-    if (!authorName || typeof authorName !== "string" || !authorName.trim()) {
-      res.status(400).json({ error: "authorName is required", status: 400 });
-      return;
-    }
-    if (authorName.trim().length > 200) {
-      res.status(400).json({ error: "authorName must be 200 characters or less", status: 400 });
+    const parsed = AddCommentBody.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: "Invalid comment data: " + parsed.error.message, status: 400 });
       return;
     }
 
@@ -118,10 +114,10 @@ router.post(
       .values({
         shareId: share.id,
         planId: share.planId,
-        x,
-        y,
-        message: message.trim(),
-        authorName: authorName.trim(),
+        x: parsed.data.x,
+        y: parsed.data.y,
+        message: parsed.data.message,
+        authorName: parsed.data.authorName,
       })
       .returning();
 
@@ -139,7 +135,7 @@ router.post(
 router.post(
   "/share/:token/approve",
   asyncHandler(async (req, res) => {
-    const { token } = req.params;
+    const token = parseStringParam(req.params.token);
 
     const [share] = await db
       .select()
@@ -151,25 +147,15 @@ router.post(
       return;
     }
 
-    const { status, note } = req.body || {};
-
-    if (status !== "approved" && status !== "changes_requested") {
-      res.status(400).json({ error: "status must be 'approved' or 'changes_requested'", status: 400 });
-      return;
-    }
-
-    if (note !== undefined && note !== null && typeof note !== "string") {
-      res.status(400).json({ error: "note must be a string", status: 400 });
-      return;
-    }
-    if (typeof note === "string" && note.length > 2000) {
-      res.status(400).json({ error: "note must be 2000 characters or less", status: 400 });
+    const parsed = ApproveShareBody.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: "Invalid approval data: " + parsed.error.message, status: 400 });
       return;
     }
 
     const [updated] = await db
       .update(planSharesTable)
-      .set({ status, statusNote: note || null })
+      .set({ status: parsed.data.status, statusNote: parsed.data.note || null })
       .where(eq(planSharesTable.id, share.id))
       .returning();
 

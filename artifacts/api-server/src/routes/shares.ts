@@ -3,8 +3,20 @@ import { eq, and, desc } from "drizzle-orm";
 import { db, plansTable, planSharesTable, planCommentsTable } from "@workspace/db";
 import { asyncHandler } from "../middlewares/async-handler";
 import crypto from "crypto";
+import { z } from "zod";
 
 const router: IRouter = Router();
+
+const CreateShareBody = z.object({
+  clientName: z.string().trim().max(200).nullish(),
+  expiresInDays: z.number().positive().int().max(365).nullish(),
+});
+
+function parseIdParam(raw: string | string[]): number | null {
+  const str = Array.isArray(raw) ? raw[0] : raw;
+  const id = parseInt(str, 10);
+  return isNaN(id) || id <= 0 ? null : id;
+}
 
 function generateToken(): string {
   return crypto.randomBytes(24).toString("base64url");
@@ -30,8 +42,8 @@ router.post(
   "/plans/:id/share",
   asyncHandler(async (req, res) => {
     const userId = (req as any).userId as string;
-    const planId = parseInt(req.params.id, 10);
-    if (isNaN(planId) || planId <= 0) {
+    const planId = parseIdParam(req.params.id);
+    if (!planId) {
       res.status(400).json({ error: "Invalid plan id", status: 400 });
       return;
     }
@@ -46,20 +58,15 @@ router.post(
       return;
     }
 
-    const { clientName, expiresInDays } = req.body || {};
-
-    if (clientName !== undefined && clientName !== null && typeof clientName !== "string") {
-      res.status(400).json({ error: "clientName must be a string", status: 400 });
-      return;
-    }
-    if (typeof clientName === "string" && clientName.trim().length > 200) {
-      res.status(400).json({ error: "clientName must be 200 characters or less", status: 400 });
+    const parsed = CreateShareBody.safeParse(req.body ?? {});
+    if (!parsed.success) {
+      res.status(400).json({ error: "Invalid share data: " + parsed.error.message, status: 400 });
       return;
     }
 
     let expiresAt: Date | null = null;
-    if (expiresInDays && typeof expiresInDays === "number" && expiresInDays > 0) {
-      expiresAt = new Date(Date.now() + expiresInDays * 86400000);
+    if (parsed.data.expiresInDays) {
+      expiresAt = new Date(Date.now() + parsed.data.expiresInDays * 86400000);
     }
 
     const shareToken = generateToken();
@@ -69,7 +76,7 @@ router.post(
       .values({
         planId,
         shareToken,
-        clientName: clientName || null,
+        clientName: parsed.data.clientName || null,
         expiresAt,
       })
       .returning();
@@ -82,8 +89,8 @@ router.get(
   "/plans/:id/shares",
   asyncHandler(async (req, res) => {
     const userId = (req as any).userId as string;
-    const planId = parseInt(req.params.id, 10);
-    if (isNaN(planId) || planId <= 0) {
+    const planId = parseIdParam(req.params.id);
+    if (!planId) {
       res.status(400).json({ error: "Invalid plan id", status: 400 });
       return;
     }
@@ -121,9 +128,9 @@ router.delete(
   "/plans/:id/shares/:shareId",
   asyncHandler(async (req, res) => {
     const userId = (req as any).userId as string;
-    const planId = parseInt(req.params.id, 10);
-    const shareId = parseInt(req.params.shareId, 10);
-    if (isNaN(planId) || isNaN(shareId)) {
+    const planId = parseIdParam(req.params.id);
+    const shareId = parseIdParam(req.params.shareId);
+    if (!planId || !shareId) {
       res.status(400).json({ error: "Invalid id", status: 400 });
       return;
     }

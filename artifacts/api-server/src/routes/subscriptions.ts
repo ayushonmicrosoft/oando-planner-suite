@@ -13,8 +13,15 @@ import {
 } from "../lib/razorpay";
 import { logger } from "../lib/logger";
 import crypto from "crypto";
+import { z } from "zod";
 
 const router: IRouter = Router();
+
+const VerifyPaymentBody = z.object({
+  razorpay_order_id: z.string().min(1).max(200),
+  razorpay_payment_id: z.string().min(1).max(200),
+  razorpay_signature: z.string().min(1).max(500),
+});
 
 router.get(
   "/billing",
@@ -93,16 +100,14 @@ router.post(
   "/billing/verify-payment",
   asyncHandler(async (req, res) => {
     const userId = (req as any).userId as string;
-    const {
-      razorpay_order_id,
-      razorpay_payment_id,
-      razorpay_signature,
-    } = req.body;
 
-    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
-      res.status(400).json({ error: "Missing payment verification fields", status: 400 });
+    const parsed = VerifyPaymentBody.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: "Missing payment verification fields: " + parsed.error.message, status: 400 });
       return;
     }
+
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = parsed.data;
 
     const [user] = await db
       .select()

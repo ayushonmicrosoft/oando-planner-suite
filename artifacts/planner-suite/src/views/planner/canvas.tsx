@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Stage, Layer, Rect, Ellipse, Line, Text, Transformer, Group, Path, Circle } from 'react-konva';
 import type Konva from 'konva';
 import {
@@ -24,7 +24,7 @@ import {
   Loader2, Sparkles, Grid3X3, Undo2, Redo2, Copy,
   ZoomIn, ZoomOut, Lock, Unlock, Download, Ruler,
   Layers, ChevronUp, ChevronDown, Search, Eye, EyeOff,
-  AlertCircle, RefreshCw, Crosshair, ChevronRight, BarChart3
+  AlertCircle, RefreshCw, Crosshair, ChevronRight, BarChart3, FileSpreadsheet
 } from 'lucide-react';
 import { getFurnitureShapeDef, getCategoryIcon } from '@/lib/furniture-shapes';
 
@@ -325,6 +325,7 @@ function FurnitureShape({
 
 export default function CanvasPlanner() {
   const location = usePathname();
+  const router = useRouter();
   const searchParams = new URLSearchParams(window.location.search);
   const planId = searchParams.get('id') ? Number(searchParams.get('id')) : null;
 
@@ -835,6 +836,12 @@ export default function CanvasPlanner() {
             <Download className="w-3.5 h-3.5" />
             PNG
           </Button>
+          {planId && (
+            <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs" onClick={() => router.push(`/plans/${planId}/quote`)} title="Generate Quote">
+              <FileSpreadsheet className="w-3.5 h-3.5" />
+              Quote
+            </Button>
+          )}
           <Button variant={aiPanelOpen ? 'secondary' : 'outline'} size="sm" className="h-8 gap-1.5 text-xs" onClick={() => setAiPanelOpen(!aiPanelOpen)}>
             <Sparkles className="w-3.5 h-3.5 text-primary" />
             AI Advisor

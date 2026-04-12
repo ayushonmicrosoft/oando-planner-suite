@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Trash2, Box, Clock, LayoutGrid, Loader2, Copy, Grid3X3, Pencil, Shapes, ImagePlus, FileSignature, AlertCircle, RefreshCw } from 'lucide-react';
+import { Trash2, Box, Clock, LayoutGrid, Loader2, Copy, Grid3X3, Pencil, Shapes, ImagePlus, FileSignature, AlertCircle, RefreshCw, FileSpreadsheet } from 'lucide-react';
 import { format } from 'date-fns';
 import { useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
@@ -204,6 +204,15 @@ export default function Plans() {
                   data-testid={`button-open-${plan.id}`}
                 >
                   Open Plan
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => router.push(`/plans/${plan.id}/quote`)}
+                  title="Generate Quote"
+                >
+                  <FileSpreadsheet className="w-4 h-4" />
                 </Button>
 
                 <Button

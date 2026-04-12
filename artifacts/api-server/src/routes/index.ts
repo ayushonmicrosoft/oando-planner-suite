@@ -7,6 +7,7 @@ import templatesRouter from "./templates";
 import usersRouter from "./users";
 import clientsRouter from "./clients";
 import projectsRouter from "./projects";
+import quotesRouter from "./quotes";
 import { requireAuth } from "../middlewares/require-auth";
 
 const router: IRouter = Router();
@@ -17,6 +18,7 @@ router.use(catalogRouter);
 router.use(requireAuth);
 router.use(usersRouter);
 router.use(plansRouter);
+router.use(quotesRouter);
 router.use(aiRouter);
 router.use(templatesRouter);
 router.use(clientsRouter);

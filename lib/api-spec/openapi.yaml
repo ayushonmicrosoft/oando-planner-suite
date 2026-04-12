@@ -22,6 +22,8 @@ tags:
     description: Client management operations
   - name: projects
     description: Project management operations
+  - name: quotes
+    description: Quote and BOQ operations
 
 paths:
   /healthz:
@@ -621,6 +623,110 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /plans/{id}/quote:
+    post:
+      operationId: createQuote
+      tags: [quotes]
+      security:
+        - BearerAuth: []
+      summary: Generate a quote/BOQ from a plan
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateQuoteBody"
+      responses:
+        "201":
+          description: Created quote
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Quote"
+        "404":
+          description: Plan not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /plans/{id}/quote/preview:
+    get:
+      operationId: previewQuote
+      tags: [quotes]
+      security:
+        - BearerAuth: []
+      summary: Preview BOQ items extracted from a plan
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: BOQ preview
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuotePreview"
+        "404":
+          description: Plan not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /quotes/{id}:
+    get:
+      operationId: getQuote
+      tags: [quotes]
+      security:
+        - BearerAuth: []
+      summary: Get a saved quote
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: A quote
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Quote"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /quotes:
+    get:
+      operationId: listQuotes
+      tags: [quotes]
+      security:
+        - BearerAuth: []
+      summary: List all quotes
+      responses:
+        "200":
+          description: List of quotes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/QuoteSummary"
+
 security: []
 
 components:
@@ -1158,3 +1264,143 @@ components:
           type: string
         notes:
           type: string
+
+    BoquItem:
+      type: object
+      properties:
+        catalogId:
+          type: string
+        name:
+          type: string
+        category:
+          type: string
+        quantity:
+          type: integer
+        widthCm:
+          type: number
+        depthCm:
+          type: number
+        heightCm:
+          type: number
+        unitPrice:
+          type: number
+        totalPrice:
+          type: number
+      required:
+        - catalogId
+        - name
+        - category
+        - quantity
+        - widthCm
+        - depthCm
+        - heightCm
+        - unitPrice
+        - totalPrice
+
+    QuotePreview:
+      type: object
+      properties:
+        planId:
+          type: integer
+        planName:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/BoquItem"
+        subtotal:
+          type: number
+        gst:
+          type: number
+        total:
+          type: number
+      required:
+        - planId
+        - planName
+        - items
+        - subtotal
+        - gst
+        - total
+
+    CreateQuoteBody:
+      type: object
+      properties:
+        clientName:
+          type: string
+        clientCompany:
+          type: string
+        clientEmail:
+          type: string
+        projectName:
+          type: string
+      required:
+        - clientName
+        - clientCompany
+        - projectName
+
+    Quote:
+      type: object
+      properties:
+        id:
+          type: integer
+        planId:
+          type: integer
+        clientName:
+          type: string
+        clientCompany:
+          type: string
+        clientEmail:
+          type: string
+        projectName:
+          type: string
+        itemsJson:
+          type: string
+        subtotal:
+          type: number
+        gst:
+          type: number
+        total:
+          type: number
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - planId
+        - clientName
+        - clientCompany
+        - clientEmail
+        - projectName
+        - itemsJson
+        - subtotal
+        - gst
+        - total
+        - createdAt
+        - updatedAt
+
+    QuoteSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+        planId:
+          type: integer
+        clientName:
+          type: string
+        clientCompany:
+          type: string
+        projectName:
+          type: string
+        total:
+          type: number
+        createdAt:
+          type: string
+      required:
+        - id
+        - planId
+        - clientName
+        - clientCompany
+        - projectName
+        - total
+        - createdAt

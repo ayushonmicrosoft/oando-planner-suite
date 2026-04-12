@@ -9,7 +9,7 @@ import {
   Ruler, Lock, Unlock, AlignStartHorizontal, AlignCenterHorizontal,
   AlignEndHorizontal, AlignStartVertical, AlignCenterVertical,
   AlignEndVertical, Group, Ungroup, MoveUp, MoveDown,
-  Highlighter, Pointer, Download, FileText, Image, Map as MapIcon,
+  Highlighter, Pointer, Download, FileText, Image, Map as MapIcon, FileSpreadsheet,
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { usePlannerStore, type CanvasToolMode } from "./planner-store";
@@ -352,6 +352,10 @@ export function StudioToolbar() {
               </button>
               <button onClick={handleExportPdf} className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-navy/5 text-left">
                 <FileText className="h-4 w-4 text-navy" /> Export PDF
+              </button>
+              <div className="border-t my-1" />
+              <button onClick={() => { setShowExportMenu(false); router.push('/plans'); }} className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-navy/5 text-left">
+                <FileSpreadsheet className="h-4 w-4 text-navy" /> Generate Quote
               </button>
             </div>
           </>

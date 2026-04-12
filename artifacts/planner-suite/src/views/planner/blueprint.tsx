@@ -17,7 +17,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { 
-  CheckCircle2, ChevronRight, FileSignature, Box, Plus, Minus, Loader2, Sparkles, ArrowRight, Download, AlertCircle, RefreshCw
+  CheckCircle2, ChevronRight, FileSignature, Box, Plus, Minus, Loader2, Sparkles, ArrowRight, Download, AlertCircle, RefreshCw, FileSpreadsheet
 } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
@@ -199,7 +199,7 @@ export default function BlueprintPlanner() {
     toast({ title: 'PDF export ready', description: 'Use the print dialog to save as PDF.' });
   };
 
-  const handleSave = () => {
+  const handleSave = (redirectToQuote = false) => {
     const documentData = {
       roomType,
       selectedCategories,
@@ -216,8 +216,13 @@ export default function BlueprintPlanner() {
       }
     }, {
       onSuccess: (data) => {
-        toast({ title: "Blueprint saved successfully" });
-        router.push('/plans');
+        if (redirectToQuote) {
+          toast({ title: "Blueprint saved — opening quote builder" });
+          router.push(`/plans/${data.id}/quote`);
+        } else {
+          toast({ title: "Blueprint saved successfully" });
+          router.push('/plans');
+        }
       }
     });
   };
@@ -550,7 +555,11 @@ export default function BlueprintPlanner() {
                   <Download className="w-4 h-4" />
                   Download PDF
                 </Button>
-                <Button onClick={handleSave} disabled={createPlan.isPending} className="px-8">
+                <Button variant="outline" onClick={() => handleSave(true)} disabled={createPlan.isPending} className="gap-2">
+                  <FileSpreadsheet className="w-4 h-4" />
+                  Save & Generate Quote
+                </Button>
+                <Button onClick={() => handleSave(false)} disabled={createPlan.isPending} className="px-8">
                   {createPlan.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
                   Save Blueprint Plan
                 </Button>

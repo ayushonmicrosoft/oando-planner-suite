@@ -520,3 +520,81 @@ export const UpdateProjectResponse = zod.object({
 export const DeleteProjectParams = zod.object({
   id: zod.coerce.number(),
 });
+
+/**
+ * @summary Generate a quote/BOQ from a plan
+ */
+export const CreateQuoteParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const CreateQuoteBody = zod.object({
+  clientName: zod.string(),
+  clientCompany: zod.string(),
+  clientEmail: zod.string().optional(),
+  projectName: zod.string(),
+});
+
+/**
+ * @summary Preview BOQ items extracted from a plan
+ */
+export const PreviewQuoteParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const PreviewQuoteResponse = zod.object({
+  planId: zod.number(),
+  planName: zod.string(),
+  items: zod.array(
+    zod.object({
+      catalogId: zod.string(),
+      name: zod.string(),
+      category: zod.string(),
+      quantity: zod.number(),
+      widthCm: zod.number(),
+      depthCm: zod.number(),
+      heightCm: zod.number(),
+      unitPrice: zod.number(),
+      totalPrice: zod.number(),
+    }),
+  ),
+  subtotal: zod.number(),
+  gst: zod.number(),
+  total: zod.number(),
+});
+
+/**
+ * @summary Get a saved quote
+ */
+export const GetQuoteParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetQuoteResponse = zod.object({
+  id: zod.number(),
+  planId: zod.number(),
+  clientName: zod.string(),
+  clientCompany: zod.string(),
+  clientEmail: zod.string(),
+  projectName: zod.string(),
+  itemsJson: zod.string(),
+  subtotal: zod.number(),
+  gst: zod.number(),
+  total: zod.number(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+
+/**
+ * @summary List all quotes
+ */
+export const ListQuotesResponseItem = zod.object({
+  id: zod.number(),
+  planId: zod.number(),
+  clientName: zod.string(),
+  clientCompany: zod.string(),
+  projectName: zod.string(),
+  total: zod.number(),
+  createdAt: zod.string(),
+});
+export const ListQuotesResponse = zod.array(ListQuotesResponseItem);

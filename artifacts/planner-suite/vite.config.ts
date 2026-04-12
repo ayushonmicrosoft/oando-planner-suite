@@ -43,7 +43,7 @@ export default defineConfig({
     devSourcemap: false,
   },
   build: {
-    outDir: path.resolve(import.meta.dirname, "..", "..", "output"),
+    outDir: path.resolve(import.meta.dirname, "build"),
     emptyOutDir: true,
     sourcemap: false,
     chunkSizeWarningLimit: 2000,

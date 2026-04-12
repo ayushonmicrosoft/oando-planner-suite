@@ -25,10 +25,12 @@ import {
   ZoomIn, ZoomOut, Lock, Unlock, Download, Ruler,
   Layers, ChevronUp, ChevronDown, Search, Eye, EyeOff,
   AlertCircle, RefreshCw, Crosshair, ChevronRight, BarChart3, FileSpreadsheet,
-  PenTool
+  PenTool, History,
 } from 'lucide-react';
 import { PlannerBreadcrumb } from '@/components/planner/PlannerBreadcrumb';
 import { PlanBackgroundLayers } from '@/components/plan-background-layers';
+import { VersionHistoryPanel } from '@/features/planner/VersionHistoryPanel';
+import { usePlannerStore } from '@/features/planner/planner-store';
 import { getFurnitureShapeDef, getCategoryIcon } from '@/lib/furniture-shapes';
 import { getCompletedSteps } from '@/lib/unified-document';
 
@@ -421,6 +423,17 @@ export default function CanvasPlanner() {
   }, [existingPlan, loadDocument, setRoomDepthCm, setRoomWidthCm]);
 
   useEffect(() => {
+    usePlannerStore.getState().setCurrentPlanId(planId);
+    const sp = new URLSearchParams(window.location.search);
+    if (sp.get("versions") === "1" && planId) {
+      usePlannerStore.getState().setVersionHistoryOpen(true);
+    }
+    return () => {
+      usePlannerStore.getState().setCurrentPlanId(null);
+    };
+  }, [planId]);
+
+  useEffect(() => {
     if (Object.keys(touched).length > 0) {
       setFormErrors(validateForm(planName, roomWidthCm, roomDepthCm));
     }
@@ -675,7 +688,15 @@ export default function CanvasPlanner() {
 
     if (planId) {
       updatePlan.mutate({ id: planId, data: payload }, {
-        onSuccess: () => toast({ title: 'Plan updated successfully' }),
+        onSuccess: () => {
+          toast({ title: 'Plan updated successfully' });
+          fetch(`/api/plans/${planId}/versions`, {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name: `Auto-save`, documentJson: getDocumentJson() }),
+          }).catch(() => {});
+        },
       });
     } else {
       createPlan.mutate({ data: payload }, {
@@ -705,6 +726,14 @@ export default function CanvasPlanner() {
   };
 
   const handleAskAi = (customQuery?: string) => {
+    if (planId) {
+      fetch(`/api/plans/${planId}/versions`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: "Before AI layout", documentJson: getDocumentJson() }),
+      }).catch(() => {});
+    }
     const catSet = new Set<string>();
     items.forEach(item => { if (item.category) catSet.add(item.category); });
     const spatialItems = items.map(item => ({
@@ -872,6 +901,12 @@ export default function CanvasPlanner() {
             {(createPlan.isPending || updatePlan.isPending) ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
             <span className="hidden sm:inline">Save</span>
           </Button>
+          {planId && (
+            <Button variant="outline" size="sm" className="h-7 gap-1 text-[11px]" onClick={() => usePlannerStore.getState().toggleVersionHistory()}>
+              <History className="w-3 h-3" />
+              <span className="hidden md:inline">Versions</span>
+            </Button>
+          )}
         </div>
       </header>
 
@@ -1560,6 +1595,14 @@ export default function CanvasPlanner() {
           )}
         </div>
       </div>
+      <VersionHistoryPanel
+        planId={planId}
+        getCurrentDocument={() => getDocumentJson()}
+        onRestore={(docJson) => {
+          loadDocument(docJson);
+          toast({ title: "Version restored", description: "The plan has been restored to the selected version." });
+        }}
+      />
     </div>
   );
 }

@@ -8,7 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Trash2, Box, Clock, LayoutGrid, Loader2, Copy, Grid3X3, Pencil, Shapes, ImagePlus, FileSignature, AlertCircle, RefreshCw, FileSpreadsheet, ArrowRight, Share2, MessageSquare, CheckCircle2, XCircle } from 'lucide-react';
+import { Trash2, Box, Clock, LayoutGrid, Loader2, Copy, Grid3X3, Pencil, Shapes, ImagePlus, FileSignature, AlertCircle, RefreshCw, FileSpreadsheet, ArrowRight, Share2, MessageSquare, CheckCircle2, XCircle, History } from 'lucide-react';
 import { format } from 'date-fns';
 import { useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
@@ -303,6 +303,20 @@ export default function Plans() {
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent>Generate Quote</TooltipContent>
+                    </Tooltip>
+
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                          onClick={() => router.push(`${plannerTypeRoutes[plan.plannerType] || '/planner/canvas'}?id=${plan.id}&versions=1`)}
+                        >
+                          <History className="w-3.5 h-3.5" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Version History</TooltipContent>
                     </Tooltip>
 
                     <Tooltip>

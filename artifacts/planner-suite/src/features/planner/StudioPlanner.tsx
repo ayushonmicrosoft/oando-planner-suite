@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, lazy, useCallback, useEffect, useRef } from "react";
+import { Suspense, lazy, useCallback, useEffect, useRef, useMemo } from "react";
 import type { Editor, TLComponents, TLUiOverrides } from "tldraw";
 import "tldraw/tldraw.css";
 import { usePlannerStore } from "./planner-store";
@@ -10,6 +10,7 @@ import { StudioCatalog } from "./StudioCatalog";
 import { StudioInspector } from "./StudioInspector";
 import { StudioStatusBar } from "./StudioStatusBar";
 import { Studio3DView } from "./Studio3DView";
+import { VersionHistoryPanel } from "./VersionHistoryPanel";
 import { Loader2 } from "lucide-react";
 
 const TldrawEditor = lazy(() =>
@@ -63,8 +64,25 @@ export function StudioPlanner() {
   const {
     setEditor, showCatalog, showInspector, showGrid, show3D,
     setZoom, setShapeCount, setCursorPos, setShapeCounts,
+    currentPlanId, showVersionHistory, setCurrentPlanId,
+    setVersionHistoryOpen,
   } = usePlannerStore();
   const editorRef = useRef<Editor | null>(null);
+
+  useEffect(() => {
+    const sp = new URLSearchParams(window.location.search);
+    const idStr = sp.get("id");
+    if (idStr) {
+      const id = parseInt(idStr, 10);
+      if (!isNaN(id) && id > 0) {
+        setCurrentPlanId(id);
+        if (sp.get("versions") === "1") {
+          setVersionHistoryOpen(true);
+        }
+      }
+    }
+    return () => { setCurrentPlanId(null); };
+  }, [setCurrentPlanId, setVersionHistoryOpen]);
 
   const handleMount = useCallback(
     (editor: Editor) => {
@@ -176,6 +194,36 @@ export function StudioPlanner() {
       {!show3D && <StudioInspector />}
       <Studio3DView />
       <StudioStatusBar />
+      <VersionHistoryPanel
+        planId={currentPlanId}
+        getCurrentDocument={() => {
+          const editor = editorRef.current;
+          if (!editor) return null;
+          try {
+            const snapshot = editor.store.getSnapshot("document");
+            return JSON.stringify(snapshot);
+          } catch {
+            return null;
+          }
+        }}
+        onRestore={(documentJson) => {
+          const editor = editorRef.current;
+          if (!editor) {
+            window.location.reload();
+            return;
+          }
+          try {
+            const snapshot = JSON.parse(documentJson);
+            if (snapshot?.store && snapshot?.schema) {
+              editor.store.loadSnapshot(snapshot);
+            } else {
+              window.location.reload();
+            }
+          } catch {
+            window.location.reload();
+          }
+        }}
+      />
 
       <div
         className="absolute transition-all duration-300 ease-out"

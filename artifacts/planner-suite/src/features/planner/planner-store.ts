@@ -88,6 +88,13 @@ interface PlannerState {
 
   isSaved: boolean;
   setSaved: (saved: boolean) => void;
+
+  currentPlanId: number | null;
+  setCurrentPlanId: (id: number | null) => void;
+
+  showVersionHistory: boolean;
+  toggleVersionHistory: () => void;
+  setVersionHistoryOpen: (open: boolean) => void;
 }
 
 export const usePlannerStore = create<PlannerState>()((set) => ({
@@ -152,4 +159,11 @@ export const usePlannerStore = create<PlannerState>()((set) => ({
 
   isSaved: false,
   setSaved: (isSaved) => set({ isSaved }),
+
+  currentPlanId: null,
+  setCurrentPlanId: (currentPlanId) => set({ currentPlanId }),
+
+  showVersionHistory: false,
+  toggleVersionHistory: () => set((s) => ({ showVersionHistory: !s.showVersionHistory })),
+  setVersionHistoryOpen: (showVersionHistory) => set({ showVersionHistory }),
 }));

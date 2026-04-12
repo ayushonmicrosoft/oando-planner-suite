@@ -11,7 +11,7 @@ import {
   AlignEndVertical, Group, Ungroup, MoveUp, MoveDown,
   Highlighter, Pointer, Download, FileText, Image, Map as MapIcon, FileSpreadsheet,
   LayoutTemplate, FolderOpen, FilePlus, Save, FileInput, Layers,
-  AlignHorizontalSpaceAround, Settings2, Presentation, Share2,
+  AlignHorizontalSpaceAround, Settings2, Presentation, Share2, History, GitCompare,
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { usePlannerStore, type CanvasToolMode } from "./planner-store";
@@ -278,6 +278,7 @@ export function StudioToolbar() {
 
       <TopBarBtn icon={Presentation} label="Present" onClick={() => {}} badge />
       <TopBarBtn icon={Sparkles} label="AI" onClick={() => {}} />
+      <TopBarBtn icon={History} label="Versions" onClick={() => usePlannerStore.getState().toggleVersionHistory()} />
       {currentPlanId > 0 && (
         <TopBarBtn icon={Share2} label="Share" onClick={() => setShowShareDialog(true)} />
       )}

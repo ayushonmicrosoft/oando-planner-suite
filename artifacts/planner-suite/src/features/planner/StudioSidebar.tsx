@@ -69,7 +69,7 @@ export function StudioSidebar() {
               )}
               title={t.shortcut ? `${t.label} (${t.shortcut})` : t.label}
             >
-              <Icon className="w-3.5 h-3.5 shrink-0" strokeWidth={1.8} />
+              <Icon className="w-3.5 h-3.5 shrink-0" />
               <span className="flex-1 leading-tight">{t.label}</span>
               {cnt !== undefined && cnt > 0 && (
                 <span className={cn(

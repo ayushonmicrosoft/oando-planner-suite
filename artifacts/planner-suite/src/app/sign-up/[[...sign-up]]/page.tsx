@@ -3,11 +3,13 @@
 import { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { Mail, Eye, EyeOff } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Mail, Eye, EyeOff, LogIn, UserPlus } from "lucide-react";
 
-export default function SignUpPage() {
-  const { signInWithProvider, signUpWithEmail } = useAuth();
+export default function AuthPage() {
+  const { signInWithProvider, signUpWithEmail, signInWithEmail } = useAuth();
+  const router = useRouter();
+  const [mode, setMode] = useState<"sign-in" | "sign-up">("sign-in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -15,18 +17,29 @@ export default function SignUpPage() {
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const handleEmailSignUp = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
     try {
-      await signUpWithEmail(email, password);
-      setSuccess(true);
+      if (mode === "sign-up") {
+        await signUpWithEmail(email, password);
+        setSuccess(true);
+      } else {
+        await signInWithEmail(email, password);
+        router.push("/");
+      }
     } catch (err: any) {
-      setError(err.message || "Failed to create account");
+      setError(err.message || (mode === "sign-up" ? "Failed to create account" : "Invalid email or password"));
     } finally {
       setLoading(false);
     }
+  };
+
+  const toggleMode = () => {
+    setMode(mode === "sign-in" ? "sign-up" : "sign-in");
+    setError("");
+    setSuccess(false);
   };
 
   if (success) {
@@ -38,24 +51,30 @@ export default function SignUpPage() {
           <p className="text-sm text-muted">
             We sent a confirmation link to <strong>{email}</strong>. Click the link to activate your account.
           </p>
-          <Link href="/sign-up" className="text-sm text-brand font-medium hover:underline mt-4 inline-block">
-            Back to Sign Up
-          </Link>
+          <button onClick={() => { setSuccess(false); setMode("sign-in"); }} className="text-sm text-brand font-medium hover:underline mt-4 inline-block">
+            Back to Sign In
+          </button>
         </div>
       </div>
     );
   }
+
+  const isSignIn = mode === "sign-in";
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-page">
       <div className="w-full max-w-sm mx-auto p-8 rounded-xl border border-soft bg-panel shadow-theme-panel">
         <div className="text-center mb-8">
           <img src="/logo-v2-white.webp" alt="One&Only" className="h-8 mx-auto mb-4 invert" />
-          <h1 className="text-xl font-semibold text-strong">Create your account</h1>
-          <p className="text-sm text-muted mt-1">Get started with One&Only</p>
+          <h1 className="text-xl font-semibold text-strong">
+            {isSignIn ? "Welcome back" : "Create your account"}
+          </h1>
+          <p className="text-sm text-muted mt-1">
+            {isSignIn ? "Sign in to One&Only" : "Get started with One&Only"}
+          </p>
         </div>
 
-        <form onSubmit={handleEmailSignUp} className="space-y-3 mb-4">
+        <form onSubmit={handleSubmit} className="space-y-3 mb-4">
           <div>
             <label htmlFor="email" className="text-xs font-medium text-muted block mb-1">Email</label>
             <div className="relative">
@@ -67,6 +86,7 @@ export default function SignUpPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@company.com"
                 required
+                autoComplete="email"
                 className="w-full h-11 pl-10 pr-3 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
@@ -79,9 +99,10 @@ export default function SignUpPage() {
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Min 6 characters"
+                placeholder={isSignIn ? "Enter your password" : "Min 6 characters"}
                 required
-                minLength={6}
+                minLength={isSignIn ? undefined : 6}
+                autoComplete={isSignIn ? "current-password" : "new-password"}
                 className="w-full h-11 pl-3 pr-10 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               />
               <button
@@ -98,8 +119,16 @@ export default function SignUpPage() {
             <p className="text-xs text-destructive">{error}</p>
           )}
 
-          <Button type="submit" className="w-full h-11" disabled={loading}>
-            {loading ? "Creating account..." : "Create Account"}
+          <Button type="submit" className="w-full h-11 gap-2" disabled={loading}>
+            {isSignIn ? (
+              <LogIn className="w-4 h-4" />
+            ) : (
+              <UserPlus className="w-4 h-4" />
+            )}
+            {loading
+              ? (isSignIn ? "Signing in..." : "Creating account...")
+              : (isSignIn ? "Sign In" : "Create Account")
+            }
           </Button>
         </form>
 
@@ -142,10 +171,10 @@ export default function SignUpPage() {
         </div>
 
         <p className="text-center text-xs text-muted mt-6">
-          Already have an account?{" "}
-          <Link href="/sign-up" className="text-brand font-medium hover:underline">
-            Sign in
-          </Link>
+          {isSignIn ? "Don't have an account? " : "Already have an account? "}
+          <button onClick={toggleMode} className="text-brand font-medium hover:underline">
+            {isSignIn ? "Sign up" : "Sign in"}
+          </button>
         </p>
       </div>
     </div>

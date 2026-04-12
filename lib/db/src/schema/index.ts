@@ -6,3 +6,4 @@ export * from "./plans";
 export * from "./quotes";
 export * from "./users";
 export * from "./templates";
+export * from "./shares";

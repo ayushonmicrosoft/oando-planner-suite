@@ -10,6 +10,8 @@ import projectsRouter from "./projects";
 import quotesRouter from "./quotes";
 import subscriptionsRouter from "./subscriptions";
 import webhooksRouter from "./webhooks";
+import publicSharesRouter from "./public-shares";
+import sharesRouter from "./shares";
 import { requireAuth } from "../middlewares/require-auth";
 
 const router: IRouter = Router();
@@ -17,6 +19,7 @@ const router: IRouter = Router();
 router.use(healthRouter);
 router.use(catalogRouter);
 router.use(webhooksRouter);
+router.use(publicSharesRouter);
 
 router.use(requireAuth);
 router.use(usersRouter);
@@ -27,5 +30,6 @@ router.use(templatesRouter);
 router.use(clientsRouter);
 router.use(projectsRouter);
 router.use(subscriptionsRouter);
+router.use(sharesRouter);
 
 export default router;

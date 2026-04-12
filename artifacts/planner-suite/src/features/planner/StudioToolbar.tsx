@@ -11,12 +11,13 @@ import {
   AlignEndVertical, Group, Ungroup, MoveUp, MoveDown,
   Highlighter, Pointer, Download, FileText, Image, Map as MapIcon, FileSpreadsheet,
   LayoutTemplate, FolderOpen, FilePlus, Save, FileInput, Layers,
-  AlignHorizontalSpaceAround, Settings2, Presentation,
+  AlignHorizontalSpaceAround, Settings2, Presentation, Share2,
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { usePlannerStore, type CanvasToolMode } from "./planner-store";
 import { cn } from "@/lib/utils";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { ShareDialog } from "@/components/share-dialog";
 
 const TOOL_MAP: Record<string, string> = {
   select: "select",
@@ -97,7 +98,10 @@ export function StudioToolbar() {
     zoom, setZoom, showSettings, toggleSettings,
   } = usePlannerStore();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [showExportMenu, setShowExportMenu] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
+  const currentPlanId = searchParams ? parseInt(searchParams.get("id") || "0", 10) : 0;
 
   const handleUndo = () => editor?.undo();
   const handleRedo = () => editor?.redo();
@@ -274,6 +278,9 @@ export function StudioToolbar() {
 
       <TopBarBtn icon={Presentation} label="Present" onClick={() => {}} badge />
       <TopBarBtn icon={Sparkles} label="AI" onClick={() => {}} />
+      {currentPlanId > 0 && (
+        <TopBarBtn icon={Share2} label="Share" onClick={() => setShowShareDialog(true)} />
+      )}
 
       <div className="flex-1" />
 
@@ -306,6 +313,14 @@ export function StudioToolbar() {
           </>
         )}
       </div>
+      {currentPlanId > 0 && (
+        <ShareDialog
+          open={showShareDialog}
+          onOpenChange={setShowShareDialog}
+          planId={currentPlanId}
+          planName={planName}
+        />
+      )}
     </div>
   );
 }

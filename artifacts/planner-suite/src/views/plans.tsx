@@ -8,7 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Trash2, Box, Clock, LayoutGrid, Loader2, Copy, Grid3X3, Pencil, Shapes, ImagePlus, FileSignature, AlertCircle, RefreshCw, FileSpreadsheet, ArrowRight } from 'lucide-react';
+import { Trash2, Box, Clock, LayoutGrid, Loader2, Copy, Grid3X3, Pencil, Shapes, ImagePlus, FileSignature, AlertCircle, RefreshCw, FileSpreadsheet, ArrowRight, Share2, MessageSquare, CheckCircle2, XCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
@@ -25,6 +25,55 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { PlanThumbnail } from '@/components/plan-thumbnail';
+import { ShareDialog } from '@/components/share-dialog';
+import { useState, useEffect } from 'react';
+
+function PlanShareStatus({ planId }: { planId: number }) {
+  const [data, setData] = useState<{ shares: any[]; comments: any[] } | null>(null);
+
+  useEffect(() => {
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+    fetch(`${baseUrl}/api/plans/${planId}/shares`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => setData(d))
+      .catch(() => {});
+  }, [planId]);
+
+  if (!data) return null;
+
+  const activeShares = data.shares.filter((s: any) => s.isActive);
+  if (activeShares.length === 0) return null;
+
+  const approved = activeShares.filter((s: any) => s.status === 'approved');
+  const changesRequested = activeShares.filter((s: any) => s.status === 'changes_requested');
+  const pending = activeShares.filter((s: any) => s.status === 'pending');
+  const totalComments = data.comments.length;
+
+  return (
+    <div className="flex flex-wrap items-center gap-1.5 mt-1">
+      {approved.length > 0 && (
+        <Badge variant="outline" className="text-[10px] bg-emerald-50 text-emerald-700 border-emerald-200 gap-1">
+          <CheckCircle2 className="w-3 h-3" /> {approved.length} approved
+        </Badge>
+      )}
+      {changesRequested.length > 0 && (
+        <Badge variant="outline" className="text-[10px] bg-amber-50 text-amber-700 border-amber-200 gap-1">
+          <XCircle className="w-3 h-3" /> {changesRequested.length} changes
+        </Badge>
+      )}
+      {pending.length > 0 && (
+        <Badge variant="outline" className="text-[10px] bg-blue-50 text-blue-700 border-blue-200 gap-1">
+          <Share2 className="w-3 h-3" /> {pending.length} pending
+        </Badge>
+      )}
+      {totalComments > 0 && (
+        <Badge variant="outline" className="text-[10px] gap-1">
+          <MessageSquare className="w-3 h-3" /> {totalComments}
+        </Badge>
+      )}
+    </div>
+  );
+}
 
 const plannerTypeRoutes: Record<string, string> = {
   canvas: '/planner/canvas',
@@ -92,6 +141,8 @@ export default function Plans() {
   const duplicatePlan = useDuplicatePlan();
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const [sharePlanId, setSharePlanId] = useState<number | null>(null);
+  const [sharePlanName, setSharePlanName] = useState("");
 
   const handleDelete = (id: number) => {
     deletePlan.mutate({ id }, {
@@ -203,6 +254,8 @@ export default function Plans() {
                     </div>
                   </div>
 
+                  <PlanShareStatus planId={plan.id} />
+
                   <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
                     <span className="flex items-center gap-1.5">
                       <Clock className="w-3 h-3 opacity-60" />
@@ -223,6 +276,20 @@ export default function Plans() {
                       Open Plan
                       <ArrowRight className="w-3 h-3" />
                     </Button>
+
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                          onClick={() => { setSharePlanId(plan.id); setSharePlanName(plan.name); }}
+                        >
+                          <Share2 className="w-3.5 h-3.5" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Share with Client</TooltipContent>
+                    </Tooltip>
 
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -288,6 +355,15 @@ export default function Plans() {
             ))}
           </div>
         </TooltipProvider>
+      )}
+
+      {sharePlanId && (
+        <ShareDialog
+          open={!!sharePlanId}
+          onOpenChange={(open) => { if (!open) setSharePlanId(null); }}
+          planId={sharePlanId}
+          planName={sharePlanName}
+        />
       )}
     </div>
   );

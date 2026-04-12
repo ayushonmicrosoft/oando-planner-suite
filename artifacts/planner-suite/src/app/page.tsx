@@ -1,12 +1,12 @@
 "use client";
 
-import { useUser } from "@clerk/nextjs";
+import { useAuth } from "@/hooks/use-auth";
 import Landing from "@/views/landing";
 import Home from "@/views/home";
 import { Loader2 } from "lucide-react";
 
 export default function RootPage() {
-  const { isSignedIn, isLoaded } = useUser();
+  const { isSignedIn, isLoaded } = useAuth();
 
   if (!isLoaded) {
     return (

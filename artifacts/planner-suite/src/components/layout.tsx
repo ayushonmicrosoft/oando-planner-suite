@@ -5,15 +5,14 @@ import { usePathname } from 'next/navigation';
 import { LayoutDashboard, FileSignature, Grid3X3, Box, Library, FolderOpen, Activity, Pencil, LayoutGrid, Shapes, ImagePlus, LayoutTemplate, LogOut, Settings, ChevronDown, Map, DraftingCompass, Layers3 } from 'lucide-react';
 import { Sidebar, SidebarContent, SidebarHeader, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider, SidebarFooter } from '@/components/ui/sidebar';
 import { useHealthCheck, getHealthCheckQueryKey } from '@workspace/api-client-react';
-import { useUser, useClerk } from '@clerk/nextjs';
+import { useAuth } from '@/hooks/use-auth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const location = usePathname();
   const { data: health, isError } = useHealthCheck({ query: { queryKey: getHealthCheckQueryKey(), refetchInterval: 30000 } });
-  const { user, isLoaded } = useUser();
-  const { signOut } = useClerk();
+  const { user, isLoaded, signOut } = useAuth();
 
   const mainNavItems = [
     { href: '/', icon: LayoutDashboard, label: 'Dashboard' },
@@ -43,8 +42,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     return location === href || location.startsWith(href + '/') || location.startsWith(href + '?');
   };
 
-  const displayName = user?.fullName || user?.firstName || user?.emailAddresses?.[0]?.emailAddress || 'User';
-  const initials = (user?.firstName?.[0] || '') + (user?.lastName?.[0] || '') || displayName[0]?.toUpperCase() || 'U';
+  const displayName = user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email || 'User';
+  const avatarUrl = user?.user_metadata?.avatar_url || user?.user_metadata?.picture;
+  const initials = displayName.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase() || 'U';
 
   return (
     <SidebarProvider>
@@ -55,12 +55,12 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               <DropdownMenu>
                 <DropdownMenuTrigger className="flex items-center gap-3 w-full text-left hover:bg-muted/50 rounded-md p-1 -m-1 transition-colors">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src={user.imageUrl} alt={displayName} />
+                    <AvatarImage src={avatarUrl} alt={displayName} />
                     <AvatarFallback className="text-xs">{initials}</AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
                     <div className="font-semibold text-sm truncate">{displayName}</div>
-                    <div className="text-xs text-muted-foreground truncate">{user.emailAddresses?.[0]?.emailAddress}</div>
+                    <div className="text-xs text-muted-foreground truncate">{user.email}</div>
                   </div>
                   <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />
                 </DropdownMenuTrigger>
@@ -70,7 +70,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                     Settings
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => signOut({ redirectUrl: window.location.origin + "/" })}>
+                  <DropdownMenuItem onClick={() => signOut()}>
                     <LogOut className="w-4 h-4 mr-2" />
                     Log Out
                   </DropdownMenuItem>

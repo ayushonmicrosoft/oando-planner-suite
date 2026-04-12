@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { usePathname } from 'next/navigation';
-import { Stage, Layer, Rect, Ellipse, Line, Text, Transformer, Group } from 'react-konva';
+import { Stage, Layer, Rect, Ellipse, Line, Text, Transformer, Group, Path, Circle } from 'react-konva';
 import type Konva from 'konva';
 import {
   useListCatalogItems,
@@ -24,8 +24,9 @@ import {
   Loader2, Sparkles, Grid3X3, Undo2, Redo2, Copy,
   ZoomIn, ZoomOut, Lock, Unlock, Download, Ruler,
   Layers, ChevronUp, ChevronDown, Search, Eye, EyeOff,
-  AlertCircle, RefreshCw
+  AlertCircle, RefreshCw, Crosshair, ChevronRight, BarChart3
 } from 'lucide-react';
+import { getFurnitureShapeDef, getCategoryIcon } from '@/lib/furniture-shapes';
 
 const GRID_CM = 10;
 const MIN_ZOOM = 0.25;
@@ -66,11 +67,78 @@ function validateForm(planName: string, roomWidthCm: number, roomDepthCm: number
   return errors;
 }
 
+const SNAP_THRESHOLD_CM = 8;
+const ALIGNMENT_GUIDE_COLOR = '#3b82f6';
+
+interface AlignmentGuide {
+  orientation: 'h' | 'v';
+  position: number;
+}
+
+function computeAlignmentGuides(
+  draggingItem: PlacedItem,
+  allItems: PlacedItem[],
+  roomWidthCm: number,
+  roomDepthCm: number,
+): AlignmentGuide[] {
+  const guides: AlignmentGuide[] = [];
+  const dx = draggingItem.x;
+  const dy = draggingItem.y;
+  const dw = draggingItem.widthCm;
+  const dh = draggingItem.depthCm;
+  const dCx = dx + dw / 2;
+  const dCy = dy + dh / 2;
+  const dRight = dx + dw;
+  const dBottom = dy + dh;
+
+  const wallEdges = {
+    left: 0, top: 0, right: roomWidthCm, bottom: roomDepthCm,
+  };
+
+  if (Math.abs(dx - wallEdges.left) < SNAP_THRESHOLD_CM) guides.push({ orientation: 'v', position: wallEdges.left });
+  if (Math.abs(dRight - wallEdges.right) < SNAP_THRESHOLD_CM) guides.push({ orientation: 'v', position: wallEdges.right });
+  if (Math.abs(dy - wallEdges.top) < SNAP_THRESHOLD_CM) guides.push({ orientation: 'h', position: wallEdges.top });
+  if (Math.abs(dBottom - wallEdges.bottom) < SNAP_THRESHOLD_CM) guides.push({ orientation: 'h', position: wallEdges.bottom });
+
+  for (const other of allItems) {
+    if (other.instanceId === draggingItem.instanceId) continue;
+    const ox = other.x;
+    const oy = other.y;
+    const ow = other.widthCm;
+    const oh = other.depthCm;
+    const oCx = ox + ow / 2;
+    const oCy = oy + oh / 2;
+    const oRight = ox + ow;
+    const oBottom = oy + oh;
+
+    if (Math.abs(dx - ox) < SNAP_THRESHOLD_CM) guides.push({ orientation: 'v', position: ox });
+    if (Math.abs(dRight - oRight) < SNAP_THRESHOLD_CM) guides.push({ orientation: 'v', position: oRight });
+    if (Math.abs(dCx - oCx) < SNAP_THRESHOLD_CM) guides.push({ orientation: 'v', position: oCx });
+    if (Math.abs(dx - oRight) < SNAP_THRESHOLD_CM) guides.push({ orientation: 'v', position: oRight });
+    if (Math.abs(dRight - ox) < SNAP_THRESHOLD_CM) guides.push({ orientation: 'v', position: ox });
+
+    if (Math.abs(dy - oy) < SNAP_THRESHOLD_CM) guides.push({ orientation: 'h', position: oy });
+    if (Math.abs(dBottom - oBottom) < SNAP_THRESHOLD_CM) guides.push({ orientation: 'h', position: oBottom });
+    if (Math.abs(dCy - oCy) < SNAP_THRESHOLD_CM) guides.push({ orientation: 'h', position: oCy });
+    if (Math.abs(dy - oBottom) < SNAP_THRESHOLD_CM) guides.push({ orientation: 'h', position: oBottom });
+    if (Math.abs(dBottom - oy) < SNAP_THRESHOLD_CM) guides.push({ orientation: 'h', position: oy });
+  }
+
+  const unique: AlignmentGuide[] = [];
+  const seen = new Set<string>();
+  for (const g of guides) {
+    const key = `${g.orientation}_${Math.round(g.position)}`;
+    if (!seen.has(key)) { seen.add(key); unique.push(g); }
+  }
+  return unique;
+}
+
 function FurnitureShape({
   item,
   isSelected,
   onSelect,
   onChange,
+  onDragMove,
   pxPerCm,
   gridSnap,
   gridSize,
@@ -79,6 +147,7 @@ function FurnitureShape({
   isSelected: boolean;
   onSelect: (e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => void;
   onChange: (changes: Partial<PlacedItem>) => void;
+  onDragMove?: (item: PlacedItem, x: number, y: number) => void;
   pxPerCm: number;
   gridSnap: boolean;
   gridSize: number;
@@ -94,6 +163,15 @@ function FurnitureShape({
   }, [isSelected]);
 
   const snapVal = (v: number) => gridSnap ? Math.round(v / gridSize) * gridSize : v;
+
+  const handleDragMove = (e: Konva.KonvaEventObject<DragEvent>) => {
+    if (onDragMove) {
+      const node = e.target;
+      const xCm = node.x() / pxPerCm;
+      const yCm = node.y() / pxPerCm;
+      onDragMove(item, xCm, yCm);
+    }
+  };
 
   const onDragEnd = (e: Konva.KonvaEventObject<DragEvent>) => {
     const node = e.target;
@@ -127,8 +205,10 @@ function FurnitureShape({
   const xPx = item.x * pxPerCm;
   const yPx = item.y * pxPerCm;
 
-  const isRound = item.shape === 'round' || item.shape === 'circle' || item.shape === 'ellipse';
-  const isLShape = item.shape === 'l-left' || item.shape === 'l-right';
+  const shapeDef = useMemo(
+    () => getFurnitureShapeDef(item.category || '', item.shape || 'rect', wPx, hPx, item.color),
+    [item.category, item.shape, wPx, hPx, item.color]
+  );
 
   const groupProps = {
     ref: shapeRef,
@@ -141,59 +221,43 @@ function FurnitureShape({
     onClick: onSelect,
     onTap: onSelect,
     onDragEnd,
+    onDragMove: handleDragMove,
     onTransformEnd,
     opacity: item.opacity,
     name: `item-${item.instanceId}`,
   };
 
-  const strokeColor = isSelected ? 'hsl(221, 83%, 53%)' : 'rgba(0,0,0,0.15)';
-  const strokeW = isSelected ? 2 : 0.5;
+  const selectionStroke = isSelected ? 'hsl(221, 83%, 53%)' : undefined;
 
   return (
     <Group>
       <Group {...groupProps}>
-        {isRound ? (
-          <Ellipse
-            x={wPx / 2}
-            y={hPx / 2}
-            radiusX={wPx / 2}
-            radiusY={hPx / 2}
-            fill={item.color}
-            stroke={strokeColor}
-            strokeWidth={strokeW}
-            shadowColor={isSelected ? 'hsl(221, 83%, 53%)' : undefined}
-            shadowBlur={isSelected ? 8 : 0}
-            shadowOpacity={0.3}
-          />
-        ) : isLShape ? (
-          <>
-            {item.shape === 'l-left' ? (
-              <>
-                <Rect x={0} y={0} width={wPx} height={hPx * 0.5} fill={item.color} cornerRadius={2} stroke={strokeColor} strokeWidth={strokeW} />
-                <Rect x={0} y={hPx * 0.5} width={wPx * 0.5} height={hPx * 0.5} fill={item.color} cornerRadius={2} stroke={strokeColor} strokeWidth={strokeW} />
-              </>
-            ) : (
-              <>
-                <Rect x={0} y={0} width={wPx} height={hPx * 0.5} fill={item.color} cornerRadius={2} stroke={strokeColor} strokeWidth={strokeW} />
-                <Rect x={wPx * 0.5} y={hPx * 0.5} width={wPx * 0.5} height={hPx * 0.5} fill={item.color} cornerRadius={2} stroke={strokeColor} strokeWidth={strokeW} />
-              </>
-            )}
-          </>
-        ) : (
+        {isSelected && (
           <Rect
-            x={0}
-            y={0}
-            width={wPx}
-            height={hPx}
-            fill={item.color}
-            cornerRadius={3}
-            stroke={strokeColor}
-            strokeWidth={strokeW}
-            shadowColor={isSelected ? 'hsl(221, 83%, 53%)' : undefined}
-            shadowBlur={isSelected ? 8 : 0}
-            shadowOpacity={0.3}
+            x={-2}
+            y={-2}
+            width={wPx + 4}
+            height={hPx + 4}
+            stroke="hsl(221, 83%, 53%)"
+            strokeWidth={1.5}
+            cornerRadius={4}
+            dash={[4, 3]}
+            listening={false}
+            shadowColor="hsl(221, 83%, 53%)"
+            shadowBlur={6}
+            shadowOpacity={0.2}
           />
         )}
+
+        {shapeDef.paths.map((pathData, i) => (
+          <Path
+            key={i}
+            data={pathData}
+            fill={shapeDef.fills[i]}
+            stroke={selectionStroke || shapeDef.strokes?.[i] || 'rgba(0,0,0,0.1)'}
+            strokeWidth={isSelected ? 1.5 : (shapeDef.strokeWidths?.[i] || 0.5)}
+          />
+        ))}
 
         {pxPerCm > 0.3 && (
           <Text
@@ -209,6 +273,8 @@ function FurnitureShape({
             align="center"
             verticalAlign="middle"
             listening={false}
+            shadowColor="rgba(0,0,0,0.5)"
+            shadowBlur={2}
           />
         )}
 
@@ -221,10 +287,12 @@ function FurnitureShape({
             text={`${item.widthCm}×${item.depthCm}`}
             fontSize={8}
             fontFamily="Inter, system-ui, sans-serif"
-            fill="rgba(255,255,255,0.7)"
+            fill="rgba(255,255,255,0.8)"
             align="center"
             verticalAlign="middle"
             listening={false}
+            shadowColor="rgba(0,0,0,0.4)"
+            shadowBlur={1}
           />
         )}
       </Group>
@@ -303,6 +371,37 @@ export default function CanvasPlanner() {
   const [aiQuery, setAiQuery] = useState('Review my current canvas layout for flow and ergonomics.');
   const [aiPanelOpen, setAiPanelOpen] = useState(false);
   const [inspectorTab, setInspectorTab] = useState<'items' | 'properties'>('items');
+
+  const [measureMode, setMeasureMode] = useState(false);
+  const [measurePoints, setMeasurePoints] = useState<{ x: number; y: number }[]>([]);
+  const [alignmentGuides, setAlignmentGuides] = useState<AlignmentGuide[]>([]);
+  const [summaryPanelOpen, setSummaryPanelOpen] = useState(false);
+
+  const categorySummary = useMemo(() => {
+    const counts: Record<string, number> = {};
+    items.forEach(item => {
+      const cat = item.category || 'Other';
+      counts[cat] = (counts[cat] || 0) + 1;
+    });
+    return Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  }, [items]);
+
+  const usedAreaCm2 = useMemo(() => {
+    return items.reduce((sum, item) => sum + item.widthCm * item.depthCm, 0);
+  }, [items]);
+
+  const totalAreaCm2 = roomWidthCm * roomDepthCm;
+  const freeAreaCm2 = Math.max(0, totalAreaCm2 - usedAreaCm2);
+  const usedPct = totalAreaCm2 > 0 ? Math.round((usedAreaCm2 / totalAreaCm2) * 100) : 0;
+
+  const handleDragMoveItem = useCallback((dragItem: PlacedItem, xCm: number, yCm: number) => {
+    const tempItem = { ...dragItem, x: xCm, y: yCm };
+    setAlignmentGuides(computeAlignmentGuides(tempItem, items, roomWidthCm, roomDepthCm));
+  }, [items, roomWidthCm, roomDepthCm]);
+
+  const handleDragEndClearGuides = useCallback(() => {
+    setAlignmentGuides([]);
+  }, []);
 
   useEffect(() => {
     if (existingPlan) {
@@ -401,10 +500,28 @@ export default function CanvasPlanner() {
       }
       return;
     }
+
+    if (measureMode) {
+      const stage = stageRef.current;
+      if (!stage) return;
+      const pointer = stage.getPointerPosition();
+      if (!pointer) return;
+      const xCm = (pointer.x / zoom - panOffset.x / zoom - roomOffsetX) / pxPerCm;
+      const yCm = (pointer.y / zoom - panOffset.y / zoom - roomOffsetY) / pxPerCm;
+      if (measurePoints.length === 0) {
+        setMeasurePoints([{ x: xCm, y: yCm }]);
+      } else if (measurePoints.length === 1) {
+        setMeasurePoints(prev => [...prev, { x: xCm, y: yCm }]);
+      } else {
+        setMeasurePoints([{ x: xCm, y: yCm }]);
+      }
+      return;
+    }
+
     if (e.target === e.target.getStage()) {
       setSelectedItemIds(new Set());
     }
-  }, [setSelectedItemIds, spaceDown]);
+  }, [setSelectedItemIds, spaceDown, measureMode, measurePoints, zoom, panOffset, roomOffsetX, roomOffsetY, pxPerCm]);
 
   const handleStageMouseMove = useCallback((e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => {
     if (isPanning && lastPointerPos.current) {
@@ -695,6 +812,24 @@ export default function CanvasPlanner() {
           <Button variant={showDimensions ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setShowDimensions(!showDimensions)} title="Toggle Dimensions">
             {showDimensions ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
           </Button>
+          <Button
+            variant={measureMode ? 'default' : 'ghost'}
+            size="icon"
+            className="h-8 w-8"
+            onClick={() => { setMeasureMode(!measureMode); setMeasurePoints([]); }}
+            title="Measurement Tool"
+          >
+            <Crosshair className="w-4 h-4" />
+          </Button>
+          <Button
+            variant={summaryPanelOpen ? 'secondary' : 'ghost'}
+            size="icon"
+            className="h-8 w-8"
+            onClick={() => setSummaryPanelOpen(!summaryPanelOpen)}
+            title="Furniture Summary"
+          >
+            <BarChart3 className="w-4 h-4" />
+          </Button>
           <div className="w-px h-5 bg-border mx-1" />
           <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-xs" onClick={handleExportPng} title="Export PNG">
             <Download className="w-3.5 h-3.5" />
@@ -819,7 +954,7 @@ export default function CanvasPlanner() {
         <div
           ref={containerRef}
           className="flex-1 bg-muted/30 relative overflow-hidden"
-          style={{ cursor: spaceDown ? (isPanning ? 'grabbing' : 'grab') : 'default' }}
+          style={{ cursor: measureMode ? 'crosshair' : spaceDown ? (isPanning ? 'grabbing' : 'grab') : 'default' }}
         >
           {aiPanelOpen && (
             <div className="absolute top-0 right-0 w-80 h-full z-10 bg-card border-l shadow-lg flex flex-col">
@@ -960,7 +1095,7 @@ export default function CanvasPlanner() {
                   <Text
                     x={roomOffsetX + roomWidthPx / 2 - 30}
                     y={roomOffsetY - 18}
-                    text={`${roomWidthCm} cm`}
+                    text={`${(roomWidthCm / 100).toFixed(1)}m`}
                     fontSize={11}
                     fill="#64748b"
                     fontFamily="Inter, system-ui, sans-serif"
@@ -987,7 +1122,7 @@ export default function CanvasPlanner() {
                   />
                   <Group rotation={-90} x={roomOffsetX - 10} y={roomOffsetY + roomHeightPx / 2 + 20}>
                     <Text
-                      text={`${roomDepthCm} cm`}
+                      text={`${(roomDepthCm / 100).toFixed(1)}m`}
                       fontSize={11}
                       fill="#64748b"
                       fontFamily="Inter, system-ui, sans-serif"
@@ -1042,6 +1177,14 @@ export default function CanvasPlanner() {
                     if (changes.x !== undefined) changes.x = changes.x - roomOffsetX / pxPerCm;
                     if (changes.y !== undefined) changes.y = changes.y - roomOffsetY / pxPerCm;
                     updateItemTransform(item.instanceId, changes);
+                    setAlignmentGuides([]);
+                  }}
+                  onDragMove={(dragItem, xCm, yCm) => {
+                    handleDragMoveItem(
+                      { ...dragItem, x: xCm - roomOffsetX / pxPerCm, y: yCm - roomOffsetY / pxPerCm },
+                      xCm - roomOffsetX / pxPerCm,
+                      yCm - roomOffsetY / pxPerCm,
+                    );
                   }}
                   pxPerCm={pxPerCm}
                   gridSnap={gridSnap}
@@ -1049,12 +1192,174 @@ export default function CanvasPlanner() {
                 />
               ))}
             </Layer>
+
+            <Layer listening={false}>
+              {alignmentGuides.map((guide, i) =>
+                guide.orientation === 'v' ? (
+                  <Line
+                    key={`ag-${i}`}
+                    points={[
+                      roomOffsetX + guide.position * pxPerCm, roomOffsetY - 8,
+                      roomOffsetX + guide.position * pxPerCm, roomOffsetY + roomHeightPx + 8,
+                    ]}
+                    stroke={ALIGNMENT_GUIDE_COLOR}
+                    strokeWidth={0.8}
+                    dash={[4, 3]}
+                    opacity={0.7}
+                  />
+                ) : (
+                  <Line
+                    key={`ag-${i}`}
+                    points={[
+                      roomOffsetX - 8, roomOffsetY + guide.position * pxPerCm,
+                      roomOffsetX + roomWidthPx + 8, roomOffsetY + guide.position * pxPerCm,
+                    ]}
+                    stroke={ALIGNMENT_GUIDE_COLOR}
+                    strokeWidth={0.8}
+                    dash={[4, 3]}
+                    opacity={0.7}
+                  />
+                )
+              )}
+
+              {measurePoints.length >= 1 && (
+                <>
+                  <Circle
+                    x={roomOffsetX + measurePoints[0].x * pxPerCm}
+                    y={roomOffsetY + measurePoints[0].y * pxPerCm}
+                    radius={4}
+                    fill="#ef4444"
+                    stroke="#fff"
+                    strokeWidth={1.5}
+                  />
+                </>
+              )}
+              {measurePoints.length === 2 && (() => {
+                const p1x = roomOffsetX + measurePoints[0].x * pxPerCm;
+                const p1y = roomOffsetY + measurePoints[0].y * pxPerCm;
+                const p2x = roomOffsetX + measurePoints[1].x * pxPerCm;
+                const p2y = roomOffsetY + measurePoints[1].y * pxPerCm;
+                const distCm = Math.sqrt(
+                  Math.pow(measurePoints[1].x - measurePoints[0].x, 2) +
+                  Math.pow(measurePoints[1].y - measurePoints[0].y, 2)
+                );
+                const distStr = distCm >= 100
+                  ? `${(distCm / 100).toFixed(2)} m`
+                  : `${Math.round(distCm)} cm`;
+                const midX = (p1x + p2x) / 2;
+                const midY = (p1y + p2y) / 2;
+                return (
+                  <>
+                    <Line
+                      points={[p1x, p1y, p2x, p2y]}
+                      stroke="#ef4444"
+                      strokeWidth={1.5}
+                      dash={[6, 3]}
+                    />
+                    <Circle
+                      x={p2x}
+                      y={p2y}
+                      radius={4}
+                      fill="#ef4444"
+                      stroke="#fff"
+                      strokeWidth={1.5}
+                    />
+                    <Rect
+                      x={midX - 30}
+                      y={midY - 18}
+                      width={60}
+                      height={16}
+                      fill="rgba(239,68,68,0.9)"
+                      cornerRadius={3}
+                    />
+                    <Text
+                      x={midX - 30}
+                      y={midY - 17}
+                      width={60}
+                      height={14}
+                      text={distStr}
+                      fontSize={10}
+                      fill="#fff"
+                      fontFamily="Inter, system-ui, sans-serif"
+                      fontStyle="700"
+                      align="center"
+                      verticalAlign="middle"
+                    />
+                  </>
+                );
+              })()}
+            </Layer>
           </Stage>
+
+          {measureMode && (
+            <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 bg-red-500/90 text-white text-xs font-medium px-3 py-1.5 rounded-full shadow-lg flex items-center gap-2">
+              <Crosshair className="w-3.5 h-3.5" />
+              {measurePoints.length === 0 ? 'Click first point' : measurePoints.length === 1 ? 'Click second point' : 'Click to start new measurement'}
+              <button onClick={() => { setMeasureMode(false); setMeasurePoints([]); }} className="ml-1 hover:bg-white/20 rounded-full p-0.5">
+                <X className="w-3 h-3" />
+              </button>
+            </div>
+          )}
+
+          {summaryPanelOpen && (
+            <div className="absolute top-3 right-3 z-10 w-64 bg-card border rounded-lg shadow-lg">
+              <div className="p-3 border-b flex justify-between items-center">
+                <h4 className="font-semibold text-xs flex items-center gap-1.5">
+                  <BarChart3 className="w-3.5 h-3.5 text-primary" />
+                  Furniture Summary
+                </h4>
+                <button onClick={() => setSummaryPanelOpen(false)} className="text-muted-foreground hover:text-foreground">
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+              <div className="p-3 space-y-2">
+                {categorySummary.length === 0 ? (
+                  <p className="text-xs text-muted-foreground text-center py-2">No items placed</p>
+                ) : (
+                  <>
+                    {categorySummary.map(([cat, count]) => (
+                      <div key={cat} className="flex items-center justify-between text-xs">
+                        <span className="flex items-center gap-1.5">
+                          <span>{getCategoryIcon(cat)}</span>
+                          <span className="font-medium">{cat}</span>
+                        </span>
+                        <span className="text-muted-foreground font-mono bg-muted px-1.5 py-0.5 rounded">{count}</span>
+                      </div>
+                    ))}
+                    <div className="border-t pt-2 mt-2 flex justify-between text-xs font-semibold">
+                      <span>Total Items</span>
+                      <span>{items.length}</span>
+                    </div>
+                  </>
+                )}
+              </div>
+              <div className="p-3 border-t space-y-1.5">
+                <h5 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Area Usage</h5>
+                <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all"
+                    style={{
+                      width: `${Math.min(100, usedPct)}%`,
+                      backgroundColor: usedPct > 80 ? '#ef4444' : usedPct > 50 ? '#f59e0b' : '#22c55e',
+                    }}
+                  />
+                </div>
+                <div className="flex justify-between text-[10px] text-muted-foreground">
+                  <span>Used: {(usedAreaCm2 / 10000).toFixed(1)} m² ({usedPct}%)</span>
+                  <span>Free: {(freeAreaCm2 / 10000).toFixed(1)} m²</span>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="absolute bottom-3 left-3 flex items-center gap-2 text-[10px] text-muted-foreground bg-card/90 backdrop-blur rounded px-2 py-1 border shadow-sm">
             <span>{items.length} items</span>
             <span className="text-border">|</span>
-            <span>{roomWidthCm}×{roomDepthCm}cm</span>
+            <span>{(roomWidthCm / 100).toFixed(1)}m × {(roomDepthCm / 100).toFixed(1)}m</span>
+            <span className="text-border">|</span>
+            <span>{(totalAreaCm2 / 10000).toFixed(1)} m²</span>
+            <span className="text-border">|</span>
+            <span className={usedPct > 80 ? 'text-red-500' : usedPct > 50 ? 'text-amber-500' : 'text-green-500'}>{usedPct}% footprint</span>
             <span className="text-border">|</span>
             <span>{Math.round(zoom * 100)}%</span>
             {gridSnap && <span className="text-border">| Snap</span>}

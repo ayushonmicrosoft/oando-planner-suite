@@ -5,17 +5,18 @@
  * Office Planner Suite API
  * OpenAPI spec version: 0.2.0
  */
-import type { PlannerType } from "./plannerType";
 
-export interface PlanSummary {
+export interface ProjectWithStats {
   id: number;
   name: string;
-  plannerType: PlannerType;
-  roomWidthCm: number;
-  roomDepthCm: number;
-  itemCount: number;
   /** @nullable */
-  projectId?: number | null;
+  clientId?: number | null;
+  /** @nullable */
+  clientName?: string | null;
+  status: string;
+  /** @nullable */
+  notes?: string | null;
+  planCount: number;
   createdAt: string;
   updatedAt: string;
 }

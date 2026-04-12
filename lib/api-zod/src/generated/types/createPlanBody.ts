@@ -13,4 +13,6 @@ export interface CreatePlanBody {
   roomWidthCm: number;
   roomDepthCm: number;
   documentJson: string;
+  /** @nullable */
+  projectId?: number | null;
 }

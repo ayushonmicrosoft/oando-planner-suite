@@ -102,6 +102,7 @@ export const ListPlansResponseItem = zod.object({
   roomWidthCm: zod.number(),
   roomDepthCm: zod.number(),
   itemCount: zod.number(),
+  projectId: zod.number().nullish(),
   createdAt: zod.string(),
   updatedAt: zod.string(),
 });
@@ -130,6 +131,7 @@ export const CreatePlanBody = zod.object({
   roomWidthCm: zod.number(),
   roomDepthCm: zod.number(),
   documentJson: zod.string(),
+  projectId: zod.number().nullish(),
 });
 
 /**
@@ -160,6 +162,7 @@ export const GetPlanResponse = zod.object({
   roomWidthCm: zod.number(),
   roomDepthCm: zod.number(),
   documentJson: zod.string(),
+  projectId: zod.number().nullish(),
   createdAt: zod.string(),
   updatedAt: zod.string(),
 });
@@ -176,6 +179,7 @@ export const UpdatePlanBody = zod.object({
   roomWidthCm: zod.number().optional(),
   roomDepthCm: zod.number().optional(),
   documentJson: zod.string().optional(),
+  projectId: zod.number().nullish(),
 });
 
 export const UpdatePlanResponse = zod.object({
@@ -199,6 +203,7 @@ export const UpdatePlanResponse = zod.object({
   roomWidthCm: zod.number(),
   roomDepthCm: zod.number(),
   documentJson: zod.string(),
+  projectId: zod.number().nullish(),
   createdAt: zod.string(),
   updatedAt: zod.string(),
 });
@@ -313,4 +318,205 @@ export const UseTemplateParams = zod.object({
 
 export const UseTemplateBody = zod.object({
   name: zod.string().optional(),
+});
+
+/**
+ * @summary List all clients
+ */
+export const ListClientsQueryParams = zod.object({
+  search: zod.coerce.string().optional(),
+});
+
+export const ListClientsResponseItem = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  company: zod.string().nullish(),
+  email: zod.string().nullish(),
+  phone: zod.string().nullish(),
+  address: zod.string().nullish(),
+  notes: zod.string().nullish(),
+  projectCount: zod.number(),
+  createdAt: zod.string(),
+});
+export const ListClientsResponse = zod.array(ListClientsResponseItem);
+
+/**
+ * @summary Create a new client
+ */
+export const CreateClientBody = zod.object({
+  name: zod.string(),
+  company: zod.string().optional(),
+  email: zod.string().optional(),
+  phone: zod.string().optional(),
+  address: zod.string().optional(),
+  notes: zod.string().optional(),
+});
+
+/**
+ * @summary Get a client by ID
+ */
+export const GetClientParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetClientResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  company: zod.string().nullish(),
+  email: zod.string().nullish(),
+  phone: zod.string().nullish(),
+  address: zod.string().nullish(),
+  notes: zod.string().nullish(),
+  projectCount: zod.number(),
+  createdAt: zod.string(),
+});
+
+/**
+ * @summary Update a client
+ */
+export const UpdateClientParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateClientBody = zod.object({
+  name: zod.string().optional(),
+  company: zod.string().optional(),
+  email: zod.string().optional(),
+  phone: zod.string().optional(),
+  address: zod.string().optional(),
+  notes: zod.string().optional(),
+});
+
+export const UpdateClientResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  company: zod.string().nullish(),
+  email: zod.string().nullish(),
+  phone: zod.string().nullish(),
+  address: zod.string().nullish(),
+  notes: zod.string().nullish(),
+  createdAt: zod.string(),
+});
+
+/**
+ * @summary Delete a client
+ */
+export const DeleteClientParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary List all projects
+ */
+export const ListProjectsQueryParams = zod.object({
+  clientId: zod.coerce.number().optional(),
+  status: zod.coerce.string().optional(),
+});
+
+export const ListProjectsResponseItem = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  clientId: zod.number().nullish(),
+  clientName: zod.string().nullish(),
+  status: zod.string(),
+  notes: zod.string().nullish(),
+  planCount: zod.number(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+export const ListProjectsResponse = zod.array(ListProjectsResponseItem);
+
+/**
+ * @summary Create a new project
+ */
+export const CreateProjectBody = zod.object({
+  name: zod.string(),
+  clientId: zod.number().optional(),
+  status: zod.string().optional(),
+  notes: zod.string().optional(),
+});
+
+/**
+ * @summary Get a project by ID
+ */
+export const GetProjectParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetProjectResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  clientId: zod.number().nullish(),
+  client: zod
+    .object({
+      id: zod.number().optional(),
+      name: zod.string().optional(),
+      company: zod.string().nullish(),
+      email: zod.string().nullish(),
+      phone: zod.string().nullish(),
+    })
+    .nullish(),
+  status: zod.string(),
+  notes: zod.string().nullish(),
+  plans: zod.array(
+    zod.object({
+      id: zod.number(),
+      name: zod.string(),
+      plannerType: zod.enum([
+        "canvas",
+        "blueprint",
+        "floorplan",
+        "cad",
+        "shapes",
+        "import",
+        "oando-floor-planning",
+        "oando-cad-drawing",
+        "oando-site-plan",
+        "oando-floor-plan-creator",
+        "oando-custom-shapes",
+        "oando-import-scale",
+        "oando-templates",
+      ]),
+      roomWidthCm: zod.number(),
+      roomDepthCm: zod.number(),
+      itemCount: zod.number(),
+      projectId: zod.number().nullish(),
+      createdAt: zod.string(),
+      updatedAt: zod.string(),
+    }),
+  ),
+  planCount: zod.number(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+
+/**
+ * @summary Update a project
+ */
+export const UpdateProjectParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateProjectBody = zod.object({
+  name: zod.string().optional(),
+  clientId: zod.number().nullish(),
+  status: zod.string().optional(),
+  notes: zod.string().optional(),
+});
+
+export const UpdateProjectResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  clientId: zod.number().nullish(),
+  status: zod.string(),
+  notes: zod.string().nullish(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+
+/**
+ * @summary Delete a project
+ */
+export const DeleteProjectParams = zod.object({
+  id: zod.coerce.number(),
 });

@@ -65,6 +65,8 @@ export interface PlanSummary {
   roomWidthCm: number;
   roomDepthCm: number;
   itemCount: number;
+  /** @nullable */
+  projectId?: number | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -76,6 +78,8 @@ export interface Plan {
   roomWidthCm: number;
   roomDepthCm: number;
   documentJson: string;
+  /** @nullable */
+  projectId?: number | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -86,6 +90,8 @@ export interface CreatePlanBody {
   roomWidthCm: number;
   roomDepthCm: number;
   documentJson: string;
+  /** @nullable */
+  projectId?: number | null;
 }
 
 export interface UpdatePlanBody {
@@ -93,6 +99,8 @@ export interface UpdatePlanBody {
   roomWidthCm?: number;
   roomDepthCm?: number;
   documentJson?: string;
+  /** @nullable */
+  projectId?: number | null;
 }
 
 export interface DuplicatePlanBody {
@@ -151,6 +159,129 @@ export interface UseTemplateBody {
   name?: string;
 }
 
+export interface Client {
+  id: number;
+  name: string;
+  /** @nullable */
+  company?: string | null;
+  /** @nullable */
+  email?: string | null;
+  /** @nullable */
+  phone?: string | null;
+  /** @nullable */
+  address?: string | null;
+  /** @nullable */
+  notes?: string | null;
+  createdAt: string;
+}
+
+export interface ClientWithStats {
+  id: number;
+  name: string;
+  /** @nullable */
+  company?: string | null;
+  /** @nullable */
+  email?: string | null;
+  /** @nullable */
+  phone?: string | null;
+  /** @nullable */
+  address?: string | null;
+  /** @nullable */
+  notes?: string | null;
+  projectCount: number;
+  createdAt: string;
+}
+
+export interface CreateClientBody {
+  name: string;
+  company?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  notes?: string;
+}
+
+export interface UpdateClientBody {
+  name?: string;
+  company?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  notes?: string;
+}
+
+export interface Project {
+  id: number;
+  name: string;
+  /** @nullable */
+  clientId?: number | null;
+  status: string;
+  /** @nullable */
+  notes?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProjectWithStats {
+  id: number;
+  name: string;
+  /** @nullable */
+  clientId?: number | null;
+  /** @nullable */
+  clientName?: string | null;
+  status: string;
+  /** @nullable */
+  notes?: string | null;
+  planCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * @nullable
+ */
+export type ProjectDetailClient = {
+  id?: number;
+  name?: string;
+  /** @nullable */
+  company?: string | null;
+  /** @nullable */
+  email?: string | null;
+  /** @nullable */
+  phone?: string | null;
+} | null;
+
+export interface ProjectDetail {
+  id: number;
+  name: string;
+  /** @nullable */
+  clientId?: number | null;
+  /** @nullable */
+  client?: ProjectDetailClient;
+  status: string;
+  /** @nullable */
+  notes?: string | null;
+  plans: PlanSummary[];
+  planCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateProjectBody {
+  name: string;
+  clientId?: number;
+  status?: string;
+  notes?: string;
+}
+
+export interface UpdateProjectBody {
+  name?: string;
+  /** @nullable */
+  clientId?: number | null;
+  status?: string;
+  notes?: string;
+}
+
 export type ListCatalogItemsParams = {
   category?: string;
   search?: string;
@@ -163,4 +294,13 @@ export type ListPlansParams = {
 
 export type ListTemplatesParams = {
   category?: string;
+};
+
+export type ListClientsParams = {
+  search?: string;
+};
+
+export type ListProjectsParams = {
+  clientId?: number;
+  status?: string;
 };

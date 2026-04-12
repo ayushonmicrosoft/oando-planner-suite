@@ -6,11 +6,10 @@
  * OpenAPI spec version: 0.2.0
  */
 
-export interface UpdatePlanBody {
+export interface UpdateProjectBody {
   name?: string;
-  roomWidthCm?: number;
-  roomDepthCm?: number;
-  documentJson?: string;
   /** @nullable */
-  projectId?: number | null;
+  clientId?: number | null;
+  status?: string;
+  notes?: string;
 }

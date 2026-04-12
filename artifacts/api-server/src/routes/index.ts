@@ -5,6 +5,8 @@ import plansRouter from "./plans";
 import aiRouter from "./ai";
 import templatesRouter from "./templates";
 import usersRouter from "./users";
+import clientsRouter from "./clients";
+import projectsRouter from "./projects";
 import { requireAuth } from "../middlewares/require-auth";
 
 const router: IRouter = Router();
@@ -17,5 +19,7 @@ router.use(usersRouter);
 router.use(plansRouter);
 router.use(aiRouter);
 router.use(templatesRouter);
+router.use(clientsRouter);
+router.use(projectsRouter);
 
 export default router;

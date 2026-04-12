@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { eq, desc, sql, and } from "drizzle-orm";
-import { db, plansTable } from "@workspace/db";
+import { db, plansTable, projectsTable } from "@workspace/db";
 import {
   CreatePlanBody,
   UpdatePlanBody,
@@ -100,6 +100,7 @@ router.get(
       roomWidthCm: p.roomWidthCm,
       roomDepthCm: p.roomDepthCm,
       itemCount: countItems(p.documentJson),
+      projectId: p.projectId,
       createdAt: p.createdAt.toISOString(),
       updatedAt: p.updatedAt.toISOString(),
     }));
@@ -118,7 +119,7 @@ router.post(
       return;
     }
 
-    const { name, plannerType, roomWidthCm, roomDepthCm, documentJson } = parsed.data;
+    const { name, plannerType, roomWidthCm, roomDepthCm, documentJson, projectId } = parsed.data;
 
     if (!validateJson(documentJson)) {
       res.status(400).json({ error: "documentJson must be valid JSON", status: 400 });
@@ -130,6 +131,17 @@ router.post(
       return;
     }
 
+    if (projectId) {
+      const [proj] = await db
+        .select()
+        .from(projectsTable)
+        .where(and(eq(projectsTable.id, projectId), eq(projectsTable.userId, userId)));
+      if (!proj) {
+        res.status(400).json({ error: "Project not found", status: 400 });
+        return;
+      }
+    }
+
     const [plan] = await db
       .insert(plansTable)
       .values({
@@ -138,6 +150,7 @@ router.post(
         roomWidthCm,
         roomDepthCm,
         documentJson,
+        projectId: projectId || null,
         userId,
       })
       .returning();
@@ -218,6 +231,19 @@ router.patch(
         return;
       }
       updates.documentJson = parsed.data.documentJson;
+    }
+    if (parsed.data.projectId !== undefined) {
+      if (parsed.data.projectId != null) {
+        const [proj] = await db
+          .select()
+          .from(projectsTable)
+          .where(and(eq(projectsTable.id, parsed.data.projectId), eq(projectsTable.userId, userId)));
+        if (!proj) {
+          res.status(400).json({ error: "Project not found", status: 400 });
+          return;
+        }
+      }
+      updates.projectId = parsed.data.projectId;
     }
 
     if (Object.keys(updates).length === 0) {

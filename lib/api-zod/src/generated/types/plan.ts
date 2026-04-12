@@ -14,6 +14,8 @@ export interface Plan {
   roomWidthCm: number;
   roomDepthCm: number;
   documentJson: string;
+  /** @nullable */
+  projectId?: number | null;
   createdAt: string;
   updatedAt: string;
 }

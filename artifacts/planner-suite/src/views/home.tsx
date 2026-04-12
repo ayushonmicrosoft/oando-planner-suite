@@ -5,13 +5,15 @@ import {
   useListPlans,
   useGetPlanStats,
   getListPlansQueryKey,
-  useCreatePlan
+  useCreatePlan,
+  useListProjects,
 } from '@workspace/api-client-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Grid3X3, FileSignature, Box, Plus, Clock, Loader2, ArrowRight, Pencil, LayoutGrid, Shapes, ImagePlus, LayoutTemplate, AlertCircle, RefreshCw, Map } from 'lucide-react';
+import { Grid3X3, FileSignature, Box, Plus, Clock, Loader2, ArrowRight, Pencil, LayoutGrid, Shapes, ImagePlus, LayoutTemplate, AlertCircle, RefreshCw, Map, Briefcase, FileText, Users } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { PlanThumbnail } from '@/components/plan-thumbnail';
 import { DashboardStatsSkeleton, RecentPlansSkeleton } from '@/components/skeletons';
@@ -50,6 +52,8 @@ export default function Home() {
   const router = useRouter();
   const { data: stats, isLoading: statsLoading, isError: statsError, refetch: refetchStats } = useGetPlanStats();
   const { data: plans, isLoading: plansLoading, isError: plansError, refetch: refetchPlans } = useListPlans();
+  const { data: projects, isLoading: projectsLoading } = useListProjects();
+  const recentProjects = projects?.slice(0, 4) || [];
 
   const recentPlans = plans?.slice(0, 4) || [];
 
@@ -326,6 +330,47 @@ export default function Home() {
           </Card>
         </div>
       </div>
+
+      {recentProjects.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold tracking-tight">Recent Projects</h2>
+            <Link href="/projects">
+              <Button variant="ghost" className="gap-2">View All <ArrowRight className="w-4 h-4" /></Button>
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {recentProjects.map((project) => (
+              <Card key={project.id} className="hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => router.push(`/projects/${project.id}`)}>
+                <CardHeader className="pb-2">
+                  <div className="flex justify-between items-start">
+                    <CardTitle className="text-base">{project.name}</CardTitle>
+                    <Badge variant="secondary" className="text-xs capitalize">{project.status.replace('_', ' ')}</Badge>
+                  </div>
+                  {project.clientName && (
+                    <CardDescription className="flex items-center gap-1.5">
+                      <Users className="w-3.5 h-3.5" /> {project.clientName}
+                    </CardDescription>
+                  )}
+                </CardHeader>
+                <CardContent className="pb-2 text-sm text-muted-foreground flex justify-between">
+                  <div className="flex items-center gap-1">
+                    <FileText className="w-4 h-4" /> {project.planCount} plan{project.planCount !== 1 ? 's' : ''}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Clock className="w-4 h-4" /> {format(new Date(project.updatedAt), 'MMM d')}
+                  </div>
+                </CardContent>
+                <CardFooter>
+                  <Button variant="secondary" className="w-full" onClick={(e) => { e.stopPropagation(); router.push(`/projects/${project.id}`); }}>
+                    View Project
+                  </Button>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="space-y-4">
         <div className="flex items-center justify-between">

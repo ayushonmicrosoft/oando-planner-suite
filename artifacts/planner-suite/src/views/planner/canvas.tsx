@@ -24,8 +24,10 @@ import {
   Loader2, Sparkles, Grid3X3, Undo2, Redo2, Copy,
   ZoomIn, ZoomOut, Lock, Unlock, Download, Ruler,
   Layers, ChevronUp, ChevronDown, Search, Eye, EyeOff,
-  AlertCircle, RefreshCw, Crosshair, ChevronRight, BarChart3, FileSpreadsheet
+  AlertCircle, RefreshCw, Crosshair, ChevronRight, BarChart3, FileSpreadsheet,
+  PenTool
 } from 'lucide-react';
+import { PlannerBreadcrumb } from '@/components/planner/PlannerBreadcrumb';
 import { getFurnitureShapeDef, getCategoryIcon } from '@/lib/furniture-shapes';
 
 const GRID_CM = 10;
@@ -757,106 +759,121 @@ export default function CanvasPlanner() {
 
   return (
     <div className="h-full flex flex-col bg-background">
-      <header className="min-h-12 border-b flex items-center justify-between px-3 shrink-0 bg-card flex-wrap gap-y-1 py-1">
-        <div className="flex items-center gap-3">
-          <Grid3X3 className="w-5 h-5 text-primary shrink-0" />
+      <PlannerBreadcrumb
+        items={[
+          { label: 'Plans', href: '/plans' },
+          { label: 'Canvas Planner' },
+        ]}
+        icon={<PenTool className="w-3.5 h-3.5 text-primary" />}
+      />
+
+      <header className="min-h-11 border-b flex items-center justify-between px-3 shrink-0 bg-card/95 backdrop-blur-sm flex-wrap gap-y-1 py-1 shadow-sm">
+        <div className="flex items-center gap-2">
           <div className="space-y-0">
             <Input
               value={planName}
               onChange={(e) => { setPlanName(e.target.value); setTouched(t => ({ ...t, planName: true })); }}
-              className={`w-40 sm:w-56 h-8 text-sm font-medium border-transparent hover:border-input focus:border-input bg-transparent ${touched.planName && formErrors.planName ? 'border-destructive' : ''}`}
+              className={`w-36 sm:w-48 h-7 text-sm font-medium border-transparent hover:border-input focus:border-input bg-transparent ${touched.planName && formErrors.planName ? 'border-destructive' : ''}`}
             />
             {touched.planName && formErrors.planName && (
-              <p className="text-xs text-destructive">{formErrors.planName}</p>
+              <p className="text-[10px] text-destructive">{formErrors.planName}</p>
             )}
           </div>
         </div>
 
-        <div className="flex items-center gap-1 flex-wrap">
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={undo} title="Undo (Ctrl+Z)">
-            <Undo2 className="w-4 h-4" />
-          </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={redo} title="Redo (Ctrl+Y)">
-            <Redo2 className="w-4 h-4" />
-          </Button>
-          <div className="w-px h-5 bg-border mx-1" />
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => duplicateItems(Array.from(selectedItemIds))} disabled={selectedItemIds.size === 0} title="Duplicate (Ctrl+D)">
-            <Copy className="w-4 h-4" />
-          </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => selectedItemIds.forEach(id => rotateItem(id))} disabled={selectedItemIds.size === 0} title="Rotate 90° (R)">
-            <RotateCw className="w-4 h-4" />
-          </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => deleteItems(Array.from(selectedItemIds))} disabled={selectedItemIds.size === 0} title="Delete (Del)">
-            <Trash2 className="w-4 h-4" />
-          </Button>
-          <div className="w-px h-5 bg-border mx-1" />
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setZoom(z => Math.max(MIN_ZOOM, z - ZOOM_STEP))} title="Zoom Out (-)">
-            <ZoomOut className="w-4 h-4" />
-          </Button>
-          <button
-            className="h-8 px-2 text-xs font-mono text-muted-foreground hover:text-foreground"
-            onClick={() => { setZoom(1); setPanOffset({ x: 0, y: 0 }); }}
-            title="Reset zoom (0)"
-          >
-            {Math.round(zoom * 100)}%
-          </button>
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setZoom(z => Math.min(MAX_ZOOM, z + ZOOM_STEP))} title="Zoom In (+)">
-            <ZoomIn className="w-4 h-4" />
-          </Button>
-          <div className="w-px h-5 bg-border mx-1" />
-          <Button variant={showGrid ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setShowGrid(!showGrid)} title="Toggle Grid">
-            <Grid3X3 className="w-4 h-4" />
-          </Button>
-          <Button variant={gridSnap ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setGridSnap(!gridSnap)} title="Toggle Snap">
-            <Ruler className="w-4 h-4" />
-          </Button>
-          <Button variant={showDimensions ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => setShowDimensions(!showDimensions)} title="Toggle Dimensions">
-            {showDimensions ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-          </Button>
-          <Button
-            variant={measureMode ? 'default' : 'ghost'}
-            size="icon"
-            className="h-8 w-8"
-            onClick={() => { setMeasureMode(!measureMode); setMeasurePoints([]); }}
-            title="Measurement Tool"
-          >
-            <Crosshair className="w-4 h-4" />
-          </Button>
-          <Button
-            variant={summaryPanelOpen ? 'secondary' : 'ghost'}
-            size="icon"
-            className="h-8 w-8"
-            onClick={() => setSummaryPanelOpen(!summaryPanelOpen)}
-            title="Furniture Summary"
-          >
-            <BarChart3 className="w-4 h-4" />
-          </Button>
-          <div className="w-px h-5 bg-border mx-1" />
-          <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-xs" onClick={handleExportPng} title="Export PNG">
-            <Download className="w-3.5 h-3.5" />
-            PNG
+        <div className="flex items-center gap-0.5 flex-wrap">
+          <div className="flex items-center gap-0.5 rounded-lg border border-border/50 bg-muted/30 p-0.5">
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={undo} title="Undo (Ctrl+Z)">
+              <Undo2 className="w-3.5 h-3.5" />
+            </Button>
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={redo} title="Redo (Ctrl+Y)">
+              <Redo2 className="w-3.5 h-3.5" />
+            </Button>
+          </div>
+          <div className="w-px h-5 bg-border/40 mx-1 hidden sm:block" />
+          <div className="flex items-center gap-0.5 rounded-lg border border-border/50 bg-muted/30 p-0.5">
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => duplicateItems(Array.from(selectedItemIds))} disabled={selectedItemIds.size === 0} title="Duplicate (Ctrl+D)">
+              <Copy className="w-3.5 h-3.5" />
+            </Button>
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => selectedItemIds.forEach(id => rotateItem(id))} disabled={selectedItemIds.size === 0} title="Rotate 90° (R)">
+              <RotateCw className="w-3.5 h-3.5" />
+            </Button>
+            <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => deleteItems(Array.from(selectedItemIds))} disabled={selectedItemIds.size === 0} title="Delete (Del)">
+              <Trash2 className="w-3.5 h-3.5" />
+            </Button>
+          </div>
+          <div className="w-px h-5 bg-border/40 mx-1 hidden sm:block" />
+          <div className="flex items-center gap-0.5 rounded-lg border border-border/50 bg-muted/30 p-0.5">
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setZoom(z => Math.max(MIN_ZOOM, z - ZOOM_STEP))} title="Zoom Out (-)">
+              <ZoomOut className="w-3.5 h-3.5" />
+            </Button>
+            <button
+              className="h-7 px-1.5 text-[11px] font-mono text-muted-foreground hover:text-foreground tabular-nums"
+              onClick={() => { setZoom(1); setPanOffset({ x: 0, y: 0 }); }}
+              title="Reset zoom (0)"
+            >
+              {Math.round(zoom * 100)}%
+            </button>
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setZoom(z => Math.min(MAX_ZOOM, z + ZOOM_STEP))} title="Zoom In (+)">
+              <ZoomIn className="w-3.5 h-3.5" />
+            </Button>
+          </div>
+          <div className="w-px h-5 bg-border/40 mx-1 hidden sm:block" />
+          <div className="flex items-center gap-0.5 rounded-lg border border-border/50 bg-muted/30 p-0.5">
+            <Button variant={showGrid ? 'secondary' : 'ghost'} size="icon" className="h-7 w-7" onClick={() => setShowGrid(!showGrid)} title="Toggle Grid">
+              <Grid3X3 className="w-3.5 h-3.5" />
+            </Button>
+            <Button variant={gridSnap ? 'secondary' : 'ghost'} size="icon" className="h-7 w-7" onClick={() => setGridSnap(!gridSnap)} title="Toggle Snap">
+              <Ruler className="w-3.5 h-3.5" />
+            </Button>
+            <Button variant={showDimensions ? 'secondary' : 'ghost'} size="icon" className="h-7 w-7" onClick={() => setShowDimensions(!showDimensions)} title="Toggle Dimensions">
+              {showDimensions ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+            </Button>
+            <Button
+              variant={measureMode ? 'default' : 'ghost'}
+              size="icon"
+              className="h-7 w-7"
+              onClick={() => { setMeasureMode(!measureMode); setMeasurePoints([]); }}
+              title="Measurement Tool"
+            >
+              <Crosshair className="w-3.5 h-3.5" />
+            </Button>
+            <Button
+              variant={summaryPanelOpen ? 'secondary' : 'ghost'}
+              size="icon"
+              className="h-7 w-7"
+              onClick={() => setSummaryPanelOpen(!summaryPanelOpen)}
+              title="Furniture Summary"
+            >
+              <BarChart3 className="w-3.5 h-3.5" />
+            </Button>
+          </div>
+          <div className="w-px h-5 bg-border/40 mx-1 hidden sm:block" />
+          <Button variant="ghost" size="sm" className="h-7 gap-1 text-[11px]" onClick={handleExportPng} title="Export PNG">
+            <Download className="w-3 h-3" />
+            <span className="hidden lg:inline">PNG</span>
           </Button>
           {planId && (
-            <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs" onClick={() => router.push(`/plans/${planId}/quote`)} title="Generate Quote">
-              <FileSpreadsheet className="w-3.5 h-3.5" />
-              Quote
+            <Button variant="outline" size="sm" className="h-7 gap-1 text-[11px]" onClick={() => router.push(`/plans/${planId}/quote`)} title="Generate Quote">
+              <FileSpreadsheet className="w-3 h-3" />
+              <span className="hidden lg:inline">Quote</span>
             </Button>
           )}
-          <Button variant={aiPanelOpen ? 'secondary' : 'outline'} size="sm" className="h-8 gap-1.5 text-xs" onClick={() => setAiPanelOpen(!aiPanelOpen)}>
-            <Sparkles className="w-3.5 h-3.5 text-primary" />
-            AI Advisor
+          <Button variant={aiPanelOpen ? 'secondary' : 'outline'} size="sm" className="h-7 gap-1 text-[11px]" onClick={() => setAiPanelOpen(!aiPanelOpen)}>
+            <Sparkles className="w-3 h-3 text-primary" />
+            <span className="hidden md:inline">AI</span>
           </Button>
-          <Button size="sm" className="h-8 gap-1.5 text-xs" onClick={handleSave} disabled={createPlan.isPending || updatePlan.isPending}>
-            {(createPlan.isPending || updatePlan.isPending) ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
-            Save
+          <Button size="sm" className="h-7 gap-1 text-[11px]" onClick={handleSave} disabled={createPlan.isPending || updatePlan.isPending}>
+            {(createPlan.isPending || updatePlan.isPending) ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
+            <span className="hidden sm:inline">Save</span>
           </Button>
         </div>
       </header>
 
       <div className="flex-1 flex overflow-hidden">
-        <div className="w-56 lg:w-64 border-r flex flex-col bg-card shrink-0 hidden sm:flex">
+        <div className="w-56 lg:w-64 border-r flex flex-col bg-card/95 backdrop-blur-sm shrink-0 hidden sm:flex">
           <div className="p-3 border-b space-y-3">
-            <h3 className="font-semibold text-xs uppercase tracking-wider text-muted-foreground">Room Settings</h3>
+            <h3 className="font-semibold text-[10px] uppercase tracking-[0.08em] text-muted-foreground/70">Room Settings</h3>
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
                 <Label className="text-xs">Width (cm)</Label>
@@ -891,7 +908,7 @@ export default function CanvasPlanner() {
 
           <div className="flex-1 flex flex-col min-h-0">
             <div className="p-3 pb-2 space-y-2">
-              <h3 className="font-semibold text-xs uppercase tracking-wider text-muted-foreground">Catalog</h3>
+              <h3 className="font-semibold text-[10px] uppercase tracking-[0.08em] text-muted-foreground/70">Catalog</h3>
               <div className="relative">
                 <Search className="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-muted-foreground" />
                 <Input
@@ -960,7 +977,7 @@ export default function CanvasPlanner() {
 
         <div
           ref={containerRef}
-          className="flex-1 bg-muted/30 relative overflow-hidden"
+          className="flex-1 bg-gradient-to-br from-muted/20 via-muted/30 to-muted/40 relative overflow-hidden"
           style={{ cursor: measureMode ? 'crosshair' : spaceDown ? (isPanning ? 'grabbing' : 'grab') : 'default' }}
         >
           {aiPanelOpen && (
@@ -1075,7 +1092,7 @@ export default function CanvasPlanner() {
                 y={0}
                 width={stageSize.width / zoom}
                 height={stageSize.height / zoom}
-                fill="#f8fafc"
+                fill="#f1f5f9"
                 listening={false}
               />
             </Layer>
@@ -1086,14 +1103,26 @@ export default function CanvasPlanner() {
 
             <Layer>
               <Rect
+                x={roomOffsetX - 1}
+                y={roomOffsetY - 1}
+                width={roomWidthPx + 2}
+                height={roomHeightPx + 2}
+                fill="transparent"
+                shadowColor="rgba(0,0,0,0.08)"
+                shadowBlur={12}
+                shadowOffsetX={0}
+                shadowOffsetY={2}
+                listening={false}
+              />
+              <Rect
                 x={roomOffsetX}
                 y={roomOffsetY}
                 width={roomWidthPx}
                 height={roomHeightPx}
                 fill="#ffffff"
-                stroke="#94a3b8"
-                strokeWidth={2}
-                cornerRadius={1}
+                stroke="#cbd5e1"
+                strokeWidth={1.5}
+                cornerRadius={2}
                 listening={false}
               />
 
@@ -1359,35 +1388,41 @@ export default function CanvasPlanner() {
             </div>
           )}
 
-          <div className="absolute bottom-3 left-3 flex items-center gap-2 text-[10px] text-muted-foreground bg-card/90 backdrop-blur rounded px-2 py-1 border shadow-sm">
-            <span>{items.length} items</span>
-            <span className="text-border">|</span>
-            <span>{(roomWidthCm / 100).toFixed(1)}m × {(roomDepthCm / 100).toFixed(1)}m</span>
-            <span className="text-border">|</span>
-            <span>{(totalAreaCm2 / 10000).toFixed(1)} m²</span>
-            <span className="text-border">|</span>
-            <span className={usedPct > 80 ? 'text-red-500' : usedPct > 50 ? 'text-amber-500' : 'text-green-500'}>{usedPct}% footprint</span>
-            <span className="text-border">|</span>
-            <span>{Math.round(zoom * 100)}%</span>
-            {gridSnap && <span className="text-border">| Snap</span>}
+          <div className="absolute bottom-3 left-3 flex items-center gap-1.5 text-[10px] text-muted-foreground bg-card/95 backdrop-blur-md rounded-lg px-2.5 py-1.5 border shadow-md">
+            <span className="font-medium text-foreground">{items.length}</span>
+            <span>items</span>
+            <span className="w-px h-3 bg-border/60 hidden sm:block" />
+            <span className="font-mono hidden sm:inline">{(roomWidthCm / 100).toFixed(1)}m × {(roomDepthCm / 100).toFixed(1)}m</span>
+            <span className="w-px h-3 bg-border/60 hidden md:block" />
+            <span className="hidden md:inline">{(totalAreaCm2 / 10000).toFixed(1)} m²</span>
+            <span className="w-px h-3 bg-border/60" />
+            <span className={`font-medium ${usedPct > 80 ? 'text-red-500' : usedPct > 50 ? 'text-amber-500' : 'text-emerald-500'}`}>{usedPct}%</span>
+            <span className="w-px h-3 bg-border/60" />
+            <span className="font-mono tabular-nums">{Math.round(zoom * 100)}%</span>
+            {gridSnap && (
+              <>
+                <span className="w-px h-3 bg-border/60" />
+                <span className="flex items-center gap-0.5"><span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />Snap</span>
+              </>
+            )}
           </div>
 
-          <div className="absolute bottom-3 right-3 text-[10px] text-muted-foreground/60 bg-card/80 backdrop-blur rounded px-2 py-1 border shadow-sm">
-            <span>Scroll: Zoom | Space+Drag: Pan | Shift+Click: Multi-select | R: Rotate | Del: Delete | Ctrl+Z/Y: Undo/Redo</span>
+          <div className="absolute bottom-3 right-3 text-[10px] text-muted-foreground/50 bg-card/90 backdrop-blur-md rounded-lg px-2.5 py-1.5 border shadow-md hidden lg:block">
+            <span>Scroll: Zoom · Space+Drag: Pan · Shift: Multi · R: Rotate · Del: Delete</span>
           </div>
         </div>
 
-        <div className="w-52 lg:w-60 border-l bg-card shrink-0 hidden md:flex flex-col">
+        <div className="w-52 lg:w-60 border-l bg-card/95 backdrop-blur-sm shrink-0 hidden md:flex flex-col shadow-sm">
           <div className="border-b flex">
             <button
-              className={`flex-1 px-3 py-2 text-xs font-medium transition-colors ${inspectorTab === 'items' ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground hover:text-foreground'}`}
+              className={`flex-1 px-3 py-2 text-[11px] font-semibold transition-colors ${inspectorTab === 'items' ? 'text-primary border-b-2 border-primary bg-primary/5' : 'text-muted-foreground hover:text-foreground'}`}
               onClick={() => setInspectorTab('items')}
             >
-              <Layers className="w-3.5 h-3.5 inline mr-1" />
+              <Layers className="w-3 h-3 inline mr-1" />
               Items ({items.length})
             </button>
             <button
-              className={`flex-1 px-3 py-2 text-xs font-medium transition-colors ${inspectorTab === 'properties' ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground hover:text-foreground'}`}
+              className={`flex-1 px-3 py-2 text-[11px] font-semibold transition-colors ${inspectorTab === 'properties' ? 'text-primary border-b-2 border-primary bg-primary/5' : 'text-muted-foreground hover:text-foreground'}`}
               onClick={() => setInspectorTab('properties')}
             >
               Properties
@@ -1432,7 +1467,7 @@ export default function CanvasPlanner() {
                 {selectedItem ? (
                   <>
                     <div>
-                      <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Selected Item</h4>
+                      <h4 className="text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-[0.08em] mb-2">Selected Item</h4>
                       <div className="text-sm font-medium">{selectedItem.name}</div>
                       <div className="text-xs text-muted-foreground">{selectedItem.category}</div>
                     </div>

@@ -221,7 +221,7 @@ export function StudioToolbar() {
   const hasSelection = editor ? editor.getSelectedShapeIds().length > 0 : false;
 
   return (
-    <div className="absolute top-0 left-0 right-0 z-30 flex h-12 items-center border-b bg-white/95 backdrop-blur-sm px-2 shadow-sm">
+    <div className="absolute top-0 left-0 right-0 z-30 flex h-12 items-center border-b bg-white/95 backdrop-blur-md px-2 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
       <button
         onClick={() => router.push("/")}
         className="flex h-8 w-8 items-center justify-center rounded-md text-navy-text/60 hover:bg-navy/10 hover:text-navy mr-1"

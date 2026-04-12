@@ -26,7 +26,7 @@ export function StudioStatusBar() {
   const selectedCount = editor?.getSelectedShapeIds().length || 0;
 
   return (
-    <div className="absolute bottom-0 left-0 right-0 z-30 flex h-8 items-center border-t bg-white/95 backdrop-blur-sm px-3 text-[10px] text-navy-text/50">
+    <div className="absolute bottom-0 left-0 right-0 z-30 flex h-8 items-center border-t bg-white/95 backdrop-blur-md px-3 text-[10px] text-navy-text/50 shadow-[0_-1px_3px_rgba(0,0,0,0.04)]">
       <div className="flex items-center gap-1.5 mr-4">
         <ToolIcon className="h-3 w-3 text-navy" />
         <span className="font-semibold text-navy">{toolMeta.label}</span>

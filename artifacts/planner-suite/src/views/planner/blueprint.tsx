@@ -17,8 +17,10 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { 
-  CheckCircle2, ChevronRight, FileSignature, Box, Plus, Minus, Loader2, Sparkles, ArrowRight, Download, AlertCircle, RefreshCw, FileSpreadsheet
+  CheckCircle2, ChevronRight, FileSignature, Box, Plus, Minus, Loader2, Sparkles, ArrowRight, Download, AlertCircle, RefreshCw, FileSpreadsheet,
+  Home
 } from 'lucide-react';
+import { PlannerBreadcrumb } from '@/components/planner/PlannerBreadcrumb';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 type Step = 'setup' | 'categories' | 'arrange' | 'review';
@@ -238,26 +240,37 @@ export default function BlueprintPlanner() {
 
   return (
     <div className="flex flex-col h-[calc(100vh-theme(spacing.16))] max-h-screen bg-muted/20">
-      <div className="bg-card border-b px-8 py-4 shrink-0">
+      <PlannerBreadcrumb
+        items={[
+          { label: 'Plans', href: '/plans' },
+          { label: 'Blueprint Wizard' },
+        ]}
+        icon={<FileSignature className="w-3.5 h-3.5 text-primary" />}
+      />
+
+      <div className="bg-card/95 backdrop-blur-sm border-b px-6 sm:px-8 py-3 shrink-0 shadow-sm">
         <div className="max-w-4xl mx-auto">
-          <div className="flex items-center gap-3 mb-6">
-            <FileSignature className="w-6 h-6 text-primary" />
-            <h1 className="text-2xl font-bold tracking-tight">Blueprint Wizard</h1>
-          </div>
-          
           <div className="flex items-center justify-between relative">
-            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-muted rounded-full overflow-hidden">
+            <div className="absolute left-0 top-[14px] w-full h-0.5 bg-muted rounded-full overflow-hidden">
               <div 
-                className="h-full bg-primary transition-all duration-500 ease-in-out"
+                className="h-full bg-primary transition-all duration-500 ease-in-out rounded-full"
                 style={{ width: `${(currentStepIndex / (steps.length - 1)) * 100}%` }}
               />
             </div>
             {steps.map((s, i) => (
-              <div key={s.id} className="relative z-10 flex flex-col items-center gap-2 bg-card px-2">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-colors ${i <= currentStepIndex ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
-                  {i < currentStepIndex ? <CheckCircle2 className="w-5 h-5" /> : i + 1}
+              <div key={s.id} className="relative z-10 flex flex-col items-center gap-1.5 bg-card/95 px-2.5">
+                <div className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs transition-all duration-300 ${
+                  i < currentStepIndex 
+                    ? 'bg-primary text-primary-foreground shadow-sm' 
+                    : i === currentStepIndex 
+                      ? 'bg-primary text-primary-foreground shadow-md ring-2 ring-primary/20' 
+                      : 'bg-muted text-muted-foreground'
+                }`}>
+                  {i < currentStepIndex ? <CheckCircle2 className="w-4 h-4" /> : i + 1}
                 </div>
-                <span className={`text-xs font-medium ${i <= currentStepIndex ? 'text-foreground' : 'text-muted-foreground'}`}>
+                <span className={`text-[10px] font-semibold tracking-wide hidden sm:block ${
+                  i <= currentStepIndex ? 'text-foreground' : 'text-muted-foreground/60'
+                }`}>
                   {s.title}
                 </span>
               </div>
@@ -266,7 +279,7 @@ export default function BlueprintPlanner() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto p-8">
+      <div className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8">
         <div className="max-w-4xl mx-auto bg-card rounded-xl border shadow-sm min-h-[500px] flex flex-col animate-in slide-in-from-bottom-4 duration-500">
           
           {step === 'setup' && (
@@ -385,11 +398,11 @@ export default function BlueprintPlanner() {
           )}
 
           {step === 'arrange' && (
-            <div className="p-0 flex-1 flex h-[500px]">
-              <div className="w-1/2 border-r flex flex-col bg-muted/10">
-                <div className="p-4 border-b bg-card">
-                  <h2 className="text-lg font-semibold">Available Catalog</h2>
-                  <p className="text-sm text-muted-foreground">Filtered by selected categories</p>
+            <div className="p-0 flex-1 flex flex-col sm:flex-row h-[500px]">
+              <div className="w-full sm:w-1/2 border-r flex flex-col bg-muted/10">
+                <div className="p-3 border-b bg-card/95">
+                  <h2 className="text-sm font-semibold">Available Catalog</h2>
+                  <p className="text-[11px] text-muted-foreground">Filtered by selected categories</p>
                 </div>
                 <ScrollArea className="flex-1 p-4">
                   {catalogError ? (
@@ -426,11 +439,11 @@ export default function BlueprintPlanner() {
                 </ScrollArea>
               </div>
 
-              <div className="w-1/2 flex flex-col">
-                <div className="p-4 border-b bg-card flex justify-between items-center">
+              <div className="w-full sm:w-1/2 flex flex-col">
+                <div className="p-3 border-b bg-card/95 flex justify-between items-center">
                   <div>
-                    <h2 className="text-lg font-semibold">Bill of Quantities</h2>
-                    <p className="text-sm text-muted-foreground">{placedItems.reduce((a,b)=>a+b.count,0)} total items</p>
+                    <h2 className="text-sm font-semibold">Bill of Quantities</h2>
+                    <p className="text-[11px] text-muted-foreground">{placedItems.reduce((a,b)=>a+b.count,0)} total items</p>
                   </div>
                 </div>
                 <ScrollArea className="flex-1 p-4">
@@ -473,26 +486,26 @@ export default function BlueprintPlanner() {
                 <p className="text-muted-foreground">Review your blueprint details before saving.</p>
               </div>
 
-              <div className="grid grid-cols-3 gap-4 mb-8">
-                <Card>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+                <Card className="border-border/50 bg-muted/20">
                   <CardContent className="p-4 space-y-1">
-                    <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Plan Details</span>
-                    <div className="font-medium text-lg">{planName}</div>
-                    <div className="text-sm text-muted-foreground capitalize">{roomType.replace('-',' ')}</div>
+                    <span className="text-[10px] text-muted-foreground/70 uppercase font-bold tracking-[0.08em]">Plan Details</span>
+                    <div className="font-semibold text-base">{planName}</div>
+                    <div className="text-xs text-muted-foreground capitalize">{roomType.replace('-',' ')}</div>
                   </CardContent>
                 </Card>
-                <Card>
+                <Card className="border-border/50 bg-muted/20">
                   <CardContent className="p-4 space-y-1">
-                    <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Dimensions</span>
-                    <div className="font-medium text-lg font-mono">{roomWidthCm / 100}m × {roomDepthCm / 100}m</div>
-                    <div className="text-sm text-muted-foreground">{(roomWidthCm * roomDepthCm) / 10000} sq.m total</div>
+                    <span className="text-[10px] text-muted-foreground/70 uppercase font-bold tracking-[0.08em]">Dimensions</span>
+                    <div className="font-semibold text-base font-mono tabular-nums">{roomWidthCm / 100}m × {roomDepthCm / 100}m</div>
+                    <div className="text-xs text-muted-foreground">{(roomWidthCm * roomDepthCm) / 10000} sq.m total</div>
                   </CardContent>
                 </Card>
-                <Card>
+                <Card className="border-border/50 bg-muted/20">
                   <CardContent className="p-4 space-y-1">
-                    <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Total Items</span>
-                    <div className="font-medium text-lg">{placedItems.reduce((a,b)=>a+b.count,0)} units</div>
-                    <div className="text-sm text-muted-foreground">{placedItems.length} unique types</div>
+                    <span className="text-[10px] text-muted-foreground/70 uppercase font-bold tracking-[0.08em]">Total Items</span>
+                    <div className="font-semibold text-base">{placedItems.reduce((a,b)=>a+b.count,0)} units</div>
+                    <div className="text-xs text-muted-foreground">{placedItems.length} unique types</div>
                   </CardContent>
                 </Card>
               </div>
@@ -533,9 +546,10 @@ export default function BlueprintPlanner() {
             </div>
           )}
 
-          <div className="p-6 border-t bg-muted/10 shrink-0 flex justify-between items-center rounded-b-xl">
+          <div className="p-4 sm:p-6 border-t bg-muted/5 shrink-0 flex justify-between items-center rounded-b-xl">
             <Button 
-              variant="outline" 
+              variant="outline"
+              size="sm"
               onClick={() => {
                 if (step === 'categories') setStep('setup');
                 if (step === 'arrange') setStep('categories');
@@ -546,22 +560,22 @@ export default function BlueprintPlanner() {
               Back
             </Button>
             
-            {step === 'setup' && <Button onClick={handleContinueFromSetup}>Continue to Categories <ChevronRight className="w-4 h-4 ml-1" /></Button>}
-            {step === 'categories' && <Button onClick={() => setStep('arrange')}>Continue to Arrangement <ChevronRight className="w-4 h-4 ml-1" /></Button>}
-            {step === 'arrange' && <Button onClick={() => setStep('review')}>Review BOQ <ChevronRight className="w-4 h-4 ml-1" /></Button>}
+            {step === 'setup' && <Button size="sm" onClick={handleContinueFromSetup}>Continue <ChevronRight className="w-3.5 h-3.5 ml-1" /></Button>}
+            {step === 'categories' && <Button size="sm" onClick={() => setStep('arrange')}>Continue <ChevronRight className="w-3.5 h-3.5 ml-1" /></Button>}
+            {step === 'arrange' && <Button size="sm" onClick={() => setStep('review')}>Review BOQ <ChevronRight className="w-3.5 h-3.5 ml-1" /></Button>}
             {step === 'review' && (
-              <div className="flex items-center gap-2">
-                <Button variant="outline" onClick={handleExportPdf} className="gap-2">
-                  <Download className="w-4 h-4" />
-                  Download PDF
+              <div className="flex items-center gap-2 flex-wrap justify-end">
+                <Button variant="outline" size="sm" onClick={handleExportPdf} className="gap-1.5">
+                  <Download className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">PDF</span>
                 </Button>
-                <Button variant="outline" onClick={() => handleSave(true)} disabled={createPlan.isPending} className="gap-2">
-                  <FileSpreadsheet className="w-4 h-4" />
-                  Save & Generate Quote
+                <Button variant="outline" size="sm" onClick={() => handleSave(true)} disabled={createPlan.isPending} className="gap-1.5">
+                  <FileSpreadsheet className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Save & Quote</span>
                 </Button>
-                <Button onClick={() => handleSave(false)} disabled={createPlan.isPending} className="px-8">
-                  {createPlan.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-                  Save Blueprint Plan
+                <Button size="sm" onClick={() => handleSave(false)} disabled={createPlan.isPending}>
+                  {createPlan.isPending ? <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> : null}
+                  Save Blueprint
                 </Button>
               </div>
             )}

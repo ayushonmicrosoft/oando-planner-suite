@@ -6,7 +6,8 @@ import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Environment, Sky, Html, PerspectiveCamera, ContactShadows } from '@react-three/drei';
 import * as THREE from 'three';
 import { useGetPlan, useListPlans, getGetPlanQueryKey, getListPlansQueryKey } from '@workspace/api-client-react';
-import { Loader2, ArrowLeft, Layers, Camera, AlertCircle, RefreshCw } from 'lucide-react';
+import { Loader2, ArrowLeft, Layers, Camera, AlertCircle, RefreshCw, Sun, Lightbulb, RotateCcw, Maximize } from 'lucide-react';
+import { PlannerBreadcrumb } from '@/components/planner/PlannerBreadcrumb';
 import { Button } from '@/components/ui/button';
 
 const DEMO_ROOM_WIDTH = 500;
@@ -503,31 +504,43 @@ export default function Viewer3D() {
 
   return (
     <div className="h-full flex flex-col bg-background">
-      <header className="h-14 border-b flex items-center justify-between px-4 shrink-0 bg-card z-10 relative shadow-sm">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => router.push('/')}><ArrowLeft className="w-4 h-4" /></Button>
+      <PlannerBreadcrumb
+        items={[
+          { label: 'Plans', href: '/plans' },
+          { label: '3D Viewer' },
+        ]}
+        icon={<Layers className="w-3.5 h-3.5 text-primary" />}
+        actions={
+          <span className="text-xs text-muted-foreground">{plan ? plan.name : 'Demo Scene'}</span>
+        }
+      />
+
+      <header className="h-11 border-b flex items-center justify-between px-4 shrink-0 bg-card/95 backdrop-blur-sm z-10 relative shadow-sm">
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => router.push('/')}><ArrowLeft className="w-3.5 h-3.5" /></Button>
           <div>
-            <h1 className="font-semibold text-sm leading-tight">3D Viewer</h1>
-            <p className="text-xs text-muted-foreground">{plan ? plan.name : 'Demo Scene'}</p>
+            <h1 className="font-semibold text-sm leading-tight">{plan ? plan.name : '3D Viewer'}</h1>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Button 
-            variant={mode === 'orbit' ? 'default' : 'outline'} 
-            size="sm" 
-            onClick={() => setMode('orbit')}
-            className="gap-2"
-          >
-            <Layers className="w-4 h-4" /> Orbit
-          </Button>
-          <Button 
-            variant={mode === 'walk' ? 'default' : 'outline'} 
-            size="sm" 
-            onClick={() => setMode('walk')}
-            className="gap-2"
-          >
-            <Camera className="w-4 h-4" /> Walk
-          </Button>
+        <div className="flex items-center gap-1.5">
+          <div className="flex items-center rounded-lg border border-border/50 bg-muted/30 p-0.5 gap-0.5">
+            <Button 
+              variant={mode === 'orbit' ? 'default' : 'ghost'} 
+              size="sm" 
+              onClick={() => setMode('orbit')}
+              className="h-7 gap-1.5 text-[11px] px-2.5"
+            >
+              <Layers className="w-3.5 h-3.5" /> Orbit
+            </Button>
+            <Button 
+              variant={mode === 'walk' ? 'default' : 'ghost'} 
+              size="sm" 
+              onClick={() => setMode('walk')}
+              className="h-7 gap-1.5 text-[11px] px-2.5"
+            >
+              <Camera className="w-3.5 h-3.5" /> Walk
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -604,11 +617,30 @@ export default function Viewer3D() {
           
         </Canvas>
         
+        <div className="absolute top-3 left-3 flex flex-col gap-1.5 text-[10px] text-muted-foreground/60 hidden sm:flex">
+          <div className="bg-card/90 backdrop-blur-md rounded-lg px-2.5 py-1.5 border shadow-sm flex items-center gap-1.5">
+            <Sun className="w-3 h-3" />
+            <span>Natural Lighting</span>
+          </div>
+        </div>
+
+        <div className="absolute bottom-3 left-3 flex items-center gap-1.5 text-[10px] text-muted-foreground bg-card/95 backdrop-blur-md rounded-lg px-2.5 py-1.5 border shadow-md">
+          <span className="font-mono tabular-nums">{items.length} items</span>
+          <span className="w-px h-3 bg-border/60" />
+          <span className="font-mono">{(roomW / 100).toFixed(1)}m × {(roomD / 100).toFixed(1)}m</span>
+          <span className="w-px h-3 bg-border/60" />
+          <span className="capitalize">{mode}</span>
+        </div>
+
         {mode === 'walk' && (
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-background/80 backdrop-blur px-4 py-2 rounded-full border shadow-lg pointer-events-none text-xs font-medium text-muted-foreground flex gap-4">
-            <span>Click and drag to look around</span>
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-card/95 backdrop-blur-md px-4 py-2 rounded-full border shadow-lg pointer-events-none text-[11px] font-medium text-muted-foreground flex gap-3">
+            <span>Drag to look around</span>
           </div>
         )}
+
+        <div className="absolute bottom-3 right-3 text-[10px] text-muted-foreground/50 bg-card/90 backdrop-blur-md rounded-lg px-2.5 py-1.5 border shadow-md hidden sm:block">
+          <span>Drag: Orbit · Scroll: Zoom · Right-drag: Pan</span>
+        </div>
       </div>
     </div>
   );

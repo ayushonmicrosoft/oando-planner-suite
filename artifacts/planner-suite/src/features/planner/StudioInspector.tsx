@@ -101,7 +101,7 @@ export function StudioInspector() {
   if (!showInspector) return null;
 
   return (
-    <div className="absolute top-12 right-0 bottom-8 z-20 w-[280px] border-l bg-white flex flex-col shadow-lg">
+    <div className="absolute top-12 right-0 bottom-8 z-20 w-[280px] border-l bg-white/95 backdrop-blur-md flex flex-col shadow-lg">
       <div className="px-3 py-2 border-b flex items-center justify-between">
         <div className="flex items-center gap-2">
           <button

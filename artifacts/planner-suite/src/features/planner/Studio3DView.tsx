@@ -140,8 +140,8 @@ export function Studio3DView() {
   if (!show3D) return null;
 
   return (
-    <div className="absolute top-12 right-0 bottom-8 z-25 w-[50%] min-w-[400px] border-l bg-white shadow-2xl flex flex-col">
-      <div className="flex items-center justify-between px-3 py-2 border-b bg-white">
+    <div className="absolute top-12 right-0 bottom-8 z-25 w-[50%] min-w-[400px] border-l bg-white/95 backdrop-blur-md shadow-2xl flex flex-col">
+      <div className="flex items-center justify-between px-3 py-2 border-b bg-white/95 backdrop-blur-sm">
         <span className="text-xs font-bold text-navy">3D Preview</span>
         <div className="flex items-center gap-1">
           <button onClick={toggle3D} className="h-7 w-7 flex items-center justify-center rounded-md hover:bg-navy/10">

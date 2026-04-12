@@ -10,12 +10,15 @@ interface HeroProps {
 
 export default function Hero({ onGetStarted }: HeroProps) {
   return (
-    <section className="relative overflow-hidden min-h-[70vh] flex items-center">
+    <section className="relative overflow-hidden min-h-[70vh] flex items-center" aria-label="Hero">
       <div className="absolute inset-0">
         <img
           src={`/hero/titan-hero.webp`}
-          alt="Workspace by One&Only"
+          alt="Modern office workspace designed by One&Only — professional office furniture layout and interior planning"
           className="w-full h-full object-cover"
+          width={1920}
+          height={1080}
+          loading="eager"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-navy-dark/90 via-navy-dark/70 to-navy-dark/40" />
       </div>
@@ -27,13 +30,12 @@ export default function Hero({ onGetStarted }: HeroProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: "easeOut" }}
         >
-          <h1 className="text-[48px] md:text-[72px] font-light leading-[1.05] text-white mb-8 tracking-tight">
-            Work.
-            <br />
-            Space.
-            <br />
-            Performance.
+          <h1 className="text-[48px] md:text-[72px] font-light leading-[1.05] text-white mb-4 tracking-tight">
+            Office Planner &amp; Workspace Design Tool
           </h1>
+          <p className="text-[18px] md:text-[20px] text-white/80 mb-8 max-w-[520px] leading-relaxed">
+            Plan, design, and visualize your office space with India&apos;s leading office furniture planning software. From quick layouts to professional blueprints.
+          </p>
           <div className="flex flex-wrap gap-4">
             <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
               <Button

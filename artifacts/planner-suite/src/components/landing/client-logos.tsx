@@ -20,16 +20,18 @@ const logos = [
 
 export default function ClientLogos() {
   return (
-    <section className="py-10 bg-white border-b overflow-hidden">
+    <section className="py-10 bg-white border-b overflow-hidden" aria-label="Trusted by leading organisations">
       <div className="relative">
         <div className="flex animate-scroll-left" style={{ width: "max-content" }}>
           {[...logos, ...logos].map((logo, i) => (
             <div key={i} className="flex items-center justify-center px-8 shrink-0">
               <img
                 src={`/ClientLogos/${logo.file}`}
-                alt={logo.name}
+                alt={`${logo.name} — One&Only client for office furniture and workspace planning`}
                 className="h-10 w-auto opacity-50 hover:opacity-100 transition-opacity grayscale hover:grayscale-0"
                 loading="lazy"
+                width={120}
+                height={40}
               />
             </div>
           ))}

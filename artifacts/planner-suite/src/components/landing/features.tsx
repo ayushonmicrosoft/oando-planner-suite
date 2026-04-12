@@ -54,7 +54,7 @@ const features = [
 
 export default function Features() {
   return (
-    <section className="py-20 lg:py-28 bg-secondary/50">
+    <section className="py-20 lg:py-28 bg-secondary/50" id="features" aria-label="Features">
       <div className="max-w-[1200px] mx-auto px-5">
         <motion.div
           className="text-center mb-16"
@@ -64,10 +64,10 @@ export default function Features() {
           transition={{ duration: 0.6 }}
         >
           <h2 className="text-[32px] md:text-[44px] font-bold text-foreground mb-4">
-            Everything You Need to Design Any Space
+            Everything You Need to Design Any Office Space
           </h2>
           <p className="text-[18px] text-muted-foreground max-w-[600px] mx-auto">
-            8 powerful tools in one suite. From quick sketches to professional blueprints.
+            8 powerful office layout tools in one suite. From quick sketches to professional blueprints and 3D visualization.
           </p>
         </motion.div>
 
@@ -82,7 +82,7 @@ export default function Features() {
               transition={{ delay: i * 0.08, duration: 0.5 }}
             >
               <div className={`w-12 h-12 rounded-lg ${f.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
-                <f.icon className="w-6 h-6" />
+                <f.icon className="w-6 h-6" aria-hidden="true" />
               </div>
               <h3 className="font-bold text-foreground text-[16px] mb-2">{f.title}</h3>
               <p className="text-[14px] text-muted-foreground leading-relaxed">{f.desc}</p>

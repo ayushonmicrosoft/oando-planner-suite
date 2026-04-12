@@ -1235,6 +1235,10 @@
     margin-block: calc(var(--spacing) * 1);
   }
 
+  .my-5 {
+    margin-block: calc(var(--spacing) * 5);
+  }
+
   .prose {
     color: var(--tw-prose-body);
     max-width: 65ch;
@@ -2407,6 +2411,10 @@
 
   .max-w-\[120px\] {
     max-width: 120px;
+  }
+
+  .max-w-\[520px\] {
+    max-width: 520px;
   }
 
   .max-w-\[560px\] {
@@ -3887,6 +3895,10 @@
 
   .pr-8 {
     padding-right: calc(var(--spacing) * 8);
+  }
+
+  .pr-10 {
+    padding-right: calc(var(--spacing) * 10);
   }
 
   .pb-0 {
@@ -6293,6 +6305,12 @@
   @media (min-width: 48rem) {
     .md\:text-\[18px\] {
       font-size: 18px;
+    }
+  }
+
+  @media (min-width: 48rem) {
+    .md\:text-\[20px\] {
+      font-size: 20px;
     }
   }
 

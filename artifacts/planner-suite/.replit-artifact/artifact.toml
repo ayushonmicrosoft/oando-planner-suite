@@ -20,13 +20,13 @@ run = "pnpm --filter @workspace/planner-suite run dev"
 [services.production]
 
 [services.production.build]
-args = ["pnpm", "--filter", "@workspace/planner-suite", "run", "build"]
+args = ["bash", "artifacts/planner-suite/scripts/build-standalone.sh"]
 
 [services.production.build.env]
 NODE_ENV = "production"
 
 [services.production.run]
-args = ["node", "artifacts/planner-suite/node_modules/.bin/next", "start", "-p", "24140", "-H", "0.0.0.0"]
+args = ["node", "artifacts/planner-suite/.next/standalone/artifacts/planner-suite/server.js"]
 
 [services.production.run.env]
 PORT = "24140"

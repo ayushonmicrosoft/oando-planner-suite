@@ -17,12 +17,18 @@ export default function Footer() {
               <span className="hover:text-white/40 transition-colors duration-300 cursor-pointer">3D Viewer</span>
             </div>
           </nav>
-          <div className="text-[12px] text-white/15">
+          <div className="text-[12px] text-white/15 flex flex-wrap items-center gap-x-1">
             <a href="https://oando.co.in" target="_blank" rel="noopener noreferrer" className="hover:text-white/30 transition-colors duration-300">
               oando.co.in
             </a>
-            <span className="mx-2 opacity-30">&middot;</span>
+            <span className="opacity-30">&middot;</span>
             &copy; {new Date().getFullYear()} One&amp;Only Office Furniture Pvt. Ltd.
+            <span className="opacity-30">&middot;</span>
+            <a href="/privacy" className="hover:text-white/30 transition-colors duration-300">Privacy Policy</a>
+            <span className="opacity-30">&middot;</span>
+            <a href="/about" className="hover:text-white/30 transition-colors duration-300">About</a>
+            <span className="opacity-30">&middot;</span>
+            <a href="/contact" className="hover:text-white/30 transition-colors duration-300">Contact</a>
           </div>
         </div>
       </div>

@@ -73,7 +73,7 @@ export default function Home() {
   const firstName = displayName.split(' ')[0];
 
   return (
-    <div className="p-6 lg:p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in duration-500">
+    <main id="main-content" className="p-6 lg:p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in duration-500">
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[var(--color-dark-midnight-blue-500)] via-[var(--color-dark-midnight-blue-600)] to-[var(--color-dark-midnight-blue-800)] p-8 lg:p-10 text-white">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--color-ocean-boat-blue-500)_0%,_transparent_60%)] opacity-20" />
         <div className="relative z-10">
@@ -451,6 +451,6 @@ export default function Home() {
           </Card>
         )}
       </div>
-    </div>
+    </main>
   );
 }

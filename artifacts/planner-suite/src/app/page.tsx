@@ -10,9 +10,12 @@ export default function RootPage() {
 
   if (!isLoaded) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
+      <>
+        <h1 className="sr-only">One&amp;Only — Office Planner &amp; Workspace Design Tool</h1>
+        <main className="min-h-screen flex items-center justify-center">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </main>
+      </>
     );
   }
 

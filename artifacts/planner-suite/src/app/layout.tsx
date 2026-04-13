@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     template: "%s | One&Only",
   },
   description:
-    "Plan, design, and visualize your office space with One&Only — India's leading office furniture planning software. 2D canvas, blueprint wizard, CAD drawing, floor plans, and 3D viewer in one suite.",
+    "Plan, design, and visualize your office space with One&Only — India's office furniture planning software with 2D canvas, blueprints, and 3D viewer.",
   keywords: [
     "office planner",
     "workspace design tool",
@@ -167,6 +167,9 @@ export default function RootLayout({
         />
       </head>
       <body>
+        <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-white focus:text-black focus:rounded focus:text-sm focus:font-medium">
+          Skip to main content
+        </a>
         <Providers>{children}</Providers>
       </body>
     </html>

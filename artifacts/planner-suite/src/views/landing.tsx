@@ -41,7 +41,7 @@ export default function Landing() {
         </nav>
       </header>
 
-      <main>
+      <main id="main-content">
         <Hero onGetStarted={handleGetStarted} />
         <ClientLogos />
         <Features />

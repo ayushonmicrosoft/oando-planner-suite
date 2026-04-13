@@ -11,6 +11,7 @@ import {
   PRO_PLAN_DESCRIPTION,
   verifyWebhookSignature,
 } from "../lib/razorpay";
+import { ApiHttpError } from "../middlewares/error-handler";
 import { logger } from "../lib/logger";
 import crypto from "crypto";
 import { z } from "zod";
@@ -26,7 +27,7 @@ const VerifyPaymentBody = z.object({
 router.get(
   "/billing",
   asyncHandler(async (req, res) => {
-    const userId = (req as any).userId as string;
+    const userId = req.userId;
 
     const [user] = await db
       .select()
@@ -35,8 +36,7 @@ router.get(
       .limit(1);
 
     if (!user) {
-      res.status(404).json({ error: "User not found", status: 404 });
-      return;
+      throw new ApiHttpError(404, "User not found");
     }
 
     res.json({
@@ -51,7 +51,7 @@ router.get(
 router.post(
   "/billing/create-order",
   asyncHandler(async (req, res) => {
-    const userId = (req as any).userId as string;
+    const userId = req.userId;
 
     const [user] = await db
       .select()
@@ -60,13 +60,11 @@ router.post(
       .limit(1);
 
     if (!user) {
-      res.status(404).json({ error: "User not found", status: 404 });
-      return;
+      throw new ApiHttpError(404, "User not found");
     }
 
     if (user.planTier === "pro" && user.subscriptionStatus === "active") {
-      res.status(400).json({ error: "Already subscribed to Pro plan", status: 400 });
-      return;
+      throw new ApiHttpError(400, "Already subscribed to Pro plan");
     }
 
     const razorpay = getRazorpay();
@@ -99,12 +97,11 @@ router.post(
 router.post(
   "/billing/verify-payment",
   asyncHandler(async (req, res) => {
-    const userId = (req as any).userId as string;
+    const userId = req.userId;
 
     const parsed = VerifyPaymentBody.safeParse(req.body);
     if (!parsed.success) {
-      res.status(400).json({ error: "Missing payment verification fields: " + parsed.error.message, status: 400 });
-      return;
+      throw new ApiHttpError(400, "Missing payment verification fields: " + parsed.error.message);
     }
 
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = parsed.data;
@@ -133,8 +130,7 @@ router.post(
 
     if (generatedSignature !== razorpay_signature) {
       logger.warn({ userId }, "Payment signature verification failed");
-      res.status(400).json({ error: "Payment verification failed", status: 400 });
-      return;
+      throw new ApiHttpError(400, "Payment verification failed");
     }
 
     const razorpay = getRazorpay();
@@ -144,13 +140,11 @@ router.post(
       paymentStatus = (payment as any).status;
     } catch (err) {
       logger.error({ err, razorpay_payment_id }, "Failed to fetch payment from Razorpay");
-      res.status(400).json({ error: "Could not verify payment with Razorpay", status: 400 });
-      return;
+      throw new ApiHttpError(400, "Could not verify payment with Razorpay");
     }
 
     if (paymentStatus !== "captured" && paymentStatus !== "authorized") {
-      res.status(400).json({ error: `Payment not captured (status: ${paymentStatus})`, status: 400 });
-      return;
+      throw new ApiHttpError(400, `Payment not captured (status: ${paymentStatus})`);
     }
 
     const nextPeriodEnd = new Date();
@@ -181,7 +175,7 @@ router.post(
 router.post(
   "/billing/cancel",
   asyncHandler(async (req, res) => {
-    const userId = (req as any).userId as string;
+    const userId = req.userId;
 
     const [user] = await db
       .select()
@@ -190,13 +184,11 @@ router.post(
       .limit(1);
 
     if (!user) {
-      res.status(404).json({ error: "User not found", status: 404 });
-      return;
+      throw new ApiHttpError(404, "User not found");
     }
 
     if (user.planTier !== "pro" || user.subscriptionStatus !== "active") {
-      res.status(400).json({ error: "No active subscription to cancel", status: 400 });
-      return;
+      throw new ApiHttpError(400, "No active subscription to cancel");
     }
 
     const [updated] = await db

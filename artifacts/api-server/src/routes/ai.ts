@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
 import { GetAiAdviceBody, GenerateAutoLayoutBody } from "@workspace/api-zod";
 import { asyncHandler } from "../middlewares/async-handler";
+import { ApiHttpError } from "../middlewares/error-handler";
 import OpenAI from "openai";
 
 const router: IRouter = Router();
@@ -651,20 +652,17 @@ router.post(
   asyncHandler(async (req, res) => {
     const parsed = GenerateAutoLayoutBody.safeParse(req.body);
     if (!parsed.success) {
-      res.status(400).json({ error: "Invalid request: " + parsed.error.message, status: 400 });
-      return;
+      throw new ApiHttpError(400, "Invalid request: " + parsed.error.message);
     }
 
     const { roomWidthCm, roomDepthCm, roomType, constraints } = parsed.data;
     const capacity = Math.floor(parsed.data.capacity);
 
     if (roomWidthCm < 200 || roomDepthCm < 200) {
-      res.status(400).json({ error: "Room must be at least 200cm × 200cm", status: 400 });
-      return;
+      throw new ApiHttpError(400, "Room must be at least 200cm × 200cm");
     }
     if (capacity < 1 || capacity > 100) {
-      res.status(400).json({ error: "Capacity must be between 1 and 100", status: 400 });
-      return;
+      throw new ApiHttpError(400, "Capacity must be between 1 and 100");
     }
 
     let layout: AutoLayoutItem[];
@@ -719,8 +717,7 @@ router.post(
   asyncHandler(async (req, res) => {
     const parsed = GetAiAdviceBody.safeParse(req.body);
     if (!parsed.success) {
-      res.status(400).json({ error: "Invalid request: " + parsed.error.message, status: 400 });
-      return;
+      throw new ApiHttpError(400, "Invalid request: " + parsed.error.message);
     }
 
     const { roomWidthCm, roomDepthCm, query, categories, itemCount } = parsed.data;

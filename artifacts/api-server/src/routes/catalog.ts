@@ -8,9 +8,59 @@ import {
 import { asyncHandler } from "../middlewares/async-handler";
 import { requireAuth } from "../middlewares/require-auth";
 import { requireAdmin } from "../middlewares/require-admin";
+import { ApiHttpError } from "../middlewares/error-handler";
 import { randomUUID } from "crypto";
+import { z } from "zod";
 
 const router: IRouter = Router();
+
+const IdParams = z.object({ id: z.string().min(1) });
+
+const CreateCatalogItemBody = z.object({
+  name: z.string().trim().min(1).max(500),
+  category: z.string().trim().min(1).max(200),
+  subCategory: z.string().trim().max(200).nullish(),
+  widthCm: z.number().positive().max(100000),
+  depthCm: z.number().positive().max(100000),
+  heightCm: z.number().positive().max(100000),
+  color: z.string().trim().max(50).nullish(),
+  description: z.string().trim().max(5000).nullish(),
+  imageUrl: z.string().url().max(2000).nullish(),
+  shape: z.string().trim().max(50).nullish(),
+  seatCount: z.number().int().min(0).max(10000).nullish(),
+  price: z.number().min(0).max(100000000).nullish(),
+  seriesId: z.string().trim().max(200).nullish(),
+});
+
+const UpdateCatalogItemBody = z.object({
+  name: z.string().trim().min(1).max(500).optional(),
+  category: z.string().trim().min(1).max(200).optional(),
+  subCategory: z.string().trim().max(200).nullish(),
+  widthCm: z.number().positive().max(100000).optional(),
+  depthCm: z.number().positive().max(100000).optional(),
+  heightCm: z.number().positive().max(100000).optional(),
+  color: z.string().trim().max(50).nullish(),
+  description: z.string().trim().max(5000).nullish(),
+  imageUrl: z.string().url().max(2000).nullish(),
+  shape: z.string().trim().max(50).nullish(),
+  seatCount: z.number().int().min(0).max(10000).nullish(),
+  price: z.number().min(0).max(100000000).nullish(),
+  seriesId: z.string().trim().max(200).nullish(),
+});
+
+const CreateSeriesBody = z.object({
+  name: z.string().trim().min(1).max(500),
+  tier: z.enum(["economy", "medium", "premium"]),
+  description: z.string().trim().max(5000).nullish(),
+  imageUrl: z.string().url().max(2000).nullish(),
+});
+
+const UpdateSeriesBody = z.object({
+  name: z.string().trim().min(1).max(500).optional(),
+  tier: z.enum(["economy", "medium", "premium"]).optional(),
+  description: z.string().trim().max(5000).nullish(),
+  imageUrl: z.string().url().max(2000).nullish(),
+});
 
 router.get(
   "/catalog/categories",
@@ -53,7 +103,7 @@ router.get(
 router.get(
   "/catalog/series/:id",
   asyncHandler(async (req, res) => {
-    const { id } = req.params;
+    const { id } = IdParams.parse(req.params);
 
     const [series] = await db
       .select()
@@ -61,8 +111,7 @@ router.get(
       .where(eq(seriesTable.id, String(id)));
 
     if (!series) {
-      res.status(404).json({ error: "Series not found", status: 404 });
-      return;
+      throw new ApiHttpError(404, "Series not found");
     }
 
     const items = await db
@@ -80,8 +129,7 @@ router.get(
   asyncHandler(async (req, res) => {
     const query = ListCatalogItemsQueryParams.safeParse(req.query);
     if (!query.success) {
-      res.status(400).json({ error: "Invalid query parameters", status: 400 });
-      return;
+      throw new ApiHttpError(400, "Invalid query parameters");
     }
 
     const conditions = [];
@@ -111,8 +159,7 @@ router.get(
   asyncHandler(async (req, res) => {
     const params = GetCatalogItemParams.safeParse(req.params);
     if (!params.success) {
-      res.status(400).json({ error: "Invalid catalog item id", status: 400 });
-      return;
+      throw new ApiHttpError(400, "Invalid catalog item id");
     }
 
     const [item] = await db
@@ -121,8 +168,7 @@ router.get(
       .where(eq(catalogItemsTable.id, params.data.id));
 
     if (!item) {
-      res.status(404).json({ error: "Catalog item not found", status: 404 });
-      return;
+      throw new ApiHttpError(404, "Catalog item not found");
     }
 
     res.json(item);
@@ -134,11 +180,9 @@ router.post(
   requireAuth,
   requireAdmin,
   asyncHandler(async (req, res) => {
-    const { name, category, subCategory, widthCm, depthCm, heightCm, color, description, imageUrl, shape, seatCount, price, seriesId } = req.body;
-
-    if (!name || !category || widthCm == null || depthCm == null || heightCm == null) {
-      res.status(400).json({ error: "name, category, widthCm, depthCm, and heightCm are required", status: 400 });
-      return;
+    const parsed = CreateCatalogItemBody.safeParse(req.body);
+    if (!parsed.success) {
+      throw new ApiHttpError(400, "Invalid catalog item data: " + parsed.error.message);
     }
 
     const id = `item-${randomUUID().slice(0, 8)}`;
@@ -147,19 +191,19 @@ router.post(
       .insert(catalogItemsTable)
       .values({
         id,
-        name,
-        category,
-        subCategory: subCategory ?? null,
-        widthCm: Number(widthCm),
-        depthCm: Number(depthCm),
-        heightCm: Number(heightCm),
-        color: color ?? null,
-        description: description ?? null,
-        imageUrl: imageUrl ?? null,
-        shape: shape ?? null,
-        seatCount: seatCount != null ? Number(seatCount) : null,
-        price: price != null ? Number(price) : null,
-        seriesId: seriesId ?? null,
+        name: parsed.data.name,
+        category: parsed.data.category,
+        subCategory: parsed.data.subCategory ?? null,
+        widthCm: parsed.data.widthCm,
+        depthCm: parsed.data.depthCm,
+        heightCm: parsed.data.heightCm,
+        color: parsed.data.color ?? null,
+        description: parsed.data.description ?? null,
+        imageUrl: parsed.data.imageUrl ?? null,
+        shape: parsed.data.shape ?? null,
+        seatCount: parsed.data.seatCount ?? null,
+        price: parsed.data.price ?? null,
+        seriesId: parsed.data.seriesId ?? null,
       })
       .returning();
 
@@ -172,27 +216,31 @@ router.patch(
   requireAuth,
   requireAdmin,
   asyncHandler(async (req, res) => {
-    const { id } = req.params;
-    const { name, category, subCategory, widthCm, depthCm, heightCm, color, description, imageUrl, shape, seatCount, price, seriesId } = req.body;
+    const { id } = IdParams.parse(req.params);
+
+    const parsed = UpdateCatalogItemBody.safeParse(req.body);
+    if (!parsed.success) {
+      throw new ApiHttpError(400, "Invalid update data: " + parsed.error.message);
+    }
 
     const updates: Record<string, unknown> = {};
-    if (name !== undefined) updates.name = name;
-    if (category !== undefined) updates.category = category;
-    if (subCategory !== undefined) updates.subCategory = subCategory;
-    if (widthCm !== undefined) updates.widthCm = Number(widthCm);
-    if (depthCm !== undefined) updates.depthCm = Number(depthCm);
-    if (heightCm !== undefined) updates.heightCm = Number(heightCm);
-    if (color !== undefined) updates.color = color;
-    if (description !== undefined) updates.description = description;
-    if (imageUrl !== undefined) updates.imageUrl = imageUrl;
-    if (shape !== undefined) updates.shape = shape;
-    if (seatCount !== undefined) updates.seatCount = seatCount != null ? Number(seatCount) : null;
-    if (price !== undefined) updates.price = price != null ? Number(price) : null;
-    if (seriesId !== undefined) updates.seriesId = seriesId;
+    const data = parsed.data;
+    if (data.name !== undefined) updates.name = data.name;
+    if (data.category !== undefined) updates.category = data.category;
+    if (data.subCategory !== undefined) updates.subCategory = data.subCategory ?? null;
+    if (data.widthCm !== undefined) updates.widthCm = data.widthCm;
+    if (data.depthCm !== undefined) updates.depthCm = data.depthCm;
+    if (data.heightCm !== undefined) updates.heightCm = data.heightCm;
+    if (data.color !== undefined) updates.color = data.color ?? null;
+    if (data.description !== undefined) updates.description = data.description ?? null;
+    if (data.imageUrl !== undefined) updates.imageUrl = data.imageUrl ?? null;
+    if (data.shape !== undefined) updates.shape = data.shape ?? null;
+    if (data.seatCount !== undefined) updates.seatCount = data.seatCount ?? null;
+    if (data.price !== undefined) updates.price = data.price ?? null;
+    if (data.seriesId !== undefined) updates.seriesId = data.seriesId ?? null;
 
     if (Object.keys(updates).length === 0) {
-      res.status(400).json({ error: "No fields to update", status: 400 });
-      return;
+      throw new ApiHttpError(400, "No fields to update");
     }
 
     const [updated] = await db
@@ -202,8 +250,7 @@ router.patch(
       .returning();
 
     if (!updated) {
-      res.status(404).json({ error: "Catalog item not found", status: 404 });
-      return;
+      throw new ApiHttpError(404, "Catalog item not found");
     }
 
     res.json(updated);
@@ -215,7 +262,7 @@ router.delete(
   requireAuth,
   requireAdmin,
   asyncHandler(async (req, res) => {
-    const { id } = req.params;
+    const { id } = IdParams.parse(req.params);
 
     const [deleted] = await db
       .delete(catalogItemsTable)
@@ -223,8 +270,7 @@ router.delete(
       .returning();
 
     if (!deleted) {
-      res.status(404).json({ error: "Catalog item not found", status: 404 });
-      return;
+      throw new ApiHttpError(404, "Catalog item not found");
     }
 
     res.status(204).send();
@@ -236,16 +282,9 @@ router.post(
   requireAuth,
   requireAdmin,
   asyncHandler(async (req, res) => {
-    const { name, tier, description, imageUrl } = req.body;
-
-    if (!name || !tier) {
-      res.status(400).json({ error: "name and tier are required", status: 400 });
-      return;
-    }
-
-    if (!["economy", "medium", "premium"].includes(tier)) {
-      res.status(400).json({ error: "tier must be economy, medium, or premium", status: 400 });
-      return;
+    const parsed = CreateSeriesBody.safeParse(req.body);
+    if (!parsed.success) {
+      throw new ApiHttpError(400, "Invalid series data: " + parsed.error.message);
     }
 
     const id = `series-${randomUUID().slice(0, 8)}`;
@@ -254,10 +293,10 @@ router.post(
       .insert(seriesTable)
       .values({
         id,
-        name,
-        tier,
-        description: description ?? null,
-        imageUrl: imageUrl ?? null,
+        name: parsed.data.name,
+        tier: parsed.data.tier,
+        description: parsed.data.description ?? null,
+        imageUrl: parsed.data.imageUrl ?? null,
       })
       .returning();
 
@@ -270,24 +309,22 @@ router.patch(
   requireAuth,
   requireAdmin,
   asyncHandler(async (req, res) => {
-    const { id } = req.params;
-    const { name, tier, description, imageUrl } = req.body;
+    const { id } = IdParams.parse(req.params);
+
+    const parsed = UpdateSeriesBody.safeParse(req.body);
+    if (!parsed.success) {
+      throw new ApiHttpError(400, "Invalid update data: " + parsed.error.message);
+    }
 
     const updates: Record<string, unknown> = {};
-    if (name !== undefined) updates.name = name;
-    if (tier !== undefined) {
-      if (!["economy", "medium", "premium"].includes(tier)) {
-        res.status(400).json({ error: "tier must be economy, medium, or premium", status: 400 });
-        return;
-      }
-      updates.tier = tier;
-    }
-    if (description !== undefined) updates.description = description;
-    if (imageUrl !== undefined) updates.imageUrl = imageUrl;
+    const data = parsed.data;
+    if (data.name !== undefined) updates.name = data.name;
+    if (data.tier !== undefined) updates.tier = data.tier;
+    if (data.description !== undefined) updates.description = data.description ?? null;
+    if (data.imageUrl !== undefined) updates.imageUrl = data.imageUrl ?? null;
 
     if (Object.keys(updates).length === 0) {
-      res.status(400).json({ error: "No fields to update", status: 400 });
-      return;
+      throw new ApiHttpError(400, "No fields to update");
     }
 
     const [updated] = await db
@@ -297,8 +334,7 @@ router.patch(
       .returning();
 
     if (!updated) {
-      res.status(404).json({ error: "Series not found", status: 404 });
-      return;
+      throw new ApiHttpError(404, "Series not found");
     }
 
     res.json(updated);
@@ -310,7 +346,7 @@ router.delete(
   requireAuth,
   requireAdmin,
   asyncHandler(async (req, res) => {
-    const { id } = req.params;
+    const { id } = IdParams.parse(req.params);
 
     await db
       .update(catalogItemsTable)
@@ -323,8 +359,7 @@ router.delete(
       .returning();
 
     if (!deleted) {
-      res.status(404).json({ error: "Series not found", status: 404 });
-      return;
+      throw new ApiHttpError(404, "Series not found");
     }
 
     res.status(204).send();

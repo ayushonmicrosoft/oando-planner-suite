@@ -2,6 +2,7 @@ import { Router, type IRouter } from "express";
 import { eq, and, desc } from "drizzle-orm";
 import { db, plansTable, planSharesTable, planCommentsTable } from "@workspace/db";
 import { asyncHandler } from "../middlewares/async-handler";
+import { ApiHttpError } from "../middlewares/error-handler";
 import crypto from "crypto";
 import { z } from "zod";
 
@@ -43,11 +44,10 @@ function serializeComment(c: typeof planCommentsTable.$inferSelect) {
 router.post(
   "/plans/:id/share",
   asyncHandler(async (req, res) => {
-    const userId = (req as any).userId as string;
+    const userId = req.userId;
     const planId = parseIdParam(req.params.id);
     if (!planId) {
-      res.status(400).json({ error: "Invalid plan id", status: 400 });
-      return;
+      throw new ApiHttpError(400, "Invalid plan id");
     }
 
     const [plan] = await db
@@ -56,14 +56,12 @@ router.post(
       .where(and(eq(plansTable.id, planId), eq(plansTable.userId, userId)));
 
     if (!plan) {
-      res.status(404).json({ error: "Plan not found", status: 404 });
-      return;
+      throw new ApiHttpError(404, "Plan not found");
     }
 
     const parsed = CreateShareBody.safeParse(req.body ?? {});
     if (!parsed.success) {
-      res.status(400).json({ error: "Invalid share data: " + parsed.error.message, status: 400 });
-      return;
+      throw new ApiHttpError(400, "Invalid share data: " + parsed.error.message);
     }
 
     let expiresAt: Date | null = null;
@@ -90,11 +88,10 @@ router.post(
 router.get(
   "/plans/:id/shares",
   asyncHandler(async (req, res) => {
-    const userId = (req as any).userId as string;
+    const userId = req.userId;
     const planId = parseIdParam(req.params.id);
     if (!planId) {
-      res.status(400).json({ error: "Invalid plan id", status: 400 });
-      return;
+      throw new ApiHttpError(400, "Invalid plan id");
     }
 
     const [plan] = await db
@@ -103,8 +100,7 @@ router.get(
       .where(and(eq(plansTable.id, planId), eq(plansTable.userId, userId)));
 
     if (!plan) {
-      res.status(404).json({ error: "Plan not found", status: 404 });
-      return;
+      throw new ApiHttpError(404, "Plan not found");
     }
 
     const shares = await db
@@ -129,12 +125,11 @@ router.get(
 router.delete(
   "/plans/:id/shares/:shareId",
   asyncHandler(async (req, res) => {
-    const userId = (req as any).userId as string;
+    const userId = req.userId;
     const planId = parseIdParam(req.params.id);
     const shareId = parseIdParam(req.params.shareId);
     if (!planId || !shareId) {
-      res.status(400).json({ error: "Invalid id", status: 400 });
-      return;
+      throw new ApiHttpError(400, "Invalid id");
     }
 
     const [plan] = await db
@@ -143,8 +138,7 @@ router.delete(
       .where(and(eq(plansTable.id, planId), eq(plansTable.userId, userId)));
 
     if (!plan) {
-      res.status(404).json({ error: "Plan not found", status: 404 });
-      return;
+      throw new ApiHttpError(404, "Plan not found");
     }
 
     const [deleted] = await db
@@ -154,8 +148,7 @@ router.delete(
       .returning();
 
     if (!deleted) {
-      res.status(404).json({ error: "Share not found", status: 404 });
-      return;
+      throw new ApiHttpError(404, "Share not found");
     }
 
     res.json(serializeShare(deleted));

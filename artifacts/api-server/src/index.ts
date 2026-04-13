@@ -3,6 +3,10 @@ import app from "./app";
 import { logger } from "./lib/logger";
 import { setupCollabWebSocket } from "./collab";
 
+if (!process.env.ADMIN_EMAILS) {
+  logger.warn("ADMIN_EMAILS is not set — admin role auto-assignment will be disabled");
+}
+
 const DEFAULT_PORT = 8080;
 const rawPort = process.env["PORT"] || String(DEFAULT_PORT);
 const port = Number(rawPort);

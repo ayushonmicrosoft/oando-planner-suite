@@ -2,8 +2,16 @@ import { Router, type IRouter } from "express";
 import { eq, desc, and, sql } from "drizzle-orm";
 import { db, plansTable, planVersionsTable } from "@workspace/db";
 import { asyncHandler } from "../middlewares/async-handler";
+import { ApiHttpError } from "../middlewares/error-handler";
+import { z } from "zod";
 
 const router: IRouter = Router();
+
+const CreatePlanVersionBody = z.object({
+  name: z.string().trim().min(1).max(500).optional(),
+  documentJson: z.string().min(1).max(10_000_000).optional(),
+  thumbnailUrl: z.string().url().max(2000).nullish(),
+});
 
 function serializeVersion(v: typeof planVersionsTable.$inferSelect) {
   return {
@@ -21,11 +29,10 @@ function parseIdParam(raw: string | string[]): number | null {
 router.post(
   "/plans/:id/versions",
   asyncHandler(async (req, res) => {
-    const userId = (req as any).userId as string;
+    const userId = req.userId;
     const planId = parseIdParam(req.params.id);
     if (!planId) {
-      res.status(400).json({ error: "Invalid plan id", status: 400 });
-      return;
+      throw new ApiHttpError(400, "Invalid plan id");
     }
 
     const [plan] = await db
@@ -34,17 +41,16 @@ router.post(
       .where(and(eq(plansTable.id, planId), eq(plansTable.userId, userId)));
 
     if (!plan) {
-      res.status(404).json({ error: "Plan not found", status: 404 });
-      return;
+      throw new ApiHttpError(404, "Plan not found");
     }
 
-    const name = typeof req.body?.name === "string" && req.body.name.trim()
-      ? req.body.name.trim()
-      : `Version`;
+    const parsed = CreatePlanVersionBody.safeParse(req.body ?? {});
+    if (!parsed.success) {
+      throw new ApiHttpError(400, "Invalid version data: " + parsed.error.message);
+    }
 
-    const documentJson = typeof req.body?.documentJson === "string" && req.body.documentJson.trim()
-      ? req.body.documentJson
-      : plan.documentJson;
+    const name = parsed.data.name?.trim() || "Version";
+    const documentJson = parsed.data.documentJson?.trim() || plan.documentJson;
 
     const [maxVersion] = await db
       .select({ max: sql<number>`coalesce(max(${planVersionsTable.versionNumber}), 0)` })
@@ -62,7 +68,7 @@ router.post(
         versionNumber: nextVersion,
         name: finalName,
         documentJson,
-        thumbnailUrl: req.body?.thumbnailUrl || null,
+        thumbnailUrl: parsed.data.thumbnailUrl ?? null,
       })
       .returning();
 
@@ -73,11 +79,10 @@ router.post(
 router.get(
   "/plans/:id/versions",
   asyncHandler(async (req, res) => {
-    const userId = (req as any).userId as string;
+    const userId = req.userId;
     const planId = parseIdParam(req.params.id);
     if (!planId) {
-      res.status(400).json({ error: "Invalid plan id", status: 400 });
-      return;
+      throw new ApiHttpError(400, "Invalid plan id");
     }
 
     const [plan] = await db
@@ -86,8 +91,7 @@ router.get(
       .where(and(eq(plansTable.id, planId), eq(plansTable.userId, userId)));
 
     if (!plan) {
-      res.status(404).json({ error: "Plan not found", status: 404 });
-      return;
+      throw new ApiHttpError(404, "Plan not found");
     }
 
     const versions = await db
@@ -103,12 +107,11 @@ router.get(
 router.get(
   "/plans/:id/versions/:versionId",
   asyncHandler(async (req, res) => {
-    const userId = (req as any).userId as string;
+    const userId = req.userId;
     const planId = parseIdParam(req.params.id);
     const versionId = parseIdParam(req.params.versionId);
     if (!planId || !versionId) {
-      res.status(400).json({ error: "Invalid id", status: 400 });
-      return;
+      throw new ApiHttpError(400, "Invalid id");
     }
 
     const [plan] = await db
@@ -117,8 +120,7 @@ router.get(
       .where(and(eq(plansTable.id, planId), eq(plansTable.userId, userId)));
 
     if (!plan) {
-      res.status(404).json({ error: "Plan not found", status: 404 });
-      return;
+      throw new ApiHttpError(404, "Plan not found");
     }
 
     const [version] = await db
@@ -132,8 +134,7 @@ router.get(
       );
 
     if (!version) {
-      res.status(404).json({ error: "Version not found", status: 404 });
-      return;
+      throw new ApiHttpError(404, "Version not found");
     }
 
     res.json(serializeVersion(version));
@@ -143,12 +144,11 @@ router.get(
 router.post(
   "/plans/:id/versions/:versionId/restore",
   asyncHandler(async (req, res) => {
-    const userId = (req as any).userId as string;
+    const userId = req.userId;
     const planId = parseIdParam(req.params.id);
     const versionId = parseIdParam(req.params.versionId);
     if (!planId || !versionId) {
-      res.status(400).json({ error: "Invalid id", status: 400 });
-      return;
+      throw new ApiHttpError(400, "Invalid id");
     }
 
     const [plan] = await db
@@ -157,8 +157,7 @@ router.post(
       .where(and(eq(plansTable.id, planId), eq(plansTable.userId, userId)));
 
     if (!plan) {
-      res.status(404).json({ error: "Plan not found", status: 404 });
-      return;
+      throw new ApiHttpError(404, "Plan not found");
     }
 
     const [version] = await db
@@ -172,8 +171,7 @@ router.post(
       );
 
     if (!version) {
-      res.status(404).json({ error: "Version not found", status: 404 });
-      return;
+      throw new ApiHttpError(404, "Version not found");
     }
 
     const [maxVersion] = await db

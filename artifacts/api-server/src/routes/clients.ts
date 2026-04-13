@@ -7,6 +7,7 @@ import {
   ListClientsQueryParams,
 } from "@workspace/api-zod";
 import { asyncHandler } from "../middlewares/async-handler";
+import { ApiHttpError } from "../middlewares/error-handler";
 
 const router: IRouter = Router();
 
@@ -26,7 +27,7 @@ function parseIdParam(raw: string | string[]): number | null {
 router.get(
   "/clients",
   asyncHandler(async (req, res) => {
-    const userId = (req as any).userId as string;
+    const userId = req.userId;
     const rawSearch = Array.isArray(req.query.search) ? req.query.search[0] : req.query.search;
     const search = typeof rawSearch === "string" ? rawSearch.replace(/[%_\\]/g, "\\$&") : undefined;
 
@@ -72,11 +73,10 @@ router.get(
 router.post(
   "/clients",
   asyncHandler(async (req, res) => {
-    const userId = (req as any).userId as string;
+    const userId = req.userId;
     const parsed = CreateClientBody.safeParse(req.body);
     if (!parsed.success) {
-      res.status(400).json({ error: "Invalid client data: " + parsed.error.message, status: 400 });
-      return;
+      throw new ApiHttpError(400, "Invalid client data: " + parsed.error.message);
     }
 
     const [client] = await db
@@ -99,11 +99,10 @@ router.post(
 router.get(
   "/clients/:id",
   asyncHandler(async (req, res) => {
-    const userId = (req as any).userId as string;
+    const userId = req.userId;
     const id = parseIdParam(req.params.id);
     if (!id) {
-      res.status(400).json({ error: "Invalid client id", status: 400 });
-      return;
+      throw new ApiHttpError(400, "Invalid client id");
     }
 
     const [client] = await db
@@ -123,8 +122,7 @@ router.get(
       .where(and(eq(clientsTable.id, id), eq(clientsTable.userId, userId)));
 
     if (!client) {
-      res.status(404).json({ error: "Client not found", status: 404 });
-      return;
+      throw new ApiHttpError(404, "Client not found");
     }
 
     res.json({
@@ -137,11 +135,10 @@ router.get(
 router.patch(
   "/clients/:id",
   asyncHandler(async (req, res) => {
-    const userId = (req as any).userId as string;
+    const userId = req.userId;
     const id = parseIdParam(req.params.id);
     if (!id) {
-      res.status(400).json({ error: "Invalid client id", status: 400 });
-      return;
+      throw new ApiHttpError(400, "Invalid client id");
     }
 
     const [existing] = await db
@@ -150,14 +147,12 @@ router.patch(
       .where(and(eq(clientsTable.id, id), eq(clientsTable.userId, userId)));
 
     if (!existing) {
-      res.status(404).json({ error: "Client not found", status: 404 });
-      return;
+      throw new ApiHttpError(404, "Client not found");
     }
 
     const parsed = UpdateClientBody.safeParse(req.body);
     if (!parsed.success) {
-      res.status(400).json({ error: "Invalid update data: " + parsed.error.message, status: 400 });
-      return;
+      throw new ApiHttpError(400, "Invalid update data: " + parsed.error.message);
     }
 
     const updates: Partial<typeof clientsTable.$inferInsert> = {};
@@ -169,8 +164,7 @@ router.patch(
     if (parsed.data.notes != null) updates.notes = parsed.data.notes;
 
     if (Object.keys(updates).length === 0) {
-      res.status(400).json({ error: "No valid fields to update", status: 400 });
-      return;
+      throw new ApiHttpError(400, "No valid fields to update");
     }
 
     const [client] = await db
@@ -180,8 +174,7 @@ router.patch(
       .returning();
 
     if (!client) {
-      res.status(404).json({ error: "Client not found", status: 404 });
-      return;
+      throw new ApiHttpError(404, "Client not found");
     }
 
     res.json(serializeClient(client));
@@ -191,11 +184,10 @@ router.patch(
 router.delete(
   "/clients/:id",
   asyncHandler(async (req, res) => {
-    const userId = (req as any).userId as string;
+    const userId = req.userId;
     const id = parseIdParam(req.params.id);
     if (!id) {
-      res.status(400).json({ error: "Invalid client id", status: 400 });
-      return;
+      throw new ApiHttpError(400, "Invalid client id");
     }
 
     const [deleted] = await db
@@ -204,8 +196,7 @@ router.delete(
       .returning();
 
     if (!deleted) {
-      res.status(404).json({ error: "Client not found", status: 404 });
-      return;
+      throw new ApiHttpError(404, "Client not found");
     }
 
     res.sendStatus(204);

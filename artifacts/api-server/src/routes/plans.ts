@@ -8,6 +8,7 @@ import {
   ListPlansQueryParams,
 } from "@workspace/api-zod";
 import { asyncHandler } from "../middlewares/async-handler";
+import { ApiHttpError } from "../middlewares/error-handler";
 
 const router: IRouter = Router();
 
@@ -46,7 +47,7 @@ function parseIdParam(raw: string | string[]): number | null {
 router.get(
   "/plans/stats",
   asyncHandler(async (req, res) => {
-    const userId = (req as any).userId as string;
+    const userId = req.userId;
 
     const [stats] = await db
       .select({
@@ -76,11 +77,10 @@ router.get(
 router.get(
   "/plans",
   asyncHandler(async (req, res) => {
-    const userId = (req as any).userId as string;
+    const userId = req.userId;
     const qp = ListPlansQueryParams.safeParse(req.query);
     if (!qp.success) {
-      res.status(400).json({ error: "Invalid query parameters", status: 400 });
-      return;
+      throw new ApiHttpError(400, "Invalid query parameters");
     }
     const limit = Math.min(Math.max(qp.data.limit ?? 50, 1), 200);
     const offset = Math.max(qp.data.offset ?? 0, 0);
@@ -112,23 +112,20 @@ router.get(
 router.post(
   "/plans",
   asyncHandler(async (req, res) => {
-    const userId = (req as any).userId as string;
+    const userId = req.userId;
     const parsed = CreatePlanBody.safeParse(req.body);
     if (!parsed.success) {
-      res.status(400).json({ error: "Invalid plan data: " + parsed.error.message, status: 400 });
-      return;
+      throw new ApiHttpError(400, "Invalid plan data: " + parsed.error.message);
     }
 
     const { name, plannerType, roomWidthCm, roomDepthCm, documentJson, projectId } = parsed.data;
 
     if (!validateJson(documentJson)) {
-      res.status(400).json({ error: "documentJson must be valid JSON", status: 400 });
-      return;
+      throw new ApiHttpError(400, "documentJson must be valid JSON");
     }
 
     if (roomWidthCm <= 0 || roomDepthCm <= 0) {
-      res.status(400).json({ error: "Room dimensions must be positive", status: 400 });
-      return;
+      throw new ApiHttpError(400, "Room dimensions must be positive");
     }
 
     if (projectId) {
@@ -137,8 +134,7 @@ router.post(
         .from(projectsTable)
         .where(and(eq(projectsTable.id, projectId), eq(projectsTable.userId, userId)));
       if (!proj) {
-        res.status(400).json({ error: "Project not found", status: 400 });
-        return;
+        throw new ApiHttpError(400, "Project not found");
       }
     }
 
@@ -162,11 +158,10 @@ router.post(
 router.get(
   "/plans/:id",
   asyncHandler(async (req, res) => {
-    const userId = (req as any).userId as string;
+    const userId = req.userId;
     const id = parseIdParam(req.params.id);
     if (!id) {
-      res.status(400).json({ error: "Invalid plan id", status: 400 });
-      return;
+      throw new ApiHttpError(400, "Invalid plan id");
     }
 
     const [plan] = await db
@@ -175,8 +170,7 @@ router.get(
       .where(and(eq(plansTable.id, id), eq(plansTable.userId, userId)));
 
     if (!plan) {
-      res.status(404).json({ error: "Plan not found", status: 404 });
-      return;
+      throw new ApiHttpError(404, "Plan not found");
     }
 
     res.json(serializePlan(plan));
@@ -186,11 +180,10 @@ router.get(
 router.patch(
   "/plans/:id",
   asyncHandler(async (req, res) => {
-    const userId = (req as any).userId as string;
+    const userId = req.userId;
     const id = parseIdParam(req.params.id);
     if (!id) {
-      res.status(400).json({ error: "Invalid plan id", status: 400 });
-      return;
+      throw new ApiHttpError(400, "Invalid plan id");
     }
 
     const [existing] = await db
@@ -199,36 +192,31 @@ router.patch(
       .where(and(eq(plansTable.id, id), eq(plansTable.userId, userId)));
 
     if (!existing) {
-      res.status(404).json({ error: "Plan not found", status: 404 });
-      return;
+      throw new ApiHttpError(404, "Plan not found");
     }
 
     const parsed = UpdatePlanBody.safeParse(req.body);
     if (!parsed.success) {
-      res.status(400).json({ error: "Invalid update data: " + parsed.error.message, status: 400 });
-      return;
+      throw new ApiHttpError(400, "Invalid update data: " + parsed.error.message);
     }
 
     const updates: Partial<typeof plansTable.$inferInsert> = {};
     if (parsed.data.name != null) updates.name = parsed.data.name.trim();
     if (parsed.data.roomWidthCm != null) {
       if (parsed.data.roomWidthCm <= 0) {
-        res.status(400).json({ error: "Room width must be positive", status: 400 });
-        return;
+        throw new ApiHttpError(400, "Room width must be positive");
       }
       updates.roomWidthCm = parsed.data.roomWidthCm;
     }
     if (parsed.data.roomDepthCm != null) {
       if (parsed.data.roomDepthCm <= 0) {
-        res.status(400).json({ error: "Room depth must be positive", status: 400 });
-        return;
+        throw new ApiHttpError(400, "Room depth must be positive");
       }
       updates.roomDepthCm = parsed.data.roomDepthCm;
     }
     if (parsed.data.documentJson != null) {
       if (!validateJson(parsed.data.documentJson)) {
-        res.status(400).json({ error: "documentJson must be valid JSON", status: 400 });
-        return;
+        throw new ApiHttpError(400, "documentJson must be valid JSON");
       }
       updates.documentJson = parsed.data.documentJson;
     }
@@ -239,16 +227,14 @@ router.patch(
           .from(projectsTable)
           .where(and(eq(projectsTable.id, parsed.data.projectId), eq(projectsTable.userId, userId)));
         if (!proj) {
-          res.status(400).json({ error: "Project not found", status: 400 });
-          return;
+          throw new ApiHttpError(400, "Project not found");
         }
       }
       updates.projectId = parsed.data.projectId;
     }
 
     if (Object.keys(updates).length === 0) {
-      res.status(400).json({ error: "No valid fields to update", status: 400 });
-      return;
+      throw new ApiHttpError(400, "No valid fields to update");
     }
 
     const [plan] = await db
@@ -258,8 +244,7 @@ router.patch(
       .returning();
 
     if (!plan) {
-      res.status(404).json({ error: "Plan not found", status: 404 });
-      return;
+      throw new ApiHttpError(404, "Plan not found");
     }
 
     res.json(serializePlan(plan));
@@ -269,11 +254,10 @@ router.patch(
 router.delete(
   "/plans/:id",
   asyncHandler(async (req, res) => {
-    const userId = (req as any).userId as string;
+    const userId = req.userId;
     const id = parseIdParam(req.params.id);
     if (!id) {
-      res.status(400).json({ error: "Invalid plan id", status: 400 });
-      return;
+      throw new ApiHttpError(400, "Invalid plan id");
     }
 
     const [deleted] = await db
@@ -282,8 +266,7 @@ router.delete(
       .returning();
 
     if (!deleted) {
-      res.status(404).json({ error: "Plan not found", status: 404 });
-      return;
+      throw new ApiHttpError(404, "Plan not found");
     }
 
     res.sendStatus(204);
@@ -293,11 +276,10 @@ router.delete(
 router.post(
   "/plans/:id/duplicate",
   asyncHandler(async (req, res) => {
-    const userId = (req as any).userId as string;
+    const userId = req.userId;
     const id = parseIdParam(req.params.id);
     if (!id) {
-      res.status(400).json({ error: "Invalid plan id", status: 400 });
-      return;
+      throw new ApiHttpError(400, "Invalid plan id");
     }
 
     const [source] = await db
@@ -306,8 +288,7 @@ router.post(
       .where(and(eq(plansTable.id, id), eq(plansTable.userId, userId)));
 
     if (!source) {
-      res.status(404).json({ error: "Plan not found", status: 404 });
-      return;
+      throw new ApiHttpError(404, "Plan not found");
     }
 
     const bodyParsed = DuplicatePlanBody.safeParse(req.body ?? {});

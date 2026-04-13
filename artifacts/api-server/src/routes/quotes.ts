@@ -3,6 +3,7 @@ import { eq, desc, and, inArray } from "drizzle-orm";
 import { db, plansTable, quotesTable, catalogItemsTable } from "@workspace/db";
 import { CreateQuoteBody } from "@workspace/api-zod";
 import { asyncHandler } from "../middlewares/async-handler";
+import { ApiHttpError } from "../middlewares/error-handler";
 
 const router: IRouter = Router();
 
@@ -164,11 +165,10 @@ function serializeQuote(q: typeof quotesTable.$inferSelect) {
 router.get(
   "/plans/:id/quote/preview",
   asyncHandler(async (req, res) => {
-    const userId = (req as any).userId as string;
+    const userId = req.userId;
     const id = parseIdParam(req.params.id);
     if (!id) {
-      res.status(400).json({ error: "Invalid plan id", status: 400 });
-      return;
+      throw new ApiHttpError(400, "Invalid plan id");
     }
 
     const [plan] = await db
@@ -177,8 +177,7 @@ router.get(
       .where(and(eq(plansTable.id, id), eq(plansTable.userId, userId)));
 
     if (!plan) {
-      res.status(404).json({ error: "Plan not found", status: 404 });
-      return;
+      throw new ApiHttpError(404, "Plan not found");
     }
 
     const items = await extractBoqFromPlan(plan.documentJson);
@@ -200,17 +199,15 @@ router.get(
 router.post(
   "/plans/:id/quote",
   asyncHandler(async (req, res) => {
-    const userId = (req as any).userId as string;
+    const userId = req.userId;
     const id = parseIdParam(req.params.id);
     if (!id) {
-      res.status(400).json({ error: "Invalid plan id", status: 400 });
-      return;
+      throw new ApiHttpError(400, "Invalid plan id");
     }
 
     const parsed = CreateQuoteBody.safeParse(req.body);
     if (!parsed.success) {
-      res.status(400).json({ error: "Invalid quote data: " + parsed.error.message, status: 400 });
-      return;
+      throw new ApiHttpError(400, "Invalid quote data: " + parsed.error.message);
     }
 
     const [plan] = await db
@@ -219,8 +216,7 @@ router.post(
       .where(and(eq(plansTable.id, id), eq(plansTable.userId, userId)));
 
     if (!plan) {
-      res.status(404).json({ error: "Plan not found", status: 404 });
-      return;
+      throw new ApiHttpError(404, "Plan not found");
     }
 
     const items = await extractBoqFromPlan(plan.documentJson);
@@ -251,11 +247,10 @@ router.post(
 router.get(
   "/quotes/:id",
   asyncHandler(async (req, res) => {
-    const userId = (req as any).userId as string;
+    const userId = req.userId;
     const id = parseIdParam(req.params.id);
     if (!id) {
-      res.status(400).json({ error: "Invalid quote id", status: 400 });
-      return;
+      throw new ApiHttpError(400, "Invalid quote id");
     }
 
     const [quote] = await db
@@ -264,8 +259,7 @@ router.get(
       .where(and(eq(quotesTable.id, id), eq(quotesTable.userId, userId)));
 
     if (!quote) {
-      res.status(404).json({ error: "Quote not found", status: 404 });
-      return;
+      throw new ApiHttpError(404, "Quote not found");
     }
 
     res.json(serializeQuote(quote));
@@ -275,7 +269,7 @@ router.get(
 router.get(
   "/quotes",
   asyncHandler(async (req, res) => {
-    const userId = (req as any).userId as string;
+    const userId = req.userId;
 
     const quotes = await db
       .select({

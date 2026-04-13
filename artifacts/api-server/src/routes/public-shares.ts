@@ -2,6 +2,7 @@ import { Router, type IRouter } from "express";
 import { eq, and, desc } from "drizzle-orm";
 import { db, plansTable, planSharesTable, planCommentsTable } from "@workspace/db";
 import { asyncHandler } from "../middlewares/async-handler";
+import { ApiHttpError } from "../middlewares/error-handler";
 import { z } from "zod";
 
 const router: IRouter = Router();
@@ -40,8 +41,7 @@ router.get(
       .where(eq(planSharesTable.shareToken, token));
 
     if (!share || !isShareValid(share)) {
-      res.status(404).json({ error: "Share link not found or expired", status: 404 });
-      return;
+      throw new ApiHttpError(404, "Share link not found or expired");
     }
 
     let viewedAt = share.viewedAt;
@@ -61,8 +61,7 @@ router.get(
       .where(eq(plansTable.id, share.planId));
 
     if (!plan) {
-      res.status(404).json({ error: "Plan not found", status: 404 });
-      return;
+      throw new ApiHttpError(404, "Plan not found");
     }
 
     const comments = await db
@@ -113,14 +112,12 @@ router.post(
       .where(eq(planSharesTable.shareToken, token));
 
     if (!share || !isShareValid(share)) {
-      res.status(404).json({ error: "Share link not found or expired", status: 404 });
-      return;
+      throw new ApiHttpError(404, "Share link not found or expired");
     }
 
     const parsed = AddCommentBody.safeParse(req.body);
     if (!parsed.success) {
-      res.status(400).json({ error: "Invalid comment data: " + parsed.error.message, status: 400 });
-      return;
+      throw new ApiHttpError(400, "Invalid comment data: " + parsed.error.message);
     }
 
     const [comment] = await db
@@ -159,14 +156,12 @@ router.post(
       .where(eq(planSharesTable.shareToken, token));
 
     if (!share || !isShareValid(share)) {
-      res.status(404).json({ error: "Share link not found or expired", status: 404 });
-      return;
+      throw new ApiHttpError(404, "Share link not found or expired");
     }
 
     const parsed = ApproveShareBody.safeParse(req.body);
     if (!parsed.success) {
-      res.status(400).json({ error: "Invalid approval data: " + parsed.error.message, status: 400 });
-      return;
+      throw new ApiHttpError(400, "Invalid approval data: " + parsed.error.message);
     }
 
     const [updated] = await db

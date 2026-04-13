@@ -3,9 +3,12 @@ import { eq, sql } from "drizzle-orm";
 import { db, templatesTable, plansTable } from "@workspace/db";
 import { asyncHandler } from "../middlewares/async-handler";
 import { requireAdmin } from "../middlewares/require-admin";
+import { ApiHttpError } from "../middlewares/error-handler";
 import { z } from "zod";
 
 const router: IRouter = Router();
+
+const IdParams = z.object({ id: z.string().min(1) });
 
 const UseTemplateBody = z.object({
   name: z.string().trim().min(1).max(200).optional(),
@@ -45,11 +48,7 @@ router.get(
 router.get(
   "/templates/:id",
   asyncHandler(async (req, res) => {
-    const id = String(req.params.id);
-    if (!id) {
-      res.status(400).json({ error: "Invalid template id", status: 400 });
-      return;
-    }
+    const { id } = IdParams.parse(req.params);
 
     const [template] = await db
       .select()
@@ -57,8 +56,7 @@ router.get(
       .where(eq(templatesTable.id, id));
 
     if (!template) {
-      res.status(404).json({ error: "Template not found", status: 404 });
-      return;
+      throw new ApiHttpError(404, "Template not found");
     }
 
     res.json({
@@ -71,11 +69,7 @@ router.get(
 router.post(
   "/templates/:id/use",
   asyncHandler(async (req, res) => {
-    const id = String(req.params.id);
-    if (!id) {
-      res.status(400).json({ error: "Invalid template id", status: 400 });
-      return;
-    }
+    const { id } = IdParams.parse(req.params);
 
     const [template] = await db
       .select()
@@ -83,16 +77,14 @@ router.post(
       .where(eq(templatesTable.id, id));
 
     if (!template) {
-      res.status(404).json({ error: "Template not found", status: 404 });
-      return;
+      throw new ApiHttpError(404, "Template not found");
     }
 
     let layoutData: { items?: unknown[] };
     try {
       layoutData = JSON.parse(template.layoutJson);
     } catch {
-      res.status(500).json({ error: "Template layout data is corrupted", status: 500 });
-      return;
+      throw new ApiHttpError(500, "Template layout data is corrupted");
     }
     const documentJson = JSON.stringify({
       roomWidthCm: template.roomWidthCm,
@@ -102,8 +94,7 @@ router.post(
 
     const parsed = UseTemplateBody.safeParse(req.body ?? {});
     if (!parsed.success) {
-      res.status(400).json({ error: "Invalid request body: " + parsed.error.message, status: 400 });
-      return;
+      throw new ApiHttpError(400, "Invalid request body: " + parsed.error.message);
     }
 
     const planName = parsed.data?.name || `${template.name} Plan`;
@@ -137,12 +128,11 @@ router.patch(
   "/admin/templates/:id",
   requireAdmin,
   asyncHandler(async (req, res) => {
-    const { id } = req.params;
+    const { id } = IdParams.parse(req.params);
 
     const parsed = UpdateTemplateBody.safeParse(req.body ?? {});
     if (!parsed.success) {
-      res.status(400).json({ error: "Invalid update data: " + parsed.error.message, status: 400 });
-      return;
+      throw new ApiHttpError(400, "Invalid update data: " + parsed.error.message);
     }
 
     const updates: Record<string, unknown> = {};
@@ -157,8 +147,7 @@ router.patch(
     if (data.thumbnailSvg !== undefined) updates.thumbnailSvg = data.thumbnailSvg;
 
     if (Object.keys(updates).length === 0) {
-      res.status(400).json({ error: "No fields to update", status: 400 });
-      return;
+      throw new ApiHttpError(400, "No fields to update");
     }
 
     const [updated] = await db
@@ -168,8 +157,7 @@ router.patch(
       .returning();
 
     if (!updated) {
-      res.status(404).json({ error: "Template not found", status: 404 });
-      return;
+      throw new ApiHttpError(404, "Template not found");
     }
 
     res.json({
@@ -183,7 +171,7 @@ router.delete(
   "/admin/templates/:id",
   requireAdmin,
   asyncHandler(async (req, res) => {
-    const { id } = req.params;
+    const { id } = IdParams.parse(req.params);
 
     const [deleted] = await db
       .delete(templatesTable)
@@ -191,8 +179,7 @@ router.delete(
       .returning();
 
     if (!deleted) {
-      res.status(404).json({ error: "Template not found", status: 404 });
-      return;
+      throw new ApiHttpError(404, "Template not found");
     }
 
     res.status(204).send();

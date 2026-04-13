@@ -3,14 +3,27 @@ import { eq, count, desc } from "drizzle-orm";
 import { db, usersTable, plansTable, catalogItemsTable, templatesTable } from "@workspace/db";
 import { asyncHandler } from "../middlewares/async-handler";
 import { requireAdmin } from "../middlewares/require-admin";
+import { ApiHttpError } from "../middlewares/error-handler";
+import { z } from "zod";
 
 const router: IRouter = Router();
+
+const IdParams = z.object({ id: z.string().min(1) });
+
+function getAdminEmails(): string[] {
+  const raw = process.env.ADMIN_EMAILS || "";
+  return raw.split(",").map((e) => e.trim().toLowerCase()).filter(Boolean);
+}
+
+const UpdateUserRoleBody = z.object({
+  role: z.enum(["user", "admin"]),
+});
 
 router.post(
   "/users/sync",
   asyncHandler(async (req, res) => {
-    const userId = (req as any).userId as string;
-    const authUser = (req as any).user;
+    const userId = req.userId;
+    const authUser = req.user;
 
     const email = authUser.email ?? "";
     const displayName = authUser.name ?? email.split("@")[0];
@@ -44,7 +57,8 @@ router.post(
           .returning();
         res.json(migrated);
       } else {
-        const isAdmin = email === "ayush@oando.co.in";
+        const adminEmails = getAdminEmails();
+        const isAdmin = adminEmails.includes(email.toLowerCase());
         const [created] = await db
           .insert(usersTable)
           .values({ id: userId, email, displayName, avatarUrl, role: isAdmin ? "admin" : "user" })
@@ -58,7 +72,7 @@ router.post(
 router.get(
   "/users/me",
   asyncHandler(async (req, res) => {
-    const userId = (req as any).userId as string;
+    const userId = req.userId;
 
     const [user] = await db
       .select()
@@ -67,8 +81,7 @@ router.get(
       .limit(1);
 
     if (!user) {
-      res.status(404).json({ error: "User profile not found. Call POST /api/users/sync first.", status: 404 });
-      return;
+      throw new ApiHttpError(404, "User profile not found. Call POST /api/users/sync first.");
     }
 
     res.json(user);
@@ -88,23 +101,21 @@ router.patch(
   "/admin/users/:id/role",
   requireAdmin,
   asyncHandler(async (req, res) => {
-    const { id } = req.params;
-    const { role } = req.body;
+    const { id } = IdParams.parse(req.params);
 
-    if (!role || !["user", "admin"].includes(role)) {
-      res.status(400).json({ error: "Role must be 'user' or 'admin'", status: 400 });
-      return;
+    const parsed = UpdateUserRoleBody.safeParse(req.body);
+    if (!parsed.success) {
+      throw new ApiHttpError(400, "Role must be 'user' or 'admin'");
     }
 
     const [updated] = await db
       .update(usersTable)
-      .set({ role })
+      .set({ role: parsed.data.role })
       .where(eq(usersTable.id, String(id)))
       .returning();
 
     if (!updated) {
-      res.status(404).json({ error: "User not found", status: 404 });
-      return;
+      throw new ApiHttpError(404, "User not found");
     }
 
     res.json(updated);

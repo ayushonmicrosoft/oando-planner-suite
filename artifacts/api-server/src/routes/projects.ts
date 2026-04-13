@@ -7,6 +7,7 @@ import {
   ListProjectsQueryParams,
 } from "@workspace/api-zod";
 import { asyncHandler } from "../middlewares/async-handler";
+import { ApiHttpError } from "../middlewares/error-handler";
 
 const router: IRouter = Router();
 
@@ -36,7 +37,7 @@ function countItems(documentJson: string): number {
 router.get(
   "/projects",
   asyncHandler(async (req, res) => {
-    const userId = (req as any).userId as string;
+    const userId = req.userId;
     const clientId = req.query.clientId ? parseInt(req.query.clientId as string, 10) : undefined;
     const status = req.query.status as string | undefined;
 
@@ -85,11 +86,10 @@ router.get(
 router.post(
   "/projects",
   asyncHandler(async (req, res) => {
-    const userId = (req as any).userId as string;
+    const userId = req.userId;
     const parsed = CreateProjectBody.safeParse(req.body);
     if (!parsed.success) {
-      res.status(400).json({ error: "Invalid project data: " + parsed.error.message, status: 400 });
-      return;
+      throw new ApiHttpError(400, "Invalid project data: " + parsed.error.message);
     }
 
     if (parsed.data.clientId) {
@@ -98,8 +98,7 @@ router.post(
         .from(clientsTable)
         .where(and(eq(clientsTable.id, parsed.data.clientId), eq(clientsTable.userId, userId)));
       if (!client) {
-        res.status(400).json({ error: "Client not found", status: 400 });
-        return;
+        throw new ApiHttpError(400, "Client not found");
       }
     }
 
@@ -121,11 +120,10 @@ router.post(
 router.get(
   "/projects/:id",
   asyncHandler(async (req, res) => {
-    const userId = (req as any).userId as string;
+    const userId = req.userId;
     const id = parseIdParam(req.params.id);
     if (!id) {
-      res.status(400).json({ error: "Invalid project id", status: 400 });
-      return;
+      throw new ApiHttpError(400, "Invalid project id");
     }
 
     const [project] = await db
@@ -134,8 +132,7 @@ router.get(
       .where(and(eq(projectsTable.id, id), eq(projectsTable.userId, userId)));
 
     if (!project) {
-      res.status(404).json({ error: "Project not found", status: 404 });
-      return;
+      throw new ApiHttpError(404, "Project not found");
     }
 
     let client = null;
@@ -189,11 +186,10 @@ router.get(
 router.patch(
   "/projects/:id",
   asyncHandler(async (req, res) => {
-    const userId = (req as any).userId as string;
+    const userId = req.userId;
     const id = parseIdParam(req.params.id);
     if (!id) {
-      res.status(400).json({ error: "Invalid project id", status: 400 });
-      return;
+      throw new ApiHttpError(400, "Invalid project id");
     }
 
     const [existing] = await db
@@ -202,14 +198,12 @@ router.patch(
       .where(and(eq(projectsTable.id, id), eq(projectsTable.userId, userId)));
 
     if (!existing) {
-      res.status(404).json({ error: "Project not found", status: 404 });
-      return;
+      throw new ApiHttpError(404, "Project not found");
     }
 
     const parsed = UpdateProjectBody.safeParse(req.body);
     if (!parsed.success) {
-      res.status(400).json({ error: "Invalid update data: " + parsed.error.message, status: 400 });
-      return;
+      throw new ApiHttpError(400, "Invalid update data: " + parsed.error.message);
     }
 
     const updates: Partial<typeof projectsTable.$inferInsert> = {};
@@ -221,8 +215,7 @@ router.patch(
           .from(clientsTable)
           .where(and(eq(clientsTable.id, parsed.data.clientId), eq(clientsTable.userId, userId)));
         if (!client) {
-          res.status(400).json({ error: "Client not found", status: 400 });
-          return;
+          throw new ApiHttpError(400, "Client not found");
         }
       }
       updates.clientId = parsed.data.clientId;
@@ -231,8 +224,7 @@ router.patch(
     if (parsed.data.notes != null) updates.notes = parsed.data.notes;
 
     if (Object.keys(updates).length === 0) {
-      res.status(400).json({ error: "No valid fields to update", status: 400 });
-      return;
+      throw new ApiHttpError(400, "No valid fields to update");
     }
 
     const [project] = await db
@@ -242,8 +234,7 @@ router.patch(
       .returning();
 
     if (!project) {
-      res.status(404).json({ error: "Project not found", status: 404 });
-      return;
+      throw new ApiHttpError(404, "Project not found");
     }
 
     res.json(serializeProject(project));
@@ -253,11 +244,10 @@ router.patch(
 router.delete(
   "/projects/:id",
   asyncHandler(async (req, res) => {
-    const userId = (req as any).userId as string;
+    const userId = req.userId;
     const id = parseIdParam(req.params.id);
     if (!id) {
-      res.status(400).json({ error: "Invalid project id", status: 400 });
-      return;
+      throw new ApiHttpError(400, "Invalid project id");
     }
 
     const [existing] = await db
@@ -266,8 +256,7 @@ router.delete(
       .where(and(eq(projectsTable.id, id), eq(projectsTable.userId, userId)));
 
     if (!existing) {
-      res.status(404).json({ error: "Project not found", status: 404 });
-      return;
+      throw new ApiHttpError(404, "Project not found");
     }
 
     await db

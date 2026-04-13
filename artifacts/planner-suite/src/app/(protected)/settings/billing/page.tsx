@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useSubscription } from "@/hooks/use-subscription";
+import { useToast } from "@/hooks/use-toast";
 
 const planFeatures = [
   { feature: "Saved plans", free: "Up to 3", pro: "Unlimited", included: true },
@@ -23,6 +24,7 @@ export default function BillingPage() {
   const [cancelling, setCancelling] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const router = useRouter();
+  const { toast } = useToast();
 
   const handleCancel = async () => {
     setCancelling(true);
@@ -39,10 +41,18 @@ export default function BillingPage() {
         setShowCancelConfirm(false);
       } else {
         const err = await res.json();
-        alert(err.error || "Failed to cancel subscription");
+        toast({
+          variant: "destructive",
+          title: "Cancellation failed",
+          description: err.error || "Failed to cancel subscription",
+        });
       }
     } catch {
-      alert("Something went wrong. Please try again.");
+      toast({
+        variant: "destructive",
+        title: "Something went wrong",
+        description: "Please try again.",
+      });
     } finally {
       setCancelling(false);
     }

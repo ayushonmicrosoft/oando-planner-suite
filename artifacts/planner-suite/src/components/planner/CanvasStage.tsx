@@ -7,6 +7,7 @@ import { PlanBackgroundLayers } from '@/components/plan-background-layers';
 import { getFurnitureShapeDef } from '@/lib/furniture-shapes';
 import type { AlignmentGuide, DrawnShape } from './canvas-types';
 import { GRID_CM, ALIGNMENT_GUIDE_COLOR } from './canvas-types';
+import { DrawShapesLayer } from './DrawShapesLayer';
 
 function FurnitureShape({
   item,
@@ -227,6 +228,10 @@ interface CanvasStageProps {
   gridSnap: boolean;
   measurePoints: { x: number; y: number }[];
   drawnShapes: DrawnShape[];
+  previewShape?: DrawnShape | null;
+  selectedDrawShapeId?: string | null;
+  onSelectDrawShape?: (id: string | null) => void;
+  isDrawMode?: boolean;
 }
 
 export function CanvasStage({
@@ -240,6 +245,7 @@ export function CanvasStage({
   onItemSelect, onItemChange, onDragMoveItem,
   setAlignmentGuides, alignmentGuides,
   gridSnap, measurePoints, drawnShapes,
+  previewShape, selectedDrawShapeId, onSelectDrawShape, isDrawMode,
 }: CanvasStageProps) {
   const gridLines: React.ReactElement[] = [];
   if (showGrid) {
@@ -505,6 +511,17 @@ export function CanvasStage({
             </>
           );
         })()}
+
+        <DrawShapesLayer
+          shapes={drawnShapes}
+          previewShape={previewShape ?? undefined}
+          selectedShapeId={selectedDrawShapeId ?? null}
+          onSelectShape={onSelectDrawShape ?? (() => {})}
+          isDrawMode={isDrawMode ?? false}
+          pxPerCm={pxPerCm}
+          roomOffsetX={roomOffsetX}
+          roomOffsetY={roomOffsetY}
+        />
       </Layer>
     </Stage>
   );

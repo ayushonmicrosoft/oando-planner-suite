@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Grid3X3, FileSignature, Box, Clock, ArrowRight, Pencil, LayoutGrid, Shapes, ImagePlus, LayoutTemplate, AlertCircle, RefreshCw, Map, FileText, Users, Layers, TrendingUp, Calendar } from 'lucide-react';
+import { Grid3X3, FileSignature, Box, Clock, ArrowRight, LayoutGrid, Shapes, ImagePlus, LayoutTemplate, AlertCircle, RefreshCw, Map, FileText, Users, Layers, TrendingUp, Calendar } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { PlanThumbnail } from '@/components/plan-thumbnail';
@@ -26,7 +26,7 @@ function useHydrationSafeDate() {
 const plannerTypeRoutes: Record<string, string> = {
   canvas: '/planner/canvas',
   blueprint: '/planner/blueprint',
-  cad: '/tools/cad',
+  cad: '/planner/canvas',
   floorplan: '/tools/floor-plan',
   shapes: '/tools/shapes',
   import: '/tools/import',
@@ -36,7 +36,7 @@ const plannerTypeRoutes: Record<string, string> = {
 const plannerTypeLabels: Record<string, string> = {
   canvas: '2D Canvas',
   blueprint: 'Blueprint',
-  cad: 'CAD Drawing',
+  cad: '2D Canvas',
   floorplan: 'Floor Plan',
   shapes: 'Custom Shapes',
   import: 'Import & Scale',
@@ -297,9 +297,8 @@ export default function Home() {
           <h2 className="text-2xl font-bold tracking-tight text-[var(--text-heading)]">Drawing Tools</h2>
           <div className="h-px flex-1 bg-border/50" />
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[
-            { icon: Pencil, color: 'var(--color-ocean-boat-blue-500)', colorLight: 'var(--color-ocean-boat-blue-500)', title: 'CAD Drawing', desc: 'Vector drawing with lines, shapes, and measurements.', route: '/tools/cad', testId: 'button-start-cad' },
             { icon: LayoutGrid, color: 'var(--color-sustain-400)', colorLight: 'var(--color-sustain-300)', title: 'Floor Plan Creator', desc: 'Room-based layout builder with presets and area calculations.', route: '/tools/floor-plan', testId: 'button-start-floor-plan' },
             { icon: Shapes, color: 'var(--color-bronze-500)', colorLight: 'var(--color-bronze-400)', title: 'Custom Shapes', desc: 'Categorized shape libraries for walls, furniture, and more.', route: '/tools/shapes', testId: 'button-start-shapes' },
             { icon: Map, color: 'var(--color-sustain-500)', colorLight: 'var(--color-sustain-400)', title: 'Site Plan', desc: 'Outdoor site plans with buildings, roads, and utilities.', route: '/tools/site-plan', testId: 'button-start-site-plan' },

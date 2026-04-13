@@ -1,9 +1,16 @@
 "use client";
 
-import dynamic from "next/dynamic";
-
-const CadDrawing = dynamic(() => import("@/views/tools/cad-drawing"), { ssr: false });
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function CadPage() {
-  return <CadDrawing />;
+  const router = useRouter();
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("id");
+    router.replace(id ? `/planner/canvas?id=${id}` : "/planner/canvas");
+  }, [router]);
+
+  return null;
 }

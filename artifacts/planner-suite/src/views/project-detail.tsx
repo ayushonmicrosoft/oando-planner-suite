@@ -34,7 +34,7 @@ import {
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
-  ArrowLeft, Mail, Phone, Building2, MapPin, Clock, FileText, Box, Loader2, AlertCircle, RefreshCw, Plus, Grid3X3, FileSignature, Pencil, LayoutGrid, Shapes, ImagePlus, CalendarDays, Hash, X
+  ArrowLeft, Mail, Phone, Building2, MapPin, Clock, FileText, Box, Loader2, AlertCircle, RefreshCw, Plus, Grid3X3, FileSignature, LayoutGrid, Shapes, ImagePlus, CalendarDays, Hash, X
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useQueryClient } from '@tanstack/react-query';
@@ -43,7 +43,7 @@ import { useToast } from '@/hooks/use-toast';
 const plannerTypeRoutes: Record<string, string> = {
   canvas: '/planner/canvas',
   blueprint: '/planner/blueprint',
-  cad: '/tools/cad',
+  cad: '/planner/canvas',
   floorplan: '/tools/floor-plan',
   shapes: '/tools/shapes',
   import: '/tools/import',
@@ -53,7 +53,7 @@ const plannerTypeRoutes: Record<string, string> = {
 const plannerTypeLabels: Record<string, string> = {
   canvas: '2D Canvas',
   blueprint: 'Blueprint',
-  cad: 'CAD Drawing',
+  cad: '2D Canvas',
   floorplan: 'Floor Plan',
   shapes: 'Custom Shapes',
   import: 'Import & Scale',
@@ -63,7 +63,7 @@ const plannerTypeLabels: Record<string, string> = {
 const plannerTypeIcons: Record<string, React.ReactNode> = {
   canvas: <Grid3X3 className="w-4 h-4 text-primary" />,
   blueprint: <FileSignature className="w-4 h-4 text-blue-500" />,
-  cad: <Pencil className="w-4 h-4 text-blue-500" />,
+  cad: <Grid3X3 className="w-4 h-4 text-primary" />,
   floorplan: <LayoutGrid className="w-4 h-4 text-emerald-500" />,
   shapes: <Shapes className="w-4 h-4 text-purple-500" />,
   import: <ImagePlus className="w-4 h-4 text-orange-500" />,

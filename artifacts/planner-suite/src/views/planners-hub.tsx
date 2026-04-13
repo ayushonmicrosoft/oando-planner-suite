@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { motion, type Variants } from "framer-motion";
 import {
   ArrowRight,
-  PencilRuler,
   Eye,
   FileDown,
   Ruler,
@@ -48,7 +47,6 @@ const TOOLS = [
   { title: "Floor Plan Creator", href: "/tools/floor-plan", icon: LayoutGrid, desc: "Define rooms and spaces", step: "rooms" as WorkflowStep },
   { title: "Custom Shapes", href: "/tools/shapes", icon: Shapes, desc: "Walls, doors, furniture", step: "structure" as WorkflowStep },
   { title: "Canvas Planner", href: "/planner/canvas", icon: PenTool, desc: "Drag & drop furniture", step: "furniture" as WorkflowStep },
-  { title: "CAD Drawing", href: "/tools/cad", icon: PencilRuler, desc: "Vector precision drawing" },
   { title: "Site Plan", href: "/tools/site-plan", icon: DraftingCompass, desc: "Outdoor/site planning" },
   { title: "Import & Scale", href: "/tools/import", icon: Import, desc: "Upload blueprints" },
 ];
@@ -57,7 +55,6 @@ const START_OPTIONS = [
   { label: "Empty Floor Plan", icon: LayoutGrid, href: "/tools/floor-plan", desc: "Start by defining rooms", plannerType: "floorplan" },
   { label: "Canvas Planner", icon: PenTool, href: "/planner/canvas", desc: "Jump into furniture layout", plannerType: "canvas" },
   { label: "Import Blueprint", icon: Import, href: "/tools/import", desc: "Upload an existing plan", plannerType: "blueprint" },
-  { label: "CAD Drawing", icon: PencilRuler, href: "/tools/cad", desc: "Precision vector drawing", plannerType: "cad" },
 ];
 
 const stagger: Variants = { hidden: {}, visible: { transition: { staggerChildren: 0.05 } } };

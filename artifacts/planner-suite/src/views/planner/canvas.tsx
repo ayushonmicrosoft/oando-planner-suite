@@ -13,6 +13,7 @@ import {
 import { useCanvasPlanner, type PlacedItem } from '@/hooks/use-canvas-planner';
 import { useCanvasInteraction } from '@/hooks/use-canvas-interaction';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { AlertCircle, Loader2, RefreshCw, PenTool, Crosshair, X } from 'lucide-react';
 import { PlannerBreadcrumb } from '@/components/planner/PlannerBreadcrumb';
@@ -26,6 +27,8 @@ import { InspectorPanel } from '@/components/planner/InspectorPanel';
 import { FurnitureSummaryPanel } from '@/components/planner/FurnitureSummaryPanel';
 import { AiToolsPanel } from '@/components/planner/AiToolsPanel';
 import { CanvasStage } from '@/components/planner/CanvasStage';
+import { DrawShapesLayer } from '@/components/planner/DrawShapesLayer';
+import { AnnotateToolbar } from '@/components/planner/AnnotateToolbar';
 import {
   type FormErrors, type AlignmentGuide,
   validateForm, computeAlignmentGuides,
@@ -115,7 +118,13 @@ export default function CanvasPlanner() {
         loadDocument(existingPlan.documentJson);
         try {
           const parsed = JSON.parse(existingPlan.documentJson);
-          if (parsed.drawnShapes) interaction.setDrawnShapes(parsed.drawnShapes);
+          if (parsed.drawnShapes) {
+            interaction.setDrawnShapes(parsed.drawnShapes);
+          } else if (Array.isArray(parsed.annotations) && parsed.annotations.length > 0) {
+            interaction.setDrawnShapes(parsed.annotations);
+          } else if (Array.isArray(parsed.shapes) && parsed.shapes.length > 0) {
+            interaction.setDrawnShapes(parsed.shapes);
+          }
         } catch {}
       }
     }
@@ -159,12 +168,15 @@ export default function CanvasPlanner() {
       toast({ variant: "destructive", title: "Validation error", description: "Please fix the errors before saving." });
       return;
     }
-    const payload = { name: planName, roomWidthCm, roomDepthCm, plannerType: 'canvas' as const, documentJson: getDocumentJson() };
+    const baseDoc = JSON.parse(getDocumentJson());
+    baseDoc.drawnShapes = interaction.drawnShapes;
+    const documentJsonWithShapes = JSON.stringify(baseDoc);
+    const payload = { name: planName, roomWidthCm, roomDepthCm, plannerType: 'canvas' as const, documentJson: documentJsonWithShapes };
     if (planId) {
       updatePlan.mutate({ id: planId, data: payload }, {
         onSuccess: () => {
           toast({ title: 'Plan updated successfully' });
-          fetch(`/api/plans/${planId}/versions`, { method: "POST", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: `Auto-save`, documentJson: getDocumentJson() }) }).catch(() => {});
+          fetch(`/api/plans/${planId}/versions`, { method: "POST", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: `Auto-save`, documentJson: documentJsonWithShapes }) }).catch(() => {});
         },
       });
     } else {
@@ -187,6 +199,28 @@ export default function CanvasPlanner() {
     link.href = uri; link.click();
     toast({ title: 'PNG exported successfully' });
   };
+
+  const handleCommitText = useCallback(() => {
+    if (!interaction.pendingTextPos || !interaction.pendingTextValue.trim()) {
+      interaction.setPendingTextPos(null);
+      return;
+    }
+    const newShape = {
+      id: `ds-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      type: 'text' as const,
+      x1: interaction.pendingTextPos.x,
+      y1: interaction.pendingTextPos.y,
+      x2: interaction.pendingTextPos.x,
+      y2: interaction.pendingTextPos.y,
+      stroke: interaction.drawStroke,
+      fill: interaction.drawStroke,
+      strokeWidth: interaction.drawStrokeWidth,
+      text: interaction.pendingTextValue.trim(),
+    };
+    interaction.setDrawnShapes(prev => [...prev, newShape]);
+    interaction.setPendingTextPos(null);
+    interaction.setPendingTextValue('');
+  }, [interaction]);
 
   if (planError && planId) {
     return (
@@ -214,6 +248,20 @@ export default function CanvasPlanner() {
     );
   }
 
+  const previewShape = interaction.isDrawing && interaction.drawStart && interaction.drawCurrent
+    ? {
+        id: '__preview__',
+        type: (interaction.drawTool === 'draw-line' ? 'line' : interaction.drawTool === 'draw-rect' ? 'rect' : 'ellipse') as 'line' | 'rect' | 'ellipse',
+        x1: interaction.drawStart.x,
+        y1: interaction.drawStart.y,
+        x2: interaction.drawCurrent.x,
+        y2: interaction.drawCurrent.y,
+        stroke: interaction.drawStroke,
+        fill: interaction.drawFill,
+        strokeWidth: interaction.drawStrokeWidth,
+      }
+    : null;
+
   return (
     <div className="h-full flex flex-col bg-background">
       <PlannerBreadcrumb
@@ -239,12 +287,31 @@ export default function CanvasPlanner() {
         aiPanelOpen={aiPanelOpen} setAiPanelOpen={setAiPanelOpen}
         onSave={handleSave} isSaving={createPlan.isPending || updatePlan.isPending}
         onToggleVersionHistory={() => usePlannerStore.getState().toggleVersionHistory()}
+        annotateToolbar={
+          <AnnotateToolbar
+            drawTool={interaction.drawTool}
+            onSetDrawTool={interaction.setDrawTool}
+            strokeColor={interaction.drawStroke}
+            onSetStrokeColor={interaction.setDrawStroke}
+            fillColor={interaction.drawFill}
+            onSetFillColor={interaction.setDrawFill}
+            strokeWidth={interaction.drawStrokeWidth}
+            onSetStrokeWidth={interaction.setDrawStrokeWidth}
+            hasSelectedShape={!!interaction.selectedDrawShapeId}
+            onDeleteSelected={() => {
+              if (interaction.selectedDrawShapeId) {
+                interaction.setDrawnShapes(prev => prev.filter(s => s.id !== interaction.selectedDrawShapeId));
+                interaction.setSelectedDrawShapeId(null);
+              }
+            }}
+          />
+        }
       />
       <div className="flex-1 flex overflow-hidden">
         <div
           ref={containerRef}
           className="flex-1 bg-gradient-to-br from-muted/20 via-muted/30 to-muted/40 relative overflow-hidden"
-          style={{ cursor: measureMode ? 'crosshair' : interaction.spaceDown ? (interaction.isPanning ? 'grabbing' : 'grab') : 'default' }}
+          style={{ cursor: measureMode || interaction.isDrawMode ? 'crosshair' : interaction.spaceDown ? (interaction.isPanning ? 'grabbing' : 'grab') : 'default' }}
         >
           <AiToolsPanel
             open={aiPanelOpen} onClose={() => setAiPanelOpen(false)}
@@ -267,7 +334,45 @@ export default function CanvasPlanner() {
             onDragMoveItem={handleDragMoveItem}
             setAlignmentGuides={setAlignmentGuides} alignmentGuides={alignmentGuides}
             gridSnap={gridSnap} measurePoints={measurePoints} drawnShapes={interaction.drawnShapes}
+            previewShape={previewShape}
+            selectedDrawShapeId={interaction.selectedDrawShapeId}
+            onSelectDrawShape={interaction.setSelectedDrawShapeId}
+            isDrawMode={interaction.isDrawMode}
           />
+
+          {interaction.pendingTextPos && (
+            <div
+              className="absolute z-20"
+              style={{
+                left: (roomOffsetX + interaction.pendingTextPos.x * pxPerCm) * zoom + panOffset.x,
+                top: (roomOffsetY + interaction.pendingTextPos.y * pxPerCm) * zoom + panOffset.y,
+              }}
+            >
+              <Input
+                autoFocus
+                value={interaction.pendingTextValue}
+                onChange={e => interaction.setPendingTextValue(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') handleCommitText();
+                  if (e.key === 'Escape') interaction.setPendingTextPos(null);
+                }}
+                onBlur={handleCommitText}
+                placeholder="Type text..."
+                className="h-7 w-40 text-xs shadow-lg border-primary"
+              />
+            </div>
+          )}
+
+          {interaction.isDrawMode && (
+            <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 bg-primary/90 text-white text-xs font-medium px-3 py-1.5 rounded-full shadow-lg flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+              {interaction.drawTool === 'draw-text' ? 'Click to place text' : 'Click & drag to draw'}
+              <button aria-label="Exit draw mode" onClick={() => interaction.setDrawTool('select')} className="ml-1 hover:bg-white/20 rounded-full p-0.5">
+                <X className="w-3 h-3" />
+              </button>
+            </div>
+          )}
+
           {measureMode && (
             <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 bg-red-500/90 text-white text-xs font-medium px-3 py-1.5 rounded-full shadow-lg flex items-center gap-2">
               <Crosshair className="w-3.5 h-3.5" />

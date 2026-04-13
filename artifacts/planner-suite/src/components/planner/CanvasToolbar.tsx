@@ -48,6 +48,7 @@ interface CanvasToolbarProps {
   onSave: () => void;
   isSaving: boolean;
   onToggleVersionHistory: () => void;
+  annotateToolbar?: React.ReactNode;
 }
 
 export function CanvasToolbar({
@@ -66,6 +67,7 @@ export function CanvasToolbar({
   aiPanelOpen, setAiPanelOpen,
   onSave, isSaving,
   onToggleVersionHistory,
+  annotateToolbar,
 }: CanvasToolbarProps) {
   return (
     <header className="min-h-11 border-b flex items-center justify-between px-3 shrink-0 bg-card/95 backdrop-blur-sm flex-wrap gap-y-1 py-1 shadow-sm">
@@ -170,6 +172,12 @@ export function CanvasToolbar({
           <Rows3 className="w-3 h-3" />
           <span className="hidden lg:inline">Room</span>
         </Button>
+        {annotateToolbar && (
+          <>
+            <div className="w-px h-5 bg-border/40 mx-1 hidden sm:block" />
+            {annotateToolbar}
+          </>
+        )}
         <div className="w-px h-5 bg-border/40 mx-1 hidden sm:block" />
         <Button variant="ghost" size="sm" className="h-7 gap-1 text-[11px]" onClick={onExportPng} title="Export PNG">
           <Download className="w-3 h-3" />

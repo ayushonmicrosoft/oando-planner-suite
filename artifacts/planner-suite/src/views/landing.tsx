@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import Hero from "@/components/landing/hero";
 import Features from "@/components/landing/features";
 import SocialProof from "@/components/landing/social-proof";
@@ -9,8 +9,7 @@ import Footer from "@/components/landing/footer";
 import ClientLogos from "@/components/landing/client-logos";
 
 export default function Landing() {
-  const router = useRouter();
-  const handleGetStarted = () => router.push("/sign-up");
+  const handleGetStarted = () => { window.location.href = "/sign-up"; };
 
   return (
     <div className="min-h-screen bg-background">
@@ -21,21 +20,21 @@ export default function Landing() {
               <img src={"/logo-v2-white.webp"} alt="One&Only" className="h-6 w-auto" width={120} height={24} />
             </div>
             <div className="hidden md:flex items-center gap-8 text-[13px] text-white/40 font-medium">
-              <button onClick={handleGetStarted} className="hover:text-white/80 transition-colors duration-300">Planner</button>
-              <button onClick={handleGetStarted} className="hover:text-white/80 transition-colors duration-300">Products</button>
-              <button onClick={handleGetStarted} className="hover:text-white/80 transition-colors duration-300">Solutions</button>
-              <button onClick={handleGetStarted} className="hover:text-white/80 transition-colors duration-300">Portfolio</button>
+              <Link href="/planner/canvas" className="hover:text-white/80 transition-colors duration-300">Planner</Link>
+              <Link href="/catalog" className="hover:text-white/80 transition-colors duration-300">Products</Link>
+              <Link href="/templates" className="hover:text-white/80 transition-colors duration-300">Solutions</Link>
+              <Link href="/projects" className="hover:text-white/80 transition-colors duration-300">Portfolio</Link>
             </div>
             <div className="flex items-center gap-3">
-              <button onClick={() => router.push("/sign-up")} className="text-[13px] text-white/50 hover:text-white transition-colors duration-300 font-medium px-4 py-1.5">
+              <Link href="/sign-up" className="text-[13px] text-white/50 hover:text-white transition-colors duration-300 font-medium px-4 py-1.5">
                 Sign In
-              </button>
-              <button
-                onClick={() => router.push("/sign-up")}
+              </Link>
+              <Link
+                href="/sign-up"
                 className="text-[13px] bg-white text-[var(--text-inverse)] px-5 py-2 rounded-full hover:bg-white/90 transition-all duration-300 font-semibold shadow-[0_0_20px_rgba(255,255,255,0.08)]"
               >
                 Get Started
-              </button>
+              </Link>
             </div>
           </div>
         </nav>

@@ -117,6 +117,66 @@ const jsonLd = {
       },
     },
     {
+      "@type": "BreadcrumbList",
+      "@id": `${SITE_URL}/#breadcrumb`,
+      itemListElement: [
+        {
+          "@type": "ListItem",
+          position: 1,
+          name: "Home",
+          item: SITE_URL,
+        },
+        {
+          "@type": "ListItem",
+          position: 2,
+          name: "Catalog",
+          item: `${SITE_URL}/catalog`,
+        },
+        {
+          "@type": "ListItem",
+          position: 3,
+          name: "Templates",
+          item: `${SITE_URL}/templates`,
+        },
+        {
+          "@type": "ListItem",
+          position: 4,
+          name: "Floor Plan Creator",
+          item: `${SITE_URL}/tools/floor-plan`,
+        },
+        {
+          "@type": "ListItem",
+          position: 5,
+          name: "CAD Drawing",
+          item: `${SITE_URL}/tools/cad`,
+        },
+        {
+          "@type": "ListItem",
+          position: 6,
+          name: "Site Plans",
+          item: `${SITE_URL}/tools/site-plan`,
+        },
+        {
+          "@type": "ListItem",
+          position: 7,
+          name: "3D Viewer",
+          item: `${SITE_URL}/viewer/3d`,
+        },
+        {
+          "@type": "ListItem",
+          position: 8,
+          name: "About",
+          item: `${SITE_URL}/about`,
+        },
+        {
+          "@type": "ListItem",
+          position: 9,
+          name: "Contact",
+          item: `${SITE_URL}/contact`,
+        },
+      ],
+    },
+    {
       "@type": "SoftwareApplication",
       "@id": `${SITE_URL}/#application`,
       name: "One&Only Office Planner",

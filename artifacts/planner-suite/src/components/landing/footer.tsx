@@ -1,4 +1,4 @@
-"use client";
+import Link from "next/link";
 
 export default function Footer() {
   return (
@@ -10,11 +10,11 @@ export default function Footer() {
           </div>
           <nav aria-label="Footer navigation">
             <div className="flex flex-wrap justify-center gap-8 text-[13px] text-white/20">
-              <span className="hover:text-white/40 transition-colors duration-300 cursor-pointer">Floor Plans</span>
-              <span className="hover:text-white/40 transition-colors duration-300 cursor-pointer">CAD Drawing</span>
-              <span className="hover:text-white/40 transition-colors duration-300 cursor-pointer">Site Plans</span>
-              <span className="hover:text-white/40 transition-colors duration-300 cursor-pointer">Templates</span>
-              <span className="hover:text-white/40 transition-colors duration-300 cursor-pointer">3D Viewer</span>
+              <Link href="/tools/floor-plan" className="hover:text-white/40 transition-colors duration-300">Floor Plans</Link>
+              <Link href="/tools/cad" className="hover:text-white/40 transition-colors duration-300">CAD Drawing</Link>
+              <Link href="/tools/site-plan" className="hover:text-white/40 transition-colors duration-300">Site Plans</Link>
+              <Link href="/templates" className="hover:text-white/40 transition-colors duration-300">Templates</Link>
+              <Link href="/viewer/3d" className="hover:text-white/40 transition-colors duration-300">3D Viewer</Link>
             </div>
           </nav>
           <div className="text-[12px] text-white/15 flex flex-wrap items-center gap-x-1">

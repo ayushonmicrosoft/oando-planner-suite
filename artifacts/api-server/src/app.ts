@@ -64,13 +64,20 @@ app.use(express.json({ limit: "2mb" }));
 app.use(express.urlencoded({ extended: true }));
 
 app.use((_req: Request, res: Response, next: NextFunction) => {
-  res.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
-  res.set("Pragma", "no-cache");
-  res.set("Expires", "0");
+  res.set(
+    "Content-Security-Policy",
+    "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' https://*.afcindia.co.in https://*.supabase.co data:; font-src 'self'; connect-src 'self' https://*.supabase.co; script-src 'self'; frame-ancestors 'none'"
+  );
+  res.set("X-Content-Type-Options", "nosniff");
+  res.set("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload");
   next();
 });
 
-app.use("/api", apiLimiter, router);
+app.use("/api", (_req: Request, res: Response, next: NextFunction) => {
+  res.set("Cache-Control", "no-store");
+  res.set("Pragma", "no-cache");
+  next();
+}, apiLimiter, router);
 
 app.use(errorHandler);
 

@@ -4,6 +4,7 @@ const nextConfig: NextConfig = {
   images: { unoptimized: true },
   typescript: { ignoreBuildErrors: false },
   productionBrowserSourceMaps: false,
+  compress: true,
   allowedDevOrigins: ["*.picard.replit.dev", "*.replit.dev"],
   async headers() {
     return [

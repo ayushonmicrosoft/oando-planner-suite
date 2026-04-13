@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
   CheckCircle2, XCircle, MessageSquare, Send, Loader2, MapPin, Eye, Box,
-  AlertTriangle, Clock, User,
+  AlertTriangle, Clock, User, Package, Tag,
 } from "lucide-react";
 
 interface ShareInfo {
@@ -18,6 +18,7 @@ interface ShareInfo {
   status: string;
   statusNote: string | null;
   clientName: string | null;
+  viewedAt: string | null;
   createdAt: string;
   expiresAt: string | null;
 }
@@ -35,9 +36,24 @@ interface Comment {
   id: number;
   x: number;
   y: number;
+  itemName: string | null;
   message: string;
   authorName: string;
   createdAt: string;
+}
+
+interface PlanItem {
+  name: string;
+  category?: string;
+  widthCm?: number;
+  depthCm?: number;
+  heightCm?: number;
+  w?: number;
+  h?: number;
+  x?: number;
+  y?: number;
+  instanceId?: string;
+  rotation?: number;
 }
 
 function apiBase(): string {
@@ -62,6 +78,26 @@ const STATUS_STYLES: Record<string, { bg: string; icon: React.ReactNode; label: 
   },
 };
 
+const COLORS: Record<string, string> = {
+  workstations: "#5b8fb9",
+  seating: "#6db587",
+  "soft-seating": "#9b7fd4",
+  tables: "#e8935a",
+  storage: "#8fad6b",
+  education: "#5aa5c9",
+  accessories: "#d47b7b",
+  desks: "#5b8fb9",
+  chairs: "#6db587",
+  cabinets: "#8fad6b",
+};
+
+function getCatColor(item: PlanItem): string {
+  const catKey = Object.keys(COLORS).find((k) =>
+    (item.category || item.name || "").toLowerCase().includes(k.slice(0, 4))
+  );
+  return catKey ? COLORS[catKey] : "#7c9bbd";
+}
+
 export default function SharedPlanView({ token }: { token: string }) {
   const [share, setShare] = useState<ShareInfo | null>(null);
   const [plan, setPlan] = useState<PlanInfo | null>(null);
@@ -72,12 +108,15 @@ export default function SharedPlanView({ token }: { token: string }) {
   const [authorName, setAuthorName] = useState("");
   const [commentMessage, setCommentMessage] = useState("");
   const [clickPos, setClickPos] = useState<{ x: number; y: number } | null>(null);
+  const [clickedItemName, setClickedItemName] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [approving, setApproving] = useState(false);
   const [approvalNote, setApprovalNote] = useState("");
   const [showApprovalForm, setShowApprovalForm] = useState(false);
   const [selectedComment, setSelectedComment] = useState<Comment | null>(null);
   const [savedName, setSavedName] = useState("");
+  const [hoveredItem, setHoveredItem] = useState<PlanItem | null>(null);
+  const [hoverPos, setHoverPos] = useState({ x: 0, y: 0 });
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -110,7 +149,7 @@ export default function SharedPlanView({ token }: { token: string }) {
     }
   }, [fetchData]);
 
-  const items = useMemo(() => {
+  const items: PlanItem[] = useMemo(() => {
     if (!plan?.documentJson) return [];
     try {
       const doc = JSON.parse(plan.documentJson);
@@ -118,6 +157,31 @@ export default function SharedPlanView({ token }: { token: string }) {
     } catch {
       return [];
     }
+  }, [plan]);
+
+  const boqItems = useMemo(() => {
+    const map = new Map<string, { name: string; category: string; widthCm: number; depthCm: number; heightCm: number; qty: number }>();
+    for (const item of items) {
+      const w = item.widthCm ?? item.w ?? 60;
+      const d = item.depthCm ?? item.h ?? 60;
+      const hCm = item.heightCm ?? 75;
+      const key = `${item.name}|${item.category || "Other"}|${w}|${d}|${hCm}`;
+      const existing = map.get(key);
+      if (existing) { existing.qty++; } else {
+        map.set(key, { name: item.name, category: item.category || "Other", widthCm: w, depthCm: d, heightCm: hCm, qty: 1 });
+      }
+    }
+    return Array.from(map.values());
+  }, [items]);
+
+  const getScale = useCallback(() => {
+    if (!plan || !canvasRef.current) return { scale: 1, offX: 0, offY: 0 };
+    const canvas = canvasRef.current;
+    const padding = 40;
+    const scale = Math.min((canvas.width - padding * 2) / plan.roomWidthCm, (canvas.height - padding * 2) / plan.roomDepthCm);
+    const offX = (canvas.width - plan.roomWidthCm * scale) / 2;
+    const offY = (canvas.height - plan.roomDepthCm * scale) / 2;
+    return { scale, offX, offY };
   }, [plan]);
 
   useEffect(() => {
@@ -128,58 +192,39 @@ export default function SharedPlanView({ token }: { token: string }) {
 
     const w = canvas.width;
     const h = canvas.height;
-    const roomW = plan.roomWidthCm;
-    const roomD = plan.roomDepthCm;
-    const padding = 40;
-    const scale = Math.min((w - padding * 2) / roomW, (h - padding * 2) / roomD);
-    const offX = (w - roomW * scale) / 2;
-    const offY = (h - roomD * scale) / 2;
+    const { scale, offX, offY } = getScale();
 
     ctx.clearRect(0, 0, w, h);
-
     ctx.fillStyle = "#f8fafc";
     ctx.fillRect(0, 0, w, h);
 
-    ctx.strokeStyle = "#94a3b8";
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(offX, offY, plan.roomWidthCm * scale, plan.roomDepthCm * scale);
+    ctx.strokeStyle = "#cbd5e1";
     ctx.lineWidth = 2;
-    ctx.setLineDash([6, 4]);
-    ctx.strokeRect(offX, offY, roomW * scale, roomD * scale);
-    ctx.setLineDash([]);
+    ctx.strokeRect(offX, offY, plan.roomWidthCm * scale, plan.roomDepthCm * scale);
 
-    ctx.fillStyle = "#e2e8f0";
+    ctx.fillStyle = "#94a3b8";
     ctx.font = "11px sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText(`${roomW}cm`, offX + (roomW * scale) / 2, offY - 8);
+    ctx.fillText(`${plan.roomWidthCm}cm`, offX + (plan.roomWidthCm * scale) / 2, offY - 8);
     ctx.save();
-    ctx.translate(offX - 8, offY + (roomD * scale) / 2);
+    ctx.translate(offX - 8, offY + (plan.roomDepthCm * scale) / 2);
     ctx.rotate(-Math.PI / 2);
-    ctx.fillText(`${roomD}cm`, 0, 0);
+    ctx.fillText(`${plan.roomDepthCm}cm`, 0, 0);
     ctx.restore();
-
-    const COLORS: Record<string, string> = {
-      workstations: "#5b8fb9",
-      seating: "#6db587",
-      "soft-seating": "#9b7fd4",
-      tables: "#e8935a",
-      storage: "#8fad6b",
-      education: "#5aa5c9",
-      accessories: "#d47b7b",
-    };
 
     for (const item of items) {
       const ix = offX + (item.x ?? 0) * scale;
       const iy = offY + (item.y ?? 0) * scale;
       const iw = (item.widthCm ?? item.w ?? 60) * scale;
       const ih = (item.depthCm ?? item.h ?? 60) * scale;
+      const color = getCatColor(item);
+      const isHovered = hoveredItem === item;
 
-      const catKey = Object.keys(COLORS).find((k) =>
-        (item.category || item.name || "").toLowerCase().includes(k.slice(0, 4))
-      );
-      const color = catKey ? COLORS[catKey] : "#7c9bbd";
-
-      ctx.fillStyle = color + "33";
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 1.5;
+      ctx.fillStyle = isHovered ? color + "55" : color + "33";
+      ctx.strokeStyle = isHovered ? color : color + "aa";
+      ctx.lineWidth = isHovered ? 2.5 : 1.5;
       ctx.fillRect(ix, iy, iw, ih);
       ctx.strokeRect(ix, iy, iw, ih);
 
@@ -188,11 +233,39 @@ export default function SharedPlanView({ token }: { token: string }) {
         ctx.font = `${Math.max(9, Math.min(12, iw * 0.2))}px sans-serif`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        const label = item.name.length > 15 ? item.name.slice(0, 12) + "…" : item.name;
+        const label = item.name.length > 15 ? item.name.slice(0, 12) + "\u2026" : item.name;
         ctx.fillText(label, ix + iw / 2, iy + ih / 2);
       }
     }
-  }, [plan, items, view]);
+  }, [plan, items, view, hoveredItem, getScale]);
+
+  const findItemAtPosition = useCallback((canvasX: number, canvasY: number): PlanItem | null => {
+    if (!plan) return null;
+    const { scale, offX, offY } = getScale();
+    for (let i = items.length - 1; i >= 0; i--) {
+      const item = items[i];
+      const ix = offX + (item.x ?? 0) * scale;
+      const iy = offY + (item.y ?? 0) * scale;
+      const iw = (item.widthCm ?? item.w ?? 60) * scale;
+      const ih = (item.depthCm ?? item.h ?? 60) * scale;
+      if (canvasX >= ix && canvasX <= ix + iw && canvasY >= iy && canvasY <= iy + ih) {
+        return item;
+      }
+    }
+    return null;
+  }, [plan, items, getScale]);
+
+  const handleCanvasMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!canvasRef.current) return;
+    const rect = canvasRef.current.getBoundingClientRect();
+    const scaleX = canvasRef.current.width / rect.width;
+    const scaleY = canvasRef.current.height / rect.height;
+    const cx = (e.clientX - rect.left) * scaleX;
+    const cy = (e.clientY - rect.top) * scaleY;
+    const item = findItemAtPosition(cx, cy);
+    setHoveredItem(item);
+    setHoverPos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+  };
 
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!canvasRef.current) return;
@@ -201,7 +274,9 @@ export default function SharedPlanView({ token }: { token: string }) {
     const scaleY = canvasRef.current.height / rect.height;
     const x = Math.round((e.clientX - rect.left) * scaleX);
     const y = Math.round((e.clientY - rect.top) * scaleY);
+    const item = findItemAtPosition(x, y);
     setClickPos({ x, y });
+    setClickedItemName(item?.name || null);
     setSelectedComment(null);
   };
 
@@ -217,6 +292,7 @@ export default function SharedPlanView({ token }: { token: string }) {
         body: JSON.stringify({
           x: clickPos.x,
           y: clickPos.y,
+          itemName: clickedItemName || undefined,
           message: commentMessage.trim(),
           authorName: authorName.trim(),
         }),
@@ -224,6 +300,7 @@ export default function SharedPlanView({ token }: { token: string }) {
       if (res.ok) {
         setCommentMessage("");
         setClickPos(null);
+        setClickedItemName(null);
         await fetchData();
       }
     } catch { /* ignore */ }
@@ -275,15 +352,17 @@ export default function SharedPlanView({ token }: { token: string }) {
   return (
     <div className="min-h-screen bg-slate-50">
       <header className="border-b bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src="/logo-v2-white.webp" alt="One&Only" className="h-6 w-auto invert opacity-70" />
-            <Separator orientation="vertical" className="h-6" />
+            <div className="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center">
+              <Package className="h-4 w-4 text-white" />
+            </div>
+            <Separator orientation="vertical" className="h-8" />
             <div>
-              <h1 className="text-sm font-bold text-slate-800">{plan.name}</h1>
-              <p className="text-[11px] text-slate-400">
+              <h1 className="text-lg font-bold text-slate-800">{plan.name}</h1>
+              <p className="text-xs text-slate-400">
                 {plan.roomWidthCm}cm × {plan.roomDepthCm}cm
-                {share.clientName && ` · Shared with ${share.clientName}`}
+                {share.clientName && ` · Prepared for ${share.clientName}`}
               </p>
             </div>
           </div>
@@ -298,7 +377,7 @@ export default function SharedPlanView({ token }: { token: string }) {
 
       <div className="max-w-7xl mx-auto px-4 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-4">
+          <div className="lg:col-span-2 space-y-6">
             <div className="flex items-center gap-2">
               <Button
                 variant={view === "2d" ? "default" : "outline"}
@@ -316,7 +395,7 @@ export default function SharedPlanView({ token }: { token: string }) {
               </Button>
               {view === "2d" && (
                 <p className="text-xs text-slate-400 ml-2">
-                  Click on the plan to add a comment pin
+                  Hover to see item details · Click to add a comment
                 </p>
               )}
             </div>
@@ -330,7 +409,27 @@ export default function SharedPlanView({ token }: { token: string }) {
                     height={600}
                     className="w-full cursor-crosshair"
                     onClick={handleCanvasClick}
+                    onMouseMove={handleCanvasMouseMove}
+                    onMouseLeave={() => setHoveredItem(null)}
                   />
+                  {hoveredItem && (
+                    <div
+                      className="absolute z-20 bg-slate-900 text-white text-xs rounded-lg px-3 py-2 pointer-events-none shadow-lg"
+                      style={{
+                        left: Math.min(hoverPos.x + 12, (containerRef.current?.clientWidth || 800) - 200),
+                        top: hoverPos.y - 40,
+                      }}
+                    >
+                      <p className="font-semibold">{hoveredItem.name}</p>
+                      <p className="text-slate-300">
+                        {hoveredItem.widthCm ?? hoveredItem.w ?? 60}cm × {hoveredItem.depthCm ?? hoveredItem.h ?? 60}cm
+                        {hoveredItem.heightCm ? ` × ${hoveredItem.heightCm}cm` : ""}
+                      </p>
+                      {hoveredItem.category && (
+                        <p className="text-slate-400 text-[10px]">{hoveredItem.category}</p>
+                      )}
+                    </div>
+                  )}
                   {comments.map((c) => (
                     <CommentPin
                       key={c.id}
@@ -344,7 +443,7 @@ export default function SharedPlanView({ token }: { token: string }) {
                   ))}
                   {clickPos && (
                     <CommentPin
-                      comment={{ id: -1, x: clickPos.x, y: clickPos.y, message: "", authorName: "", createdAt: "" }}
+                      comment={{ id: -1, x: clickPos.x, y: clickPos.y, itemName: null, message: "", authorName: "", createdAt: "" }}
                       canvasWidth={800}
                       canvasHeight={600}
                       containerRef={containerRef}
@@ -363,7 +462,13 @@ export default function SharedPlanView({ token }: { token: string }) {
               <div className="border rounded-xl p-4 bg-white shadow-sm space-y-3">
                 <p className="text-sm font-semibold text-slate-700 flex items-center gap-2">
                   <MapPin className="h-4 w-4 text-primary" />
-                  Add Comment at ({clickPos.x}, {clickPos.y})
+                  Add Comment
+                  {clickedItemName && (
+                    <Badge variant="secondary" className="text-xs gap-1">
+                      <Tag className="h-3 w-3" />
+                      {clickedItemName}
+                    </Badge>
+                  )}
                 </p>
                 <div className="flex gap-2">
                   <Input
@@ -382,12 +487,68 @@ export default function SharedPlanView({ token }: { token: string }) {
                   <Button onClick={handleSubmitComment} disabled={submitting || !commentMessage.trim() || !authorName.trim()}>
                     {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                   </Button>
-                  <Button variant="ghost" onClick={() => setClickPos(null)}>
+                  <Button variant="ghost" onClick={() => { setClickPos(null); setClickedItemName(null); }}>
                     Cancel
                   </Button>
                 </div>
               </div>
             )}
+
+            <div className="border rounded-xl bg-white shadow-sm overflow-hidden">
+              <div className="px-4 py-3 border-b bg-slate-50">
+                <h3 className="text-sm font-bold text-slate-700 flex items-center gap-2">
+                  <Package className="h-4 w-4" />
+                  Bill of Quantities
+                  <Badge variant="secondary" className="text-[10px]">{items.length} items</Badge>
+                </h3>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-xs text-slate-500 border-b bg-slate-50/50">
+                      <th className="px-4 py-2 font-medium">#</th>
+                      <th className="px-4 py-2 font-medium">Item Name</th>
+                      <th className="px-4 py-2 font-medium">Category</th>
+                      <th className="px-4 py-2 font-medium">Width</th>
+                      <th className="px-4 py-2 font-medium">Depth</th>
+                      <th className="px-4 py-2 font-medium">Height</th>
+                      <th className="px-4 py-2 font-medium">Qty</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {boqItems.map((row, idx) => (
+                      <tr key={idx} className={`border-b last:border-0 ${idx % 2 === 0 ? "bg-white" : "bg-slate-50/30"}`}>
+                        <td className="px-4 py-2 text-slate-400">{idx + 1}</td>
+                        <td className="px-4 py-2 font-medium text-slate-700">{row.name}</td>
+                        <td className="px-4 py-2">
+                          <Badge variant="outline" className="text-[10px]">
+                            {row.category}
+                          </Badge>
+                        </td>
+                        <td className="px-4 py-2 text-slate-600">{row.widthCm}cm</td>
+                        <td className="px-4 py-2 text-slate-600">{row.depthCm}cm</td>
+                        <td className="px-4 py-2 text-slate-600">{row.heightCm}cm</td>
+                        <td className="px-4 py-2 font-medium text-slate-700">{row.qty}</td>
+                      </tr>
+                    ))}
+                    {boqItems.length === 0 && (
+                      <tr>
+                        <td colSpan={7} className="px-4 py-8 text-center text-slate-400">
+                          No items in this plan yet.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              {items.length > 0 && (
+                <div className="px-4 py-2 border-t bg-slate-50 text-xs text-slate-500 flex items-center gap-4">
+                  <span>Room: {plan.roomWidthCm}cm × {plan.roomDepthCm}cm ({(plan.roomWidthCm * plan.roomDepthCm / 10000).toFixed(1)} m²)</span>
+                  <span>Total: {items.length} items</span>
+                  <span>Unique: {boqItems.length} types</span>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="space-y-4">
@@ -487,8 +648,13 @@ export default function SharedPlanView({ token }: { token: string }) {
                             {new Date(c.createdAt).toLocaleDateString()}
                           </span>
                         </div>
+                        {c.itemName && (
+                          <Badge variant="secondary" className="text-[10px] mb-1 gap-1">
+                            <Tag className="h-2.5 w-2.5" />
+                            {c.itemName}
+                          </Badge>
+                        )}
                         <p className="text-sm text-slate-700">{c.message}</p>
-                        <p className="text-[10px] text-slate-400 mt-1">📍 ({c.x}, {c.y})</p>
                       </div>
                     ))}
                   </div>

@@ -29,6 +29,8 @@ import { AiBottomBar } from '@/components/planner/AiBottomBar';
 import { CanvasStage } from '@/components/planner/CanvasStage';
 import { DrawShapesLayer } from '@/components/planner/DrawShapesLayer';
 import { AnnotateToolbar } from '@/components/planner/AnnotateToolbar';
+import { DeliverDropdown } from '@/components/planner/DeliverDropdown';
+import { PresentationMode } from '@/components/planner/PresentationMode';
 import {
   type FormErrors, type AlignmentGuide,
   validateForm, computeAlignmentGuides,
@@ -69,6 +71,7 @@ export default function CanvasPlanner() {
   const [catalogPanelOpen, setCatalogPanelOpen] = useState(false);
   const [roomPanelOpen, setRoomPanelOpen] = useState(false);
   const [blueprintWizardOpen, setBlueprintWizardOpen] = useState(false);
+  const [presentationOpen, setPresentationOpen] = useState(false);
 
   const { data: catalogItems, isError: catalogError, refetch: refetchCatalog } = useListCatalogItems();
   const { data: existingPlan, isLoading: planLoading, isError: planError, refetch: refetchPlan } = useGetPlan(planId || 0, { query: { queryKey: getGetPlanQueryKey(planId || 0), enabled: !!planId } });
@@ -377,6 +380,18 @@ export default function CanvasPlanner() {
         onNavigateQuote={() => router.push(`/plans/${planId}/quote`)}
         onSave={handleSave} isSaving={createPlan.isPending || updatePlan.isPending}
         onToggleVersionHistory={() => usePlannerStore.getState().toggleVersionHistory()}
+        deliverDropdown={
+          <DeliverDropdown
+            planId={planId}
+            planName={planName}
+            items={items}
+            roomWidthCm={roomWidthCm}
+            roomDepthCm={roomDepthCm}
+            stageRef={stageRef}
+            onExportPng={handleExportPng}
+            onStartPresentation={() => setPresentationOpen(true)}
+          />
+        }
         annotateToolbar={
           <AnnotateToolbar
             drawTool={interaction.drawTool}
@@ -527,6 +542,14 @@ export default function CanvasPlanner() {
         open={blueprintWizardOpen}
         onClose={() => setBlueprintWizardOpen(false)}
         onComplete={handleBlueprintComplete}
+      />
+      <PresentationMode
+        open={presentationOpen}
+        onClose={() => setPresentationOpen(false)}
+        planName={planName}
+        items={items}
+        roomWidthCm={roomWidthCm}
+        roomDepthCm={roomDepthCm}
       />
     </div>
   );

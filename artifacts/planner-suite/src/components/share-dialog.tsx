@@ -11,7 +11,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import {
   Share2, Copy, Check, Trash2, Loader2, Link2, Clock, User, MessageSquare,
-  ExternalLink, Plus,
+  ExternalLink, Plus, Eye, EyeOff,
 } from "lucide-react";
 import { format } from "date-fns";
 
@@ -23,6 +23,7 @@ interface ShareData {
   status: string;
   statusNote: string | null;
   isActive: boolean;
+  viewedAt: string | null;
   expiresAt: string | null;
   createdAt: string;
   updatedAt: string;
@@ -268,7 +269,20 @@ function ShareRow({
         )}
       </div>
 
-      <div className="flex items-center gap-3 mt-1.5 text-[11px] text-muted-foreground">
+      <div className="flex items-center gap-3 mt-1.5 text-[11px] text-muted-foreground flex-wrap">
+        <span className="flex items-center gap-1">
+          {share.viewedAt ? (
+            <>
+              <Eye className="h-3 w-3 text-emerald-500" />
+              <span className="text-emerald-600">Viewed {format(new Date(share.viewedAt), "MMM d, h:mm a")}</span>
+            </>
+          ) : (
+            <>
+              <EyeOff className="h-3 w-3 text-slate-400" />
+              <span>Not yet viewed</span>
+            </>
+          )}
+        </span>
         <span className="flex items-center gap-1">
           <Clock className="h-3 w-3" />
           {share.expiresAt

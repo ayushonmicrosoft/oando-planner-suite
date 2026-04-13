@@ -9,6 +9,7 @@ const router: IRouter = Router();
 const AddCommentBody = z.object({
   x: z.number().finite().min(0).max(10000),
   y: z.number().finite().min(0).max(10000),
+  itemName: z.string().trim().max(200).nullish(),
   message: z.string().trim().min(1).max(2000),
   authorName: z.string().trim().min(1).max(200),
 });
@@ -43,6 +44,17 @@ router.get(
       return;
     }
 
+    let viewedAt = share.viewedAt;
+    if (!viewedAt) {
+      const now = new Date();
+      const [updated] = await db
+        .update(planSharesTable)
+        .set({ viewedAt: now })
+        .where(eq(planSharesTable.id, share.id))
+        .returning();
+      viewedAt = updated?.viewedAt ?? now;
+    }
+
     const [plan] = await db
       .select()
       .from(plansTable)
@@ -65,6 +77,7 @@ router.get(
         status: share.status,
         statusNote: share.statusNote,
         clientName: share.clientName,
+        viewedAt: viewedAt?.toISOString() ?? null,
         createdAt: share.createdAt.toISOString(),
         expiresAt: share.expiresAt?.toISOString() ?? null,
       },
@@ -80,6 +93,7 @@ router.get(
         id: c.id,
         x: c.x,
         y: c.y,
+        itemName: c.itemName,
         message: c.message,
         authorName: c.authorName,
         createdAt: c.createdAt.toISOString(),
@@ -116,6 +130,7 @@ router.post(
         planId: share.planId,
         x: parsed.data.x,
         y: parsed.data.y,
+        itemName: parsed.data.itemName || null,
         message: parsed.data.message,
         authorName: parsed.data.authorName,
       })
@@ -125,6 +140,7 @@ router.post(
       id: comment.id,
       x: comment.x,
       y: comment.y,
+      itemName: comment.itemName,
       message: comment.message,
       authorName: comment.authorName,
       createdAt: comment.createdAt.toISOString(),

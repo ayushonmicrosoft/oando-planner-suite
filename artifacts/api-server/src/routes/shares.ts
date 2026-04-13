@@ -27,6 +27,7 @@ function serializeShare(s: typeof planSharesTable.$inferSelect) {
     ...s,
     createdAt: s.createdAt.toISOString(),
     updatedAt: s.updatedAt.toISOString(),
+    viewedAt: s.viewedAt?.toISOString() ?? null,
     expiresAt: s.expiresAt?.toISOString() ?? null,
   };
 }
@@ -35,6 +36,7 @@ function serializeComment(c: typeof planCommentsTable.$inferSelect) {
   return {
     ...c,
     createdAt: c.createdAt.toISOString(),
+    itemName: c.itemName ?? null,
   };
 }
 

@@ -3,7 +3,7 @@ import { Input } from '@/components/ui/input';
 import {
   Save, RotateCw, Trash2, Copy, Loader2,
   Grid3X3, Undo2, Redo2,
-  ZoomIn, ZoomOut, Download, Ruler,
+  ZoomIn, ZoomOut, Ruler,
   Eye, EyeOff, Crosshair, ClipboardList, FileSpreadsheet,
   History, Box, Rows3,
 } from 'lucide-react';
@@ -52,6 +52,7 @@ interface CanvasToolbarProps {
   onNewFromBlueprint: () => void;
   onImport: () => void;
   onOpenPlan: (planId: number) => void;
+  deliverDropdown?: React.ReactNode;
 }
 
 export function CanvasToolbar({
@@ -71,6 +72,7 @@ export function CanvasToolbar({
   onToggleVersionHistory,
   annotateToolbar,
   onNewBlankCanvas, onNewFromBlueprint, onImport, onOpenPlan,
+  deliverDropdown,
 }: CanvasToolbarProps) {
   return (
     <header className="min-h-11 border-b flex items-center justify-between px-3 shrink-0 bg-card/95 backdrop-blur-sm flex-wrap gap-y-1 py-1 shadow-sm">
@@ -191,10 +193,7 @@ export function CanvasToolbar({
           </>
         )}
         <div className="w-px h-5 bg-border/40 mx-1 hidden sm:block" />
-        <Button variant="ghost" size="sm" className="h-7 gap-1 text-[11px]" onClick={onExportPng} title="Export PNG">
-          <Download className="w-3 h-3" />
-          <span className="hidden lg:inline">PNG</span>
-        </Button>
+        {deliverDropdown}
         {planId && (
           <Button variant="outline" size="sm" className="h-7 gap-1 text-[11px]" onClick={onNavigateQuote} title="Generate Quote">
             <FileSpreadsheet className="w-3 h-3" />

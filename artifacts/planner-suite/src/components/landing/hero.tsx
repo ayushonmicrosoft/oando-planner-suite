@@ -20,9 +20,9 @@ export default function Hero({ onGetStarted }: HeroProps) {
           height={1080}
           loading="eager"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#070D12]/95 via-[#0B1324]/85 to-[#0B1324]/40" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#070D12] via-[#070D12]/20 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#070D12]/40 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-background)]/95 via-[var(--color-dark-midnight-blue-850)]/85 to-[var(--color-dark-midnight-blue-850)]/40" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-background)] via-[var(--color-background)]/20 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[var(--color-background)]/40 via-transparent to-transparent" />
       </div>
 
       <div className="max-w-[1200px] mx-auto px-5 py-28 lg:py-40 relative w-full">
@@ -45,7 +45,7 @@ export default function Hero({ onGetStarted }: HeroProps) {
           <h1 className="text-[46px] md:text-[64px] lg:text-[76px] font-bold leading-[1.02] text-white mb-7 tracking-[-0.03em]">
             Design Your
             <br />
-            <span className="bg-gradient-to-r from-[#5488B6] via-[#77A2C9] to-[#5488B6] bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-[var(--color-ocean-boat-blue-500)] via-[var(--color-ocean-boat-blue-400)] to-[var(--color-ocean-boat-blue-500)] bg-clip-text text-transparent">
               Perfect Office
             </span>
           </h1>
@@ -60,7 +60,7 @@ export default function Hero({ onGetStarted }: HeroProps) {
               <Button
                 size="lg"
                 onClick={onGetStarted}
-                className="text-[15px] px-8 py-6 h-auto gap-2.5 bg-white text-[#0B1324] hover:bg-white/90 rounded-full font-semibold shadow-[0_18px_40px_-12px_rgba(255,255,255,0.15)]"
+                className="text-[15px] px-8 py-6 h-auto gap-2.5 bg-white text-[var(--text-inverse)] hover:bg-white/90 rounded-full font-semibold shadow-[0_18px_40px_-12px_rgba(255,255,255,0.15)]"
               >
                 Start Planning Free <ArrowRight className="w-4 h-4" />
               </Button>
@@ -94,7 +94,7 @@ export default function Hero({ onGetStarted }: HeroProps) {
         </motion.div>
       </div>
 
-      <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-[#070D12] to-transparent" />
+      <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-[var(--color-background)] to-transparent" />
     </section>
   );
 }

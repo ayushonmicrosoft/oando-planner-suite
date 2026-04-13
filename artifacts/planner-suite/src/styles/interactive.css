@@ -98,6 +98,21 @@
   animation: fadein 0.25s ease-out both;
 }
 
+/* ── Elevate utilities for buttons/badges ── */
+@utility hover-elevate {
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px -4px var(--shadow-elevate, rgba(0, 0, 0, 0.25));
+  }
+}
+
+@utility active-elevate-2 {
+  &:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: none;
+  }
+}
+
 /* scale-103 — Tailwind doesn't include this by default */
 .hover\:scale-103:hover {
   transform: scale(1.03);

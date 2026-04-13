@@ -13,9 +13,9 @@ export default function Landing() {
   const handleGetStarted = () => router.push("/sign-up");
 
   return (
-    <div className="min-h-screen bg-[#070D12]">
+    <div className="min-h-screen bg-background">
       <header>
-        <nav className="fixed top-0 left-0 right-0 z-50 bg-[#070D12]/70 backdrop-blur-2xl border-b border-white/[0.04] transition-all duration-300" aria-label="Main navigation">
+        <nav className="fixed top-0 left-0 right-0 z-50 bg-background/70 backdrop-blur-2xl border-b border-white/[0.04] transition-all duration-300" aria-label="Main navigation">
           <div className="max-w-[1200px] mx-auto px-5 h-16 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <img src={"/logo-v2-white.webp"} alt="One&Only" className="h-6 w-auto" width={120} height={24} />
@@ -32,7 +32,7 @@ export default function Landing() {
               </button>
               <button
                 onClick={() => router.push("/sign-up")}
-                className="text-[13px] bg-white text-[#0B1324] px-5 py-2 rounded-full hover:bg-white/90 transition-all duration-300 font-semibold shadow-[0_0_20px_rgba(255,255,255,0.08)]"
+                className="text-[13px] bg-white text-[var(--text-inverse)] px-5 py-2 rounded-full hover:bg-white/90 transition-all duration-300 font-semibold shadow-[0_0_20px_rgba(255,255,255,0.08)]"
               >
                 Get Started
               </button>

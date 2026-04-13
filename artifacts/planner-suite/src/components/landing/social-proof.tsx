@@ -27,7 +27,7 @@ const testimonials = [
 ];
 
 const stats = [
-  { value: "120+", label: "Organisations", color: "from-[#5488B6] to-[#77A2C9]" },
+  { value: "120+", label: "Organisations", color: "from-primary to-[var(--color-ocean-boat-blue-400)]" },
   { value: "259+", label: "Projects Delivered", color: "from-emerald-400 to-emerald-300" },
   { value: "15+", label: "Years Experience", color: "from-amber-400 to-amber-300" },
   { value: "18+", label: "Sectors Served", color: "from-violet-400 to-violet-300" },
@@ -60,9 +60,9 @@ export default function SocialProof() {
   }, []);
 
   return (
-    <section className="py-28 lg:py-36 bg-[#0A1018] relative" id="testimonials" aria-label="Testimonials and social proof">
+    <section className="py-28 lg:py-36 bg-[var(--surface-glass-strong)] relative" id="testimonials" aria-label="Testimonials and social proof">
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#5488B6]/[0.03] rounded-full blur-[150px]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/[0.03] rounded-full blur-[150px]" />
       </div>
 
       <div className="max-w-[1200px] mx-auto px-5 relative">
@@ -88,7 +88,7 @@ export default function SocialProof() {
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <p className="text-sm font-medium tracking-[0.2em] uppercase text-[#5488B6] mb-4">Testimonials</p>
+          <p className="text-sm font-medium tracking-[0.2em] uppercase text-primary mb-4">Testimonials</p>
           <h2 className="text-[32px] md:text-[44px] font-bold text-white mb-4 tracking-[-0.02em]">
             Trusted by Leading Enterprises
           </h2>
@@ -99,9 +99,9 @@ export default function SocialProof() {
 
         <div className="max-w-[800px] mx-auto mb-20">
           <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-8 md:p-12 min-h-[220px] backdrop-blur-sm relative overflow-hidden">
-            <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#5488B6]/20 to-transparent" />
+            <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
             <div className="flex items-start gap-3 mb-6">
-              <svg className="w-8 h-8 text-[#5488B6]/20 shrink-0" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <svg className="w-8 h-8 text-primary/20 shrink-0" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/>
               </svg>
             </div>
@@ -130,7 +130,7 @@ export default function SocialProof() {
                 key={i}
                 onClick={() => setActive(i)}
                 className={`h-1.5 rounded-full transition-all duration-300 ${
-                  i === active ? "bg-[#5488B6] w-8" : "bg-white/10 w-3 hover:bg-white/20"
+                  i === active ? "bg-primary w-8" : "bg-white/10 w-3 hover:bg-white/20"
                 }`}
                 aria-label={`View testimonial ${i + 1} of ${testimonials.length}`}
               />

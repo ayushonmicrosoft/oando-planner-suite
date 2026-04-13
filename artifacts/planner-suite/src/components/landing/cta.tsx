@@ -10,10 +10,10 @@ interface CTAProps {
 
 export default function CTA({ onGetStarted }: CTAProps) {
   return (
-    <section className="py-28 lg:py-36 bg-[#070D12] relative overflow-hidden" aria-label="Call to action">
+    <section className="py-28 lg:py-36 bg-background relative overflow-hidden" aria-label="Call to action">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-[#5488B6]/[0.05] rounded-full blur-[150px]" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-[#5488B6]/[0.08] rounded-full blur-[80px]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-primary/[0.05] rounded-full blur-[150px]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-primary/[0.08] rounded-full blur-[80px]" />
       </div>
 
       <motion.div
@@ -23,7 +23,7 @@ export default function CTA({ onGetStarted }: CTAProps) {
         viewport={{ once: true }}
         transition={{ duration: 0.6 }}
       >
-        <p className="text-sm font-medium tracking-[0.2em] uppercase text-[#5488B6] mb-4">Get Started</p>
+        <p className="text-sm font-medium tracking-[0.2em] uppercase text-primary mb-4">Get Started</p>
         <h2 className="text-[32px] md:text-[48px] font-bold text-white mb-6 tracking-[-0.02em]">
           Ready to Design Your
           <br />
@@ -37,7 +37,7 @@ export default function CTA({ onGetStarted }: CTAProps) {
             <Button
               size="lg"
               onClick={onGetStarted}
-              className="text-[15px] px-10 py-6 h-auto gap-2.5 bg-white text-[#0B1324] hover:bg-white/90 rounded-full font-semibold shadow-[0_18px_40px_-12px_rgba(255,255,255,0.15)]"
+              className="text-[15px] px-10 py-6 h-auto gap-2.5 bg-white text-[var(--text-inverse)] hover:bg-white/90 rounded-full font-semibold shadow-[0_18px_40px_-12px_rgba(255,255,255,0.15)]"
             >
               Start Planning Free <ArrowRight className="w-4 h-4" aria-hidden="true" />
             </Button>

@@ -21,13 +21,10 @@
 
 @layer base {
   :root {
-    --background: var(--surface-page);
-    --foreground: var(--text-body);
-
     --planner-primary: var(--color-primary);
     --planner-primary-hover: var(--color-primary-hover);
     --planner-primary-soft: var(--color-ocean-boat-blue-50);
-    --planner-accent: var(--color-accent);
+    --planner-accent: var(--color-bronze-400);
     --planner-accent-soft: var(--color-accent-soft);
     --planner-accent-strong: var(--color-accent-strong);
 
@@ -53,6 +50,8 @@
     --planner-success-soft: var(--surface-status-ok);
     --planner-danger-soft: var(--surface-status-bad);
 
+    --shadow-elevate: rgba(0, 0, 0, 0.25);
+
     --planner-shadow-panel: var(--shadow-panel);
     --planner-shadow-float: var(--shadow-float);
     --planner-shadow-inverse: var(--shadow-inverse);
@@ -62,14 +61,63 @@
     --planner-panel-dock-gap: 16px;
   }
 
+  .light {
+    --color-background: #F5F7FA;
+    --color-foreground: #1B2940;
+
+    --color-card: #FFFFFF;
+    --color-card-foreground: #1B2940;
+
+    --color-primary: var(--color-ocean-boat-blue-600);
+    --color-primary-foreground: #FFFFFF;
+    --color-primary-border: var(--color-ocean-boat-blue-700);
+
+    --color-secondary: #EEF2F6;
+    --color-secondary-foreground: #1B2940;
+    --color-secondary-border: #DDE5ED;
+
+    --color-muted: #EEF2F6;
+    --color-muted-foreground: #4A5C76;
+
+    --color-accent: #E6ECF3;
+    --color-accent-foreground: #0B1324;
+
+    --color-destructive: #DC2626;
+    --color-destructive-foreground: #FFFFFF;
+    --color-destructive-border: #B91C1C;
+
+    --color-popover: #FFFFFF;
+    --color-popover-foreground: #1B2940;
+
+    --color-border: #DDE5ED;
+    --color-input: #DDE5ED;
+    --color-ring: var(--color-ocean-boat-blue-500);
+
+    --color-sidebar: #F5F7FA;
+    --color-sidebar-foreground: #1B2940;
+    --color-sidebar-accent: #E6ECF3;
+    --color-sidebar-accent-foreground: #0B1324;
+    --color-sidebar-border: #DDE5ED;
+    --color-sidebar-ring: var(--color-ocean-boat-blue-500);
+
+    --color-chart-1: var(--color-ocean-boat-blue-600);
+    --color-chart-2: var(--color-bronze-500);
+    --color-chart-3: var(--color-sustain-500);
+    --color-chart-4: var(--color-ocean-boat-blue-400);
+    --color-chart-5: var(--color-bronze-400);
+
+    --color-button-outline: #DDE5ED;
+    --color-badge-outline: #DDE5ED;
+  }
+
   html {
     scroll-behavior: smooth;
     overflow-x: hidden;
   }
 
   body {
-    background: #070D12;
-    color: var(--foreground);
+    background: var(--color-background);
+    color: var(--color-foreground);
     font-family: var(--font-sans);
     font-size: var(--type-body-size);
     line-height: 1.7;
@@ -140,7 +188,7 @@
 
 @layer utilities {
   .bg-page {
-    background: #070D12;
+    background: var(--color-background);
   }
 
   .bg-panel {

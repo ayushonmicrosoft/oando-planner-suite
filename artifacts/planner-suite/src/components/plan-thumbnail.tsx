@@ -43,15 +43,15 @@ export function PlanThumbnail({
       height={height}
       viewBox={`0 0 ${width} ${height}`}
       className={className}
-      style={{ background: "#f8fafc" }}
+      style={{ background: "var(--color-muted)" }}
     >
       <rect
         x={offsetX}
         y={offsetY}
         width={roomW}
         height={roomH}
-        fill="#ffffff"
-        stroke="#94a3b8"
+        fill="var(--color-card)"
+        stroke="var(--color-border)"
         strokeWidth={1.5}
         rx={1}
       />
@@ -65,7 +65,7 @@ export function PlanThumbnail({
           item.shape === "circle" ||
           item.shape === "round" ||
           item.shape === "ellipse";
-        const fill = item.color || "#6b7280";
+        const fill = item.color || "var(--color-muted-foreground)";
 
         if (isRound) {
           return (
@@ -76,7 +76,7 @@ export function PlanThumbnail({
               rx={iw / 2}
               ry={ih / 2}
               fill={fill}
-              stroke="rgba(0,0,0,0.1)"
+              stroke="var(--color-border)"
               strokeWidth={0.5}
             />
           );
@@ -90,7 +90,7 @@ export function PlanThumbnail({
             width={Math.max(iw, 1)}
             height={Math.max(ih, 1)}
             fill={fill}
-            stroke="rgba(0,0,0,0.1)"
+            stroke="var(--color-border)"
             strokeWidth={0.5}
             rx={1}
           />
@@ -102,7 +102,7 @@ export function PlanThumbnail({
         y={offsetY + roomH + 6}
         textAnchor="middle"
         fontSize={7}
-        fill="#94a3b8"
+        fill="var(--color-border)"
         fontFamily="Inter, system-ui, sans-serif"
       >
         {(roomWidthCm / 100).toFixed(1)}m × {(roomDepthCm / 100).toFixed(1)}m

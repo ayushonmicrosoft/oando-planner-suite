@@ -80,7 +80,7 @@ const features = [
 
 export default function Features() {
   return (
-    <section className="py-28 lg:py-36 bg-[#070D12] relative" id="features" aria-label="Features">
+    <section className="py-28 lg:py-36 bg-background relative" id="features" aria-label="Features">
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[1px] bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
       </div>
@@ -93,7 +93,7 @@ export default function Features() {
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <p className="text-sm font-medium tracking-[0.2em] uppercase text-[#5488B6] mb-4">Powerful Tools</p>
+          <p className="text-sm font-medium tracking-[0.2em] uppercase text-primary mb-4">Powerful Tools</p>
           <h2 className="text-[32px] md:text-[48px] font-bold text-white mb-5 tracking-[-0.02em]">
             Everything You Need to Design
             <br className="hidden md:block" />

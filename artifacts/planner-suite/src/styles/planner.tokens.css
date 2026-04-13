@@ -6,8 +6,8 @@
   --planner-compat-border: color-mix(in srgb, var(--border-accent) 58%, var(--border-soft) 42%);
   --planner-compat-border-strong: color-mix(in srgb, var(--color-primary) 18%, var(--border-soft) 82%);
   --planner-compat-glow: color-mix(in srgb, var(--color-primary) 12%, transparent);
-  --planner-compat-accent: var(--color-accent);
-  --planner-compat-accent-soft: color-mix(in srgb, var(--color-accent-soft) 72%, white 28%);
+  --planner-compat-accent: var(--color-bronze-400);
+  --planner-compat-accent-soft: color-mix(in srgb, var(--color-bronze-300) 72%, white 28%);
   --planner-compat-text: var(--text-body);
   --planner-compat-text-strong: var(--text-heading);
   --planner-compat-text-muted: var(--text-muted);

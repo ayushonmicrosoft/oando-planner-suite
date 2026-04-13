@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, FileSignature, Grid3X3, Box, Library, FolderOpen, LayoutGrid, Shapes, ImagePlus, LayoutTemplate, LogOut, ChevronDown, Map, DraftingCompass, Layers3, Shield, Briefcase, Users, CreditCard } from 'lucide-react';
+import { LayoutDashboard, FileSignature, Grid3X3, Box, Library, FolderOpen, LayoutGrid, Shapes, ImagePlus, LayoutTemplate, LogOut, ChevronDown, Map, DraftingCompass, Layers3, Shield, Briefcase, Users, CreditCard, Pencil } from 'lucide-react';
 import { Sidebar, SidebarContent, SidebarHeader, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider, SidebarFooter } from '@/components/ui/sidebar';
 import { useHealthCheck, getHealthCheckQueryKey } from '@workspace/api-client-react';
 import { useAuth } from '@/hooks/use-auth';
@@ -21,15 +21,12 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
   const mainNavItems = [
     { href: '/', icon: LayoutDashboard, label: 'Dashboard' },
-    { href: '/planners', icon: Layers3, label: 'Planner Hub' },
-    { href: '/planner/canvas', icon: Grid3X3, label: '2D Canvas' },
-    { href: '/planner/blueprint', icon: FileSignature, label: 'Blueprint Wizard' },
+    { href: '/planner/canvas', icon: Grid3X3, label: 'Canvas Planner' },
     { href: '/viewer/3d', icon: Box, label: '3D Viewer' },
   ];
 
   const toolNavItems = [
-    { href: '/tools/floor-plan', icon: LayoutGrid, label: 'Floor Plan Creator' },
-    { href: '/tools/shapes', icon: Shapes, label: 'Custom Shapes' },
+    { href: '/tools/cad', icon: Pencil, label: 'CAD Drawing' },
     { href: '/tools/site-plan', icon: Map, label: 'Site Plan' },
     { href: '/tools/import', icon: ImagePlus, label: 'Import & Scale' },
   ];

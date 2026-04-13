@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import type { FormErrors } from './canvas-types';
 import { MIN_ZOOM, MAX_ZOOM, ZOOM_STEP } from './canvas-types';
+import { FileMenu } from './FileMenu';
 
 interface CanvasToolbarProps {
   planName: string;
@@ -47,6 +48,10 @@ interface CanvasToolbarProps {
   isSaving: boolean;
   onToggleVersionHistory: () => void;
   annotateToolbar?: React.ReactNode;
+  onNewBlankCanvas: () => void;
+  onNewFromBlueprint: () => void;
+  onImport: () => void;
+  onOpenPlan: (planId: number) => void;
 }
 
 export function CanvasToolbar({
@@ -65,10 +70,20 @@ export function CanvasToolbar({
   onSave, isSaving,
   onToggleVersionHistory,
   annotateToolbar,
+  onNewBlankCanvas, onNewFromBlueprint, onImport, onOpenPlan,
 }: CanvasToolbarProps) {
   return (
     <header className="min-h-11 border-b flex items-center justify-between px-3 shrink-0 bg-card/95 backdrop-blur-sm flex-wrap gap-y-1 py-1 shadow-sm">
       <div className="flex items-center gap-2">
+        <FileMenu
+          onNewBlankCanvas={onNewBlankCanvas}
+          onNewFromBlueprint={onNewFromBlueprint}
+          onImport={onImport}
+          onOpenPlan={onOpenPlan}
+          currentPlanId={planId}
+          currentPlanName={planName}
+        />
+        <div className="w-px h-5 bg-border/40 hidden sm:block" />
         <div className="space-y-0">
           <Input
             value={planName}

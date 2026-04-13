@@ -24,11 +24,10 @@ function useHydrationSafeDate() {
 }
 
 const plannerTypeRoutes: Record<string, string> = {
-  canvas: '/planner/canvas',
-  blueprint: '/planner/blueprint',
-  cad: '/planner/canvas',
-  floorplan: '/tools/floor-plan',
-  shapes: '/tools/shapes',
+  blueprint: '/planner/canvas',
+  cad: '/tools/cad',
+  floorplan: '/planner/canvas',
+  shapes: '/planner/canvas',
   import: '/tools/import',
   'oando-site-plan': '/tools/site-plan',
 };
@@ -237,7 +236,7 @@ export default function Home() {
             </CardContent>
             <CardFooter>
               <Button className="w-full" onClick={() => router.push('/planner/canvas')} data-testid="button-start-canvas">
-                Start Empty Canvas
+                Open Canvas Planner
               </Button>
             </CardFooter>
           </Card>
@@ -259,8 +258,8 @@ export default function Home() {
               </ul>
             </CardContent>
             <CardFooter>
-              <Button className="w-full" variant="secondary" onClick={() => router.push('/planner/blueprint')} data-testid="button-start-blueprint">
-                Start Blueprint Wizard
+              <Button className="w-full" variant="secondary" onClick={() => router.push('/planner/canvas')} data-testid="button-start-blueprint">
+                Open Canvas (Blueprint via File Menu)
               </Button>
             </CardFooter>
           </Card>
@@ -299,8 +298,8 @@ export default function Home() {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[
-            { icon: LayoutGrid, color: 'var(--color-sustain-400)', colorLight: 'var(--color-sustain-300)', title: 'Floor Plan Creator', desc: 'Room-based layout builder with presets and area calculations.', route: '/tools/floor-plan', testId: 'button-start-floor-plan' },
-            { icon: Shapes, color: 'var(--color-bronze-500)', colorLight: 'var(--color-bronze-400)', title: 'Custom Shapes', desc: 'Categorized shape libraries for walls, furniture, and more.', route: '/tools/shapes', testId: 'button-start-shapes' },
+            { icon: LayoutGrid, color: 'var(--color-sustain-400)', colorLight: 'var(--color-sustain-300)', title: 'Floor Plan Creator', desc: 'Room-based layout builder with presets and area calculations.', route: '/planner/canvas', testId: 'button-start-floor-plan' },
+            { icon: Shapes, color: 'var(--color-bronze-500)', colorLight: 'var(--color-bronze-400)', title: 'Custom Shapes', desc: 'Categorized shape libraries for walls, furniture, and more.', route: '/planner/canvas', testId: 'button-start-shapes' },
             { icon: Map, color: 'var(--color-sustain-500)', colorLight: 'var(--color-sustain-400)', title: 'Site Plan', desc: 'Outdoor site plans with buildings, roads, and utilities.', route: '/tools/site-plan', testId: 'button-start-site-plan' },
             { icon: ImagePlus, color: 'var(--color-bronze-400)', colorLight: 'var(--color-bronze-300)', title: 'Import & Scale', desc: 'Upload images, calibrate scale, and annotate blueprints.', route: '/tools/import', testId: 'button-start-import' },
           ].map((tool) => (

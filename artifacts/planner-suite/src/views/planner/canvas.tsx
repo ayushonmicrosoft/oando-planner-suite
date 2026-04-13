@@ -33,11 +33,14 @@ import {
   type FormErrors, type AlignmentGuide,
   validateForm, computeAlignmentGuides,
 } from '@/components/planner/canvas-types';
+import { BlueprintWizardModal, type BlueprintResult } from '@/components/planner/BlueprintWizardModal';
 
 export default function CanvasPlanner() {
   const router = useRouter();
   const searchParams = new URLSearchParams(window.location.search);
-  const planId = searchParams.get('id') ? Number(searchParams.get('id')) : null;
+  const initialPlanId = searchParams.get('id') ? Number(searchParams.get('id')) : null;
+  const [activePlanId, setActivePlanId] = useState<number | null>(initialPlanId);
+  const planId = activePlanId;
 
   const planner = useCanvasPlanner(500, 500);
   const {
@@ -65,6 +68,7 @@ export default function CanvasPlanner() {
   const [boqPanelOpen, setBoqPanelOpen] = useState(false);
   const [catalogPanelOpen, setCatalogPanelOpen] = useState(false);
   const [roomPanelOpen, setRoomPanelOpen] = useState(false);
+  const [blueprintWizardOpen, setBlueprintWizardOpen] = useState(false);
 
   const { data: catalogItems, isError: catalogError, refetch: refetchCatalog } = useListCatalogItems();
   const { data: existingPlan, isLoading: planLoading, isError: planError, refetch: refetchPlan } = useGetPlan(planId || 0, { query: { queryKey: getGetPlanQueryKey(planId || 0), enabled: !!planId } });
@@ -227,6 +231,88 @@ export default function CanvasPlanner() {
     interaction.setPendingTextValue('');
   }, [interaction]);
 
+  const handleNewBlankCanvas = () => {
+    clearAll();
+    setPlanName('New Canvas Plan');
+    setRoomWidthCm(500);
+    setRoomDepthCm(500);
+    setActivePlanId(null);
+    window.history.replaceState(null, '', window.location.pathname);
+    toast({ title: 'New blank canvas created' });
+  };
+
+  const handleNewFromBlueprint = () => {
+    setBlueprintWizardOpen(true);
+  };
+
+  const handleImport = () => {
+    router.push('/tools/import');
+  };
+
+  const handleOpenPlan = (id: number) => {
+    setActivePlanId(id);
+    window.history.replaceState(null, '', `?id=${id}`);
+  };
+
+  const handleBlueprintComplete = (result: BlueprintResult) => {
+    clearAll();
+    setPlanName(result.planName);
+    setRoomWidthCm(result.roomWidthCm);
+    setRoomDepthCm(result.roomDepthCm);
+    setActivePlanId(null);
+    window.history.replaceState(null, '', window.location.pathname);
+
+    const furnitureItems = result.boqItems.flatMap(({ item, count }) => {
+      const placed: Record<string, any>[] = [];
+      for (let i = 0; i < count; i++) {
+        const margin = 30;
+        const xPos = margin + Math.random() * Math.max(0, result.roomWidthCm - item.widthCm - margin * 2);
+        const yPos = margin + Math.random() * Math.max(0, result.roomDepthCm - item.depthCm - margin * 2);
+        placed.push({
+          instanceId: `bp_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+          catalogId: item.id,
+          name: item.name,
+          category: item.category,
+          widthCm: item.widthCm,
+          depthCm: item.depthCm,
+          heightCm: item.heightCm || 75,
+          color: item.color || '#666',
+          shape: item.shape || 'rect',
+          seatCount: item.seatCount || null,
+          price: item.price || null,
+          x: xPos,
+          y: yPos,
+          rotation: 0,
+          scaleX: 1,
+          scaleY: 1,
+          locked: false,
+          opacity: 1,
+          zIndex: i,
+        });
+      }
+      return placed;
+    });
+
+    const docData = {
+      version: 3,
+      rooms: [],
+      structure: result.structureItems,
+      furniture: furnitureItems,
+      annotations: [],
+      site: [],
+      importLayer: null,
+      roomWidthCm: result.roomWidthCm,
+      roomDepthCm: result.roomDepthCm,
+    };
+    loadDocument(JSON.stringify(docData));
+
+    const totalFurniture = furnitureItems.length;
+    const desc = totalFurniture > 0
+      ? `${result.structureItems.length} structural elements and ${totalFurniture} furniture items placed.`
+      : `${result.structureItems.length} structural elements added as a locked layer.`;
+    toast({ title: 'Blueprint placed on canvas', description: desc });
+  };
+
   if (planError && planId) {
     return (
       <div className="h-full flex items-center justify-center">
@@ -310,6 +396,10 @@ export default function CanvasPlanner() {
             }}
           />
         }
+        onNewBlankCanvas={handleNewBlankCanvas}
+        onNewFromBlueprint={handleNewFromBlueprint}
+        onImport={handleImport}
+        onOpenPlan={handleOpenPlan}
       />
       <div className="flex-1 flex overflow-hidden">
         <div
@@ -432,6 +522,11 @@ export default function CanvasPlanner() {
       <VersionHistoryPanel
         planId={planId} getCurrentDocument={() => getDocumentJson()}
         onRestore={(docJson) => { loadDocument(docJson); toast({ title: "Version restored", description: "The plan has been restored to the selected version." }); }}
+      />
+      <BlueprintWizardModal
+        open={blueprintWizardOpen}
+        onClose={() => setBlueprintWizardOpen(false)}
+        onComplete={handleBlueprintComplete}
       />
     </div>
   );

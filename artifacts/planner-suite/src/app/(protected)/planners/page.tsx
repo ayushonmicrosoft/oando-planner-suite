@@ -1,7 +1,12 @@
 "use client";
 
-import PlannersHub from "@/views/planners-hub";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function PlannersPage() {
-  return <PlannersHub />;
+  const router = useRouter();
+  useEffect(() => {
+    router.replace("/planner/canvas");
+  }, [router]);
+  return null;
 }

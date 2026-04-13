@@ -1,9 +1,14 @@
 "use client";
 
-import dynamic from "next/dynamic";
-
-const CustomShapes = dynamic(() => import("@/views/tools/custom-shapes"), { ssr: false });
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function ShapesPage() {
-  return <CustomShapes />;
+  const router = useRouter();
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("id");
+    router.replace(id ? `/planner/canvas?id=${id}` : "/planner/canvas");
+  }, [router]);
+  return null;
 }

@@ -4,6 +4,7 @@ import { db, usersTable, plansTable, catalogItemsTable, templatesTable } from "@
 import { asyncHandler } from "../middlewares/async-handler";
 import { requireAdmin } from "../middlewares/require-admin";
 import { ApiHttpError } from "../middlewares/error-handler";
+import { config } from "../lib/config";
 import { z } from "zod";
 
 const router: IRouter = Router();
@@ -11,8 +12,7 @@ const router: IRouter = Router();
 const IdParams = z.object({ id: z.string().min(1) });
 
 function getAdminEmails(): string[] {
-  const raw = process.env.ADMIN_EMAILS || "";
-  return raw.split(",").map((e) => e.trim().toLowerCase()).filter(Boolean);
+  return config.adminEmails.map((e) => e.toLowerCase());
 }
 
 const UpdateUserRoleBody = z.object({

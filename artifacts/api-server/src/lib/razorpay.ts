@@ -1,9 +1,10 @@
 import Razorpay from "razorpay";
 import crypto from "crypto";
 import { logger } from "./logger";
+import { config } from "./config";
 
-const keyId = process.env.RAZORPAY_KEY_ID || "";
-const keySecret = process.env.RAZORPAY_KEY_SECRET || "";
+const keyId = config.razorpay.keyId;
+const keySecret = config.razorpay.keySecret;
 
 let razorpayInstance: Razorpay | null = null;
 
@@ -28,7 +29,7 @@ export function verifyWebhookSignature(
   body: string,
   signature: string,
 ): boolean {
-  const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET || "";
+  const webhookSecret = config.razorpay.webhookSecret;
   if (!webhookSecret) {
     logger.warn("RAZORPAY_WEBHOOK_SECRET not set, skipping verification");
     return false;

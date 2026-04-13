@@ -2,6 +2,7 @@ import { Router, type IRouter } from "express";
 import { GetAiAdviceBody, GenerateAutoLayoutBody } from "@workspace/api-zod";
 import { asyncHandler } from "../middlewares/async-handler";
 import { ApiHttpError } from "../middlewares/error-handler";
+import { config } from "../lib/config";
 import OpenAI from "openai";
 
 const router: IRouter = Router();
@@ -489,8 +490,7 @@ function generateSummary(roomType: RoomType, capacity: number, items: AutoLayout
 }
 
 function getOpenAIClient(): OpenAI | null {
-  const baseURL = process.env.AI_INTEGRATIONS_OPENAI_BASE_URL;
-  const apiKey = process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
+  const { baseURL, apiKey } = config.ai;
   if (!baseURL || !apiKey) return null;
   return new OpenAI({ baseURL, apiKey });
 }

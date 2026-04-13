@@ -1,5 +1,5 @@
 export function OrganizationJsonLd() {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://oneandonly.com";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://oando.co.in";
 
   const organizationSchema = {
     "@context": "https://schema.org",

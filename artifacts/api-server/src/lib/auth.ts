@@ -2,6 +2,7 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "@workspace/db";
 import * as schema from "@workspace/db/schema";
+import { config } from "./config";
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -23,8 +24,8 @@ export const auth = betterAuth({
       maxAge: 5 * 60,
     },
   },
-  secret: process.env.BETTER_AUTH_SECRET,
+  secret: config.auth.secret,
   basePath: "/api/auth",
-  baseURL: process.env.BETTER_AUTH_URL,
+  baseURL: config.auth.baseURL,
   trustedOrigins: ["*"],
 });

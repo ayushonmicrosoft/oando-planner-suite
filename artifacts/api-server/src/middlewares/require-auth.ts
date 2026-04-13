@@ -1,9 +1,10 @@
 import type { Request, Response, NextFunction } from "express";
+import { config } from "../lib/config";
 
 const STATIC_ADMIN = {
   id: "admin-001",
   name: "Admin",
-  email: process.env.ADMIN_EMAILS?.split(",")[0]?.trim() || "admin@example.com",
+  email: config.adminEmails[0] || "admin@example.com",
   role: "admin",
 };
 

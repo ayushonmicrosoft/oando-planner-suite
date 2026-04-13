@@ -2,17 +2,16 @@ import { createServer } from "node:http";
 import app from "./app";
 import { logger } from "./lib/logger";
 import { setupCollabWebSocket } from "./collab";
+import { config } from "./lib/config";
 
-if (!process.env.ADMIN_EMAILS) {
+if (config.adminEmails.length === 0) {
   logger.warn("ADMIN_EMAILS is not set — admin role auto-assignment will be disabled");
 }
 
-const DEFAULT_PORT = 8080;
-const rawPort = process.env["PORT"] || String(DEFAULT_PORT);
-const port = Number(rawPort);
+const port = config.port;
 
 if (Number.isNaN(port) || port <= 0) {
-  logger.error({ rawPort }, "Invalid PORT value, exiting");
+  logger.error({ port }, "Invalid PORT value, exiting");
   process.exit(1);
 }
 

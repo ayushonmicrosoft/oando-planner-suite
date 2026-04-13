@@ -2,6 +2,7 @@ import { Router, type IRouter } from "express";
 import { eq } from "drizzle-orm";
 import { db, usersTable } from "@workspace/db";
 import { asyncHandler } from "../middlewares/async-handler";
+import { config } from "../lib/config";
 import {
   getRazorpay,
   getRazorpayKeyId,
@@ -122,7 +123,7 @@ router.post(
       return;
     }
 
-    const keySecret = process.env.RAZORPAY_KEY_SECRET || "";
+    const keySecret = config.razorpay.keySecret;
     const generatedSignature = crypto
       .createHmac("sha256", keySecret)
       .update(`${razorpay_order_id}|${razorpay_payment_id}`)

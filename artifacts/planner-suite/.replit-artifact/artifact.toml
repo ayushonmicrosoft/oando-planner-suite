@@ -20,13 +20,13 @@ run = "pnpm --filter @workspace/planner-suite run dev"
 [services.production]
 
 [services.production.build]
-args = ["bash", "artifacts/planner-suite/scripts/build-standalone.sh"]
+args = ["pnpm", "--filter", "@workspace/planner-suite", "run", "build"]
 
 [services.production.build.env]
 NODE_ENV = "production"
 
 [services.production.run]
-args = ["node", "artifacts/planner-suite/.next/standalone/artifacts/planner-suite/server.js"]
+args = ["pnpm", "--filter", "@workspace/planner-suite", "run", "start"]
 
 [services.production.run.env]
 PORT = "24140"
@@ -34,7 +34,7 @@ NODE_ENV = "production"
 HOSTNAME = "0.0.0.0"
 
 [services.production.health.startup]
-path = "/"
+path = "/healthz"
 
 [services.env]
 PORT = "24140"

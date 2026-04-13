@@ -2,9 +2,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
   Save, RotateCw, Trash2, Copy, Loader2,
-  Sparkles, Grid3X3, Undo2, Redo2,
+  Grid3X3, Undo2, Redo2,
   ZoomIn, ZoomOut, Download, Ruler,
-  Eye, EyeOff, Crosshair, BarChart3, FileSpreadsheet,
+  Eye, EyeOff, Crosshair, ClipboardList, FileSpreadsheet,
   History, Box, Rows3,
 } from 'lucide-react';
 import type { FormErrors } from './canvas-types';
@@ -34,8 +34,8 @@ interface CanvasToolbarProps {
   measureMode: boolean;
   setMeasureMode: (v: boolean) => void;
   setMeasurePoints: (v: { x: number; y: number }[]) => void;
-  summaryPanelOpen: boolean;
-  setSummaryPanelOpen: (v: boolean) => void;
+  boqPanelOpen: boolean;
+  setBoqPanelOpen: (v: boolean) => void;
   catalogPanelOpen: boolean;
   setCatalogPanelOpen: (v: boolean) => void;
   roomPanelOpen: boolean;
@@ -43,8 +43,6 @@ interface CanvasToolbarProps {
   onExportPng: () => void;
   planId: number | null;
   onNavigateQuote: () => void;
-  aiPanelOpen: boolean;
-  setAiPanelOpen: (v: boolean) => void;
   onSave: () => void;
   isSaving: boolean;
   onToggleVersionHistory: () => void;
@@ -60,11 +58,10 @@ export function CanvasToolbar({
   showGrid, setShowGrid, gridSnap, setGridSnap,
   showDimensions, setShowDimensions,
   measureMode, setMeasureMode, setMeasurePoints,
-  summaryPanelOpen, setSummaryPanelOpen,
+  boqPanelOpen, setBoqPanelOpen,
   catalogPanelOpen, setCatalogPanelOpen,
   roomPanelOpen, setRoomPanelOpen,
   onExportPng, planId, onNavigateQuote,
-  aiPanelOpen, setAiPanelOpen,
   onSave, isSaving,
   onToggleVersionHistory,
   annotateToolbar,
@@ -142,13 +139,13 @@ export function CanvasToolbar({
             <Crosshair className="w-3.5 h-3.5" />
           </Button>
           <Button
-            variant={summaryPanelOpen ? 'secondary' : 'ghost'}
+            variant={boqPanelOpen ? 'secondary' : 'ghost'}
             size="icon"
             className="h-7 w-7"
-            onClick={() => setSummaryPanelOpen(!summaryPanelOpen)}
-            title="Furniture Summary"
+            onClick={() => setBoqPanelOpen(!boqPanelOpen)}
+            title="Bill of Quantities"
           >
-            <BarChart3 className="w-3.5 h-3.5" />
+            <ClipboardList className="w-3.5 h-3.5" />
           </Button>
         </div>
         <div className="w-px h-5 bg-border/40 mx-1 hidden sm:block" />
@@ -189,10 +186,6 @@ export function CanvasToolbar({
             <span className="hidden lg:inline">Quote</span>
           </Button>
         )}
-        <Button variant={aiPanelOpen ? 'secondary' : 'outline'} size="sm" className="h-7 gap-1 text-[11px]" onClick={() => setAiPanelOpen(!aiPanelOpen)}>
-          <Sparkles className="w-3 h-3 text-primary" />
-          <span className="hidden md:inline">AI</span>
-        </Button>
         <Button size="sm" className="h-7 gap-1 text-[11px]" onClick={onSave} disabled={isSaving}>
           {isSaving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
           <span className="hidden sm:inline">Save</span>

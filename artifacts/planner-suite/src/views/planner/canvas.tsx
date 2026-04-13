@@ -24,8 +24,8 @@ import { CanvasToolbar } from '@/components/planner/CanvasToolbar';
 import { CatalogPanel } from '@/components/planner/CatalogPanel';
 import { RoomSettingsPanel } from '@/components/planner/RoomSettingsPanel';
 import { InspectorPanel } from '@/components/planner/InspectorPanel';
-import { FurnitureSummaryPanel } from '@/components/planner/FurnitureSummaryPanel';
-import { AiToolsPanel } from '@/components/planner/AiToolsPanel';
+import { BillOfQuantitiesPanel } from '@/components/planner/BillOfQuantitiesPanel';
+import { AiBottomBar } from '@/components/planner/AiBottomBar';
 import { CanvasStage } from '@/components/planner/CanvasStage';
 import { DrawShapesLayer } from '@/components/planner/DrawShapesLayer';
 import { AnnotateToolbar } from '@/components/planner/AnnotateToolbar';
@@ -58,12 +58,11 @@ export default function CanvasPlanner() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [formErrors, setFormErrors] = useState<FormErrors>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
-  const [aiPanelOpen, setAiPanelOpen] = useState(false);
   const [inspectorTab, setInspectorTab] = useState<'items' | 'properties'>('items');
   const [measureMode, setMeasureMode] = useState(false);
   const [measurePoints, setMeasurePoints] = useState<{ x: number; y: number }[]>([]);
   const [alignmentGuides, setAlignmentGuides] = useState<AlignmentGuide[]>([]);
-  const [summaryPanelOpen, setSummaryPanelOpen] = useState(false);
+  const [boqPanelOpen, setBoqPanelOpen] = useState(false);
   const [catalogPanelOpen, setCatalogPanelOpen] = useState(false);
   const [roomPanelOpen, setRoomPanelOpen] = useState(false);
 
@@ -94,20 +93,26 @@ export default function CanvasPlanner() {
     measureMode, measurePoints, setMeasurePoints,
   });
 
-  const categorySummary = useMemo(() => {
-    const counts: Record<string, number> = {};
-    items.forEach(item => { counts[item.category || 'Other'] = (counts[item.category || 'Other'] || 0) + 1; });
-    return Object.entries(counts).sort((a, b) => b[1] - a[1]);
-  }, [items]);
-
   const usedAreaCm2 = useMemo(() => items.reduce((sum, item) => sum + item.widthCm * item.depthCm, 0), [items]);
   const totalAreaCm2 = roomWidthCm * roomDepthCm;
-  const freeAreaCm2 = Math.max(0, totalAreaCm2 - usedAreaCm2);
   const usedPct = totalAreaCm2 > 0 ? Math.round((usedAreaCm2 / totalAreaCm2) * 100) : 0;
 
   const handleDragMoveItem = useCallback((dragItem: PlacedItem, xCm: number, yCm: number) => {
     setAlignmentGuides(computeAlignmentGuides({ ...dragItem, x: xCm, y: yCm }, items, roomWidthCm, roomDepthCm));
   }, [items, roomWidthCm, roomDepthCm]);
+
+  const handleZoomToItem = useCallback((item: PlacedItem) => {
+    const centerXCm = item.x + item.widthCm / 2;
+    const centerYCm = item.y + item.depthCm / 2;
+    const centerXPx = roomOffsetX + centerXCm * pxPerCm;
+    const centerYPx = roomOffsetY + centerYCm * pxPerCm;
+    const targetZoom = 1.5;
+    setZoom(targetZoom);
+    setPanOffset({
+      x: stageSize.width / 2 - centerXPx * targetZoom,
+      y: stageSize.height / 2 - centerYPx * targetZoom,
+    });
+  }, [roomOffsetX, roomOffsetY, pxPerCm, stageSize, setZoom, setPanOffset]);
 
   useEffect(() => {
     if (existingPlan) {
@@ -279,12 +284,11 @@ export default function CanvasPlanner() {
         showGrid={showGrid} setShowGrid={setShowGrid} gridSnap={gridSnap} setGridSnap={setGridSnap}
         showDimensions={showDimensions} setShowDimensions={setShowDimensions}
         measureMode={measureMode} setMeasureMode={setMeasureMode} setMeasurePoints={setMeasurePoints}
-        summaryPanelOpen={summaryPanelOpen} setSummaryPanelOpen={setSummaryPanelOpen}
+        boqPanelOpen={boqPanelOpen} setBoqPanelOpen={setBoqPanelOpen}
         catalogPanelOpen={catalogPanelOpen} setCatalogPanelOpen={setCatalogPanelOpen}
         roomPanelOpen={roomPanelOpen} setRoomPanelOpen={setRoomPanelOpen}
         onExportPng={handleExportPng} planId={planId}
         onNavigateQuote={() => router.push(`/plans/${planId}/quote`)}
-        aiPanelOpen={aiPanelOpen} setAiPanelOpen={setAiPanelOpen}
         onSave={handleSave} isSaving={createPlan.isPending || updatePlan.isPending}
         onToggleVersionHistory={() => usePlannerStore.getState().toggleVersionHistory()}
         annotateToolbar={
@@ -313,12 +317,12 @@ export default function CanvasPlanner() {
           className="flex-1 bg-gradient-to-br from-muted/20 via-muted/30 to-muted/40 relative overflow-hidden"
           style={{ cursor: measureMode || interaction.isDrawMode ? 'crosshair' : interaction.spaceDown ? (interaction.isPanning ? 'grabbing' : 'grab') : 'default' }}
         >
-          <AiToolsPanel
-            open={aiPanelOpen} onClose={() => setAiPanelOpen(false)}
+          <AiBottomBar
             items={items} roomWidthCm={roomWidthCm} roomDepthCm={roomDepthCm}
             planId={planId} getDocumentJson={getDocumentJson}
             catalogItems={catalogItems} addItem={addItem}
             updateItemTransform={updateItemTransform} clearAll={clearAll} onToast={toast}
+            boqOpen={boqPanelOpen}
           />
           <CanvasStage
             stageRef={stageRef} stageSize={stageSize} zoom={zoom} panOffset={panOffset}
@@ -380,10 +384,12 @@ export default function CanvasPlanner() {
               <button aria-label="Exit measurement mode" onClick={() => { setMeasureMode(false); setMeasurePoints([]); }} className="ml-1 hover:bg-white/20 rounded-full p-0.5"><X className="w-3 h-3" /></button>
             </div>
           )}
-          <FurnitureSummaryPanel
-            open={summaryPanelOpen} onClose={() => setSummaryPanelOpen(false)}
-            categorySummary={categorySummary as [string, number][]}
-            totalItems={items.length} usedAreaCm2={usedAreaCm2} freeAreaCm2={freeAreaCm2} usedPct={usedPct}
+          <BillOfQuantitiesPanel
+            open={boqPanelOpen} onClose={() => setBoqPanelOpen(false)}
+            items={items} selectedItemIds={selectedItemIds}
+            onSelectItems={(ids) => setSelectedItemIds(new Set(ids))}
+            onZoomToItem={handleZoomToItem}
+            roomWidthCm={roomWidthCm} roomDepthCm={roomDepthCm}
           />
           <CatalogPanel
             open={catalogPanelOpen} onClose={() => setCatalogPanelOpen(false)}

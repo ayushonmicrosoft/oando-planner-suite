@@ -1,4 +1,4 @@
-import { pgTable, text, serial, real, integer, timestamp, pgEnum } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, real, integer, timestamp, pgEnum, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 import { relations } from "drizzle-orm";
@@ -30,7 +30,10 @@ export const catalogItemsTable = pgTable("catalog_items", {
   price: real("price"),
   seriesId: text("series_id").references(() => seriesTable.id),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-});
+}, (table) => [
+  index("idx_catalog_items_category").on(table.category),
+  index("idx_catalog_items_series_id").on(table.seriesId),
+]);
 
 export const seriesRelations = relations(seriesTable, ({ many }) => ({
   items: many(catalogItemsTable),

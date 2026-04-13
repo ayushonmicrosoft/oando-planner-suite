@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, real, timestamp, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, real, timestamp, boolean, index } from "drizzle-orm/pg-core";
 import { plansTable } from "./plans";
 
 export const planSharesTable = pgTable("plan_shares", {
@@ -13,7 +13,9 @@ export const planSharesTable = pgTable("plan_shares", {
   expiresAt: timestamp("expires_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
-});
+}, (table) => [
+  index("idx_plan_shares_plan_id").on(table.planId),
+]);
 
 export const planCommentsTable = pgTable("plan_comments", {
   id: serial("id").primaryKey(),
@@ -25,7 +27,10 @@ export const planCommentsTable = pgTable("plan_comments", {
   message: text("message").notNull(),
   authorName: text("author_name").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-});
+}, (table) => [
+  index("idx_plan_comments_share_id").on(table.shareId),
+  index("idx_plan_comments_plan_id").on(table.planId),
+]);
 
 export type PlanShare = typeof planSharesTable.$inferSelect;
 export type PlanComment = typeof planCommentsTable.$inferSelect;

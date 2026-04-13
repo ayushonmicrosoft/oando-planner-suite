@@ -1,4 +1,4 @@
-import { pgTable, text, integer, real, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, integer, real, timestamp, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -14,7 +14,9 @@ export const templatesTable = pgTable("templates", {
   usageCount: integer("usage_count").notNull().default(0),
   thumbnailSvg: text("thumbnail_svg"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-});
+}, (table) => [
+  index("idx_templates_category").on(table.category),
+]);
 
 export const insertTemplateSchema = createInsertSchema(templatesTable).omit({ createdAt: true });
 export type InsertTemplate = z.infer<typeof insertTemplateSchema>;

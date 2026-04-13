@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, index } from "drizzle-orm/pg-core";
 
 export const authUser = pgTable("auth_user", {
   id: text("id").primaryKey(),
@@ -21,7 +21,9 @@ export const authSession = pgTable("auth_session", {
   userId: text("user_id")
     .notNull()
     .references(() => authUser.id, { onDelete: "cascade" }),
-});
+}, (table) => [
+  index("idx_auth_session_user_id").on(table.userId),
+]);
 
 export const authAccount = pgTable("auth_account", {
   id: text("id").primaryKey(),
@@ -39,7 +41,9 @@ export const authAccount = pgTable("auth_account", {
   password: text("password"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
+}, (table) => [
+  index("idx_auth_account_user_id").on(table.userId),
+]);
 
 export const authVerification = pgTable("auth_verification", {
   id: text("id").primaryKey(),

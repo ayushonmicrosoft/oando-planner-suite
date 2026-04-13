@@ -10,6 +10,7 @@ import { seedDatabase } from "./lib/seed";
 import { errorHandler } from "./middlewares/error-handler";
 
 const app: Express = express();
+app.set("trust proxy", 1);
 
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,

@@ -303,7 +303,7 @@ export default function Home() {
             { icon: Map, color: 'var(--color-sustain-500)', colorLight: 'var(--color-sustain-400)', title: 'Site Plan', desc: 'Outdoor site plans with buildings, roads, and utilities.', route: '/tools/site-plan', testId: 'button-start-site-plan' },
             { icon: ImagePlus, color: 'var(--color-bronze-400)', colorLight: 'var(--color-bronze-300)', title: 'Import & Scale', desc: 'Upload images, calibrate scale, and annotate blueprints.', route: '/tools/import', testId: 'button-start-import' },
           ].map((tool) => (
-            <Card key={tool.route} className="group hover:border-border transition-all duration-300 hover:shadow-md">
+            <Card key={tool.testId} className="group hover:border-border transition-all duration-300 hover:shadow-md">
               <CardHeader className="pb-2">
                 <div className="w-10 h-10 rounded-lg flex items-center justify-center mb-2 transition-transform duration-300 group-hover:scale-105" style={{ background: `color-mix(in srgb, ${tool.colorLight} 12%, transparent)` }}>
                   <tool.icon className="w-5 h-5" style={{ color: tool.color }} />

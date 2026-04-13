@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, FileSignature, Grid3X3, Box, Library, FolderOpen, LayoutGrid, Shapes, ImagePlus, LayoutTemplate, LogOut, ChevronDown, Map, DraftingCompass, Layers3, Shield, Briefcase, Users, CreditCard, Pencil } from 'lucide-react';
+import { LayoutDashboard, FileSignature, Grid3X3, Box, Library, FolderOpen, LayoutGrid, Shapes, ImagePlus, LayoutTemplate, LogOut, ChevronDown, Map, DraftingCompass, Layers3, Shield, Briefcase, Users, CreditCard } from 'lucide-react';
 import { Sidebar, SidebarContent, SidebarHeader, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider, SidebarFooter } from '@/components/ui/sidebar';
 import { useHealthCheck, getHealthCheckQueryKey } from '@workspace/api-client-react';
 import { useAuth } from '@/hooks/use-auth';
@@ -26,7 +26,6 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   ];
 
   const toolNavItems = [
-    { href: '/tools/cad', icon: Pencil, label: 'CAD Drawing' },
     { href: '/tools/site-plan', icon: Map, label: 'Site Plan' },
     { href: '/tools/import', icon: ImagePlus, label: 'Import & Scale' },
   ];

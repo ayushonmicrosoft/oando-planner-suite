@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { ilike, eq, and, sql, count } from "drizzle-orm";
-import { db, catalogItemsTable } from "@workspace/db";
+import { db, catalogItemsTable, seriesTable } from "@workspace/db";
 import {
   ListCatalogItemsQueryParams,
   GetCatalogItemParams,
@@ -25,6 +25,53 @@ router.get(
       .orderBy(catalogItemsTable.category);
 
     res.json(categories);
+  }),
+);
+
+router.get(
+  "/catalog/series",
+  asyncHandler(async (_req, res) => {
+    const allSeries = await db
+      .select()
+      .from(seriesTable)
+      .orderBy(seriesTable.tier);
+
+    const items = await db
+      .select()
+      .from(catalogItemsTable)
+      .orderBy(catalogItemsTable.category, catalogItemsTable.name);
+
+    const result = allSeries.map((s) => ({
+      ...s,
+      items: items.filter((i) => i.seriesId === s.id),
+    }));
+
+    res.json(result);
+  }),
+);
+
+router.get(
+  "/catalog/series/:id",
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    const [series] = await db
+      .select()
+      .from(seriesTable)
+      .where(eq(seriesTable.id, String(id)));
+
+    if (!series) {
+      res.status(404).json({ error: "Series not found", status: 404 });
+      return;
+    }
+
+    const items = await db
+      .select()
+      .from(catalogItemsTable)
+      .where(eq(catalogItemsTable.seriesId, String(id)))
+      .orderBy(catalogItemsTable.category, catalogItemsTable.name);
+
+    res.json({ ...series, items });
   }),
 );
 
@@ -87,7 +134,7 @@ router.post(
   requireAuth,
   requireAdmin,
   asyncHandler(async (req, res) => {
-    const { name, category, subCategory, widthCm, depthCm, heightCm, color, description, imageUrl, shape, seatCount, price } = req.body;
+    const { name, category, subCategory, widthCm, depthCm, heightCm, color, description, imageUrl, shape, seatCount, price, seriesId } = req.body;
 
     if (!name || !category || widthCm == null || depthCm == null || heightCm == null) {
       res.status(400).json({ error: "name, category, widthCm, depthCm, and heightCm are required", status: 400 });
@@ -112,6 +159,7 @@ router.post(
         shape: shape ?? null,
         seatCount: seatCount != null ? Number(seatCount) : null,
         price: price != null ? Number(price) : null,
+        seriesId: seriesId ?? null,
       })
       .returning();
 
@@ -125,7 +173,7 @@ router.patch(
   requireAdmin,
   asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const { name, category, subCategory, widthCm, depthCm, heightCm, color, description, imageUrl, shape, seatCount, price } = req.body;
+    const { name, category, subCategory, widthCm, depthCm, heightCm, color, description, imageUrl, shape, seatCount, price, seriesId } = req.body;
 
     const updates: Record<string, unknown> = {};
     if (name !== undefined) updates.name = name;
@@ -140,6 +188,7 @@ router.patch(
     if (shape !== undefined) updates.shape = shape;
     if (seatCount !== undefined) updates.seatCount = seatCount != null ? Number(seatCount) : null;
     if (price !== undefined) updates.price = price != null ? Number(price) : null;
+    if (seriesId !== undefined) updates.seriesId = seriesId;
 
     if (Object.keys(updates).length === 0) {
       res.status(400).json({ error: "No fields to update", status: 400 });
@@ -175,6 +224,106 @@ router.delete(
 
     if (!deleted) {
       res.status(404).json({ error: "Catalog item not found", status: 404 });
+      return;
+    }
+
+    res.status(204).send();
+  }),
+);
+
+router.post(
+  "/admin/series",
+  requireAuth,
+  requireAdmin,
+  asyncHandler(async (req, res) => {
+    const { name, tier, description, imageUrl } = req.body;
+
+    if (!name || !tier) {
+      res.status(400).json({ error: "name and tier are required", status: 400 });
+      return;
+    }
+
+    if (!["economy", "medium", "premium"].includes(tier)) {
+      res.status(400).json({ error: "tier must be economy, medium, or premium", status: 400 });
+      return;
+    }
+
+    const id = `series-${randomUUID().slice(0, 8)}`;
+
+    const [series] = await db
+      .insert(seriesTable)
+      .values({
+        id,
+        name,
+        tier,
+        description: description ?? null,
+        imageUrl: imageUrl ?? null,
+      })
+      .returning();
+
+    res.status(201).json(series);
+  }),
+);
+
+router.patch(
+  "/admin/series/:id",
+  requireAuth,
+  requireAdmin,
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { name, tier, description, imageUrl } = req.body;
+
+    const updates: Record<string, unknown> = {};
+    if (name !== undefined) updates.name = name;
+    if (tier !== undefined) {
+      if (!["economy", "medium", "premium"].includes(tier)) {
+        res.status(400).json({ error: "tier must be economy, medium, or premium", status: 400 });
+        return;
+      }
+      updates.tier = tier;
+    }
+    if (description !== undefined) updates.description = description;
+    if (imageUrl !== undefined) updates.imageUrl = imageUrl;
+
+    if (Object.keys(updates).length === 0) {
+      res.status(400).json({ error: "No fields to update", status: 400 });
+      return;
+    }
+
+    const [updated] = await db
+      .update(seriesTable)
+      .set(updates)
+      .where(eq(seriesTable.id, String(id)))
+      .returning();
+
+    if (!updated) {
+      res.status(404).json({ error: "Series not found", status: 404 });
+      return;
+    }
+
+    res.json(updated);
+  }),
+);
+
+router.delete(
+  "/admin/series/:id",
+  requireAuth,
+  requireAdmin,
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    await db
+      .update(catalogItemsTable)
+      .set({ seriesId: null })
+      .where(eq(catalogItemsTable.seriesId, String(id)));
+
+    const [deleted] = await db
+      .delete(seriesTable)
+      .where(eq(seriesTable.id, String(id)))
+      .returning();
+
+    if (!deleted) {
+      res.status(404).json({ error: "Series not found", status: 404 });
       return;
     }
 

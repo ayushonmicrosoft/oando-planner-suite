@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -30,8 +31,31 @@ import {
   Box,
   Layers,
   DollarSign,
+  ZoomIn,
+  X,
 } from "lucide-react";
 import { FurnitureVisual, getColorForCategory } from "./catalog";
+
+function ImageZoomModal({ src, alt, onClose }: { src: string; alt: string; onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4" onClick={onClose}>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="absolute top-4 right-4 text-white hover:bg-white/20 z-10"
+        onClick={onClose}
+      >
+        <X className="w-6 h-6" />
+      </Button>
+      <img
+        src={src}
+        alt={alt}
+        className="max-w-full max-h-[90vh] object-contain rounded-lg"
+        onClick={(e) => e.stopPropagation()}
+      />
+    </div>
+  );
+}
 
 function DimensionDiagram({
   width,
@@ -61,84 +85,18 @@ function DimensionDiagram({
       className="w-full max-w-[280px]"
       aria-label={`Dimension diagram: ${width}cm wide × ${depth}cm deep × ${height}cm tall`}
     >
-      <rect
-        x={x}
-        y={y}
-        width={rectW}
-        height={rectD}
-        fill="hsl(var(--primary) / 0.08)"
-        stroke="hsl(var(--primary) / 0.3)"
-        strokeWidth="1.5"
-        rx="3"
-      />
-      <rect
-        x={x + 3}
-        y={y + 3}
-        width={rectW - 6}
-        height={rectD - 6}
-        fill="none"
-        stroke="hsl(var(--primary) / 0.1)"
-        strokeWidth="0.5"
-        strokeDasharray="4 3"
-        rx="2"
-      />
-      <line
-        x1={x}
-        y1={y + rectD + 12}
-        x2={x + rectW}
-        y2={y + rectD + 12}
-        stroke="hsl(var(--muted-foreground) / 0.4)"
-        strokeWidth="1"
-        markerStart="url(#arrowL)"
-        markerEnd="url(#arrowR)"
-      />
-      <text
-        x={x + rectW / 2}
-        y={y + rectD + 28}
-        textAnchor="middle"
-        className="fill-muted-foreground text-[11px] font-mono"
-      >
-        {width} cm
-      </text>
-      <line
-        x1={x + rectW + 12}
-        y1={y}
-        x2={x + rectW + 12}
-        y2={y + rectD}
-        stroke="hsl(var(--muted-foreground) / 0.4)"
-        strokeWidth="1"
-        markerStart="url(#arrowU)"
-        markerEnd="url(#arrowD)"
-      />
-      <text
-        x={x + rectW + 16}
-        y={y + rectD / 2}
-        dominantBaseline="middle"
-        className="fill-muted-foreground text-[11px] font-mono"
-      >
-        {depth} cm
-      </text>
-      <text
-        x={svgW / 2}
-        y={y - 10}
-        textAnchor="middle"
-        className="fill-muted-foreground text-[10px] font-mono"
-      >
-        H: {height} cm
-      </text>
+      <rect x={x} y={y} width={rectW} height={rectD} fill="hsl(var(--primary) / 0.08)" stroke="hsl(var(--primary) / 0.3)" strokeWidth="1.5" rx="3" />
+      <rect x={x + 3} y={y + 3} width={rectW - 6} height={rectD - 6} fill="none" stroke="hsl(var(--primary) / 0.1)" strokeWidth="0.5" strokeDasharray="4 3" rx="2" />
+      <line x1={x} y1={y + rectD + 12} x2={x + rectW} y2={y + rectD + 12} stroke="hsl(var(--muted-foreground) / 0.4)" strokeWidth="1" markerStart="url(#arrowL)" markerEnd="url(#arrowR)" />
+      <text x={x + rectW / 2} y={y + rectD + 28} textAnchor="middle" className="fill-muted-foreground text-[11px] font-mono">{width} cm</text>
+      <line x1={x + rectW + 12} y1={y} x2={x + rectW + 12} y2={y + rectD} stroke="hsl(var(--muted-foreground) / 0.4)" strokeWidth="1" markerStart="url(#arrowU)" markerEnd="url(#arrowD)" />
+      <text x={x + rectW + 16} y={y + rectD / 2} dominantBaseline="middle" className="fill-muted-foreground text-[11px] font-mono">{depth} cm</text>
+      <text x={svgW / 2} y={y - 10} textAnchor="middle" className="fill-muted-foreground text-[10px] font-mono">H: {height} cm</text>
       <defs>
-        <marker id="arrowL" markerWidth="6" markerHeight="6" refX="0" refY="3" orient="auto">
-          <path d="M6,0 L0,3 L6,6" fill="none" stroke="hsl(var(--muted-foreground) / 0.4)" strokeWidth="1" />
-        </marker>
-        <marker id="arrowR" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto">
-          <path d="M0,0 L6,3 L0,6" fill="none" stroke="hsl(var(--muted-foreground) / 0.4)" strokeWidth="1" />
-        </marker>
-        <marker id="arrowU" markerWidth="6" markerHeight="6" refX="3" refY="0" orient="auto">
-          <path d="M0,6 L3,0 L6,6" fill="none" stroke="hsl(var(--muted-foreground) / 0.4)" strokeWidth="1" />
-        </marker>
-        <marker id="arrowD" markerWidth="6" markerHeight="6" refX="3" refY="6" orient="auto">
-          <path d="M0,0 L3,6 L6,0" fill="none" stroke="hsl(var(--muted-foreground) / 0.4)" strokeWidth="1" />
-        </marker>
+        <marker id="arrowL" markerWidth="6" markerHeight="6" refX="0" refY="3" orient="auto"><path d="M6,0 L0,3 L6,6" fill="none" stroke="hsl(var(--muted-foreground) / 0.4)" strokeWidth="1" /></marker>
+        <marker id="arrowR" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6" fill="none" stroke="hsl(var(--muted-foreground) / 0.4)" strokeWidth="1" /></marker>
+        <marker id="arrowU" markerWidth="6" markerHeight="6" refX="3" refY="0" orient="auto"><path d="M0,6 L3,0 L6,6" fill="none" stroke="hsl(var(--muted-foreground) / 0.4)" strokeWidth="1" /></marker>
+        <marker id="arrowD" markerWidth="6" markerHeight="6" refX="3" refY="6" orient="auto"><path d="M0,0 L3,6 L6,0" fill="none" stroke="hsl(var(--muted-foreground) / 0.4)" strokeWidth="1" /></marker>
       </defs>
     </svg>
   );
@@ -160,6 +118,7 @@ export default function CatalogDetail() {
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
+  const [zoomOpen, setZoomOpen] = useState(false);
 
   const {
     data: item,
@@ -192,7 +151,7 @@ export default function CatalogDetail() {
       <div className="p-8 max-w-6xl mx-auto flex justify-center items-center min-h-[400px]">
         <div className="flex flex-col items-center gap-3">
           <Loader2 className="w-8 h-8 animate-spin text-primary/60" />
-          <p className="text-sm text-muted-foreground/60">Loading product details…</p>
+          <p className="text-sm text-muted-foreground/60">Loading product details...</p>
         </div>
       </div>
     );
@@ -207,12 +166,8 @@ export default function CatalogDetail() {
         <div className="bg-destructive/5 border border-destructive/20 rounded-xl">
           <div className="flex flex-col items-center justify-center h-64 text-center space-y-4">
             <p className="text-lg font-medium">Item not found</p>
-            <p className="text-sm text-muted-foreground">
-              The catalog item you're looking for doesn't exist or has been removed.
-            </p>
-            <Button variant="outline" onClick={() => router.push("/catalog")}>
-              Return to Catalog
-            </Button>
+            <p className="text-sm text-muted-foreground">The catalog item you're looking for doesn't exist or has been removed.</p>
+            <Button variant="outline" onClick={() => router.push("/catalog")}>Return to Catalog</Button>
           </div>
         </div>
       </div>
@@ -224,13 +179,15 @@ export default function CatalogDetail() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto space-y-6 animate-in fade-in duration-500">
+      {zoomOpen && item.imageUrl && (
+        <ImageZoomModal src={item.imageUrl} alt={item.name} onClose={() => setZoomOpen(false)} />
+      )}
+
       <div className="flex items-center justify-between">
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink asChild>
-                <Link href="/catalog">Catalog</Link>
-              </BreadcrumbLink>
+              <BreadcrumbLink asChild><Link href="/catalog">Catalog</Link></BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
@@ -250,28 +207,48 @@ export default function CatalogDetail() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="space-y-4">
-          <div className="rounded-2xl overflow-hidden border bg-card">
-            <div className="group">
-              <FurnitureVisual
-                category={item.category}
-                name={item.name}
-                color={item.color}
-                widthCm={item.widthCm}
-                depthCm={item.depthCm}
-                size="lg"
-              />
-            </div>
+          <div className="rounded-2xl overflow-hidden border bg-card relative group">
+            {item.imageUrl ? (
+              <div
+                className="aspect-[16/10] overflow-hidden cursor-zoom-in relative"
+                onClick={() => setZoomOpen(true)}
+              >
+                <img
+                  src={item.imageUrl}
+                  alt={item.name}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                  <ZoomIn className="w-8 h-8 text-white opacity-0 group-hover:opacity-80 transition-opacity drop-shadow-lg" />
+                </div>
+              </div>
+            ) : (
+              <div className="group">
+                <FurnitureVisual
+                  category={item.category}
+                  name={item.name}
+                  color={item.color}
+                  widthCm={item.widthCm}
+                  depthCm={item.depthCm}
+                  size="lg"
+                />
+              </div>
+            )}
             <div className="p-4 border-t bg-muted/20">
               <div className="flex items-center justify-between">
-                <Badge variant="outline" className={`capitalize ${catColor.accent} font-normal`}>
-                  {item.category.replace('-', ' ')}
-                </Badge>
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className={`capitalize ${catColor.accent} font-normal`}>
+                    {item.category.replace('-', ' ')}
+                  </Badge>
+                  {item.seriesId && (
+                    <Badge variant="outline" className="text-[10px]">
+                      Series
+                    </Badge>
+                  )}
+                </div>
                 {item.color && (
                   <div className="flex items-center gap-2">
-                    <div
-                      className="w-5 h-5 rounded-full border-2 border-background shadow-sm ring-1 ring-border"
-                      style={{ backgroundColor: item.color }}
-                    />
+                    <div className="w-5 h-5 rounded-full border-2 border-background shadow-sm ring-1 ring-border" style={{ backgroundColor: item.color }} />
                     <span className="text-xs text-muted-foreground font-mono">{item.color}</span>
                   </div>
                 )}
@@ -285,11 +262,7 @@ export default function CatalogDetail() {
               <h3 className="text-sm font-medium">Dimension Diagram</h3>
             </div>
             <div className="flex justify-center">
-              <DimensionDiagram
-                width={item.widthCm}
-                depth={item.depthCm}
-                height={item.heightCm}
-              />
+              <DimensionDiagram width={item.widthCm} depth={item.depthCm} height={item.heightCm} />
             </div>
           </div>
         </div>
@@ -326,10 +299,7 @@ export default function CatalogDetail() {
               {item.color && (
                 <SpecCard icon={Palette} label="Color">
                   <div className="flex items-center gap-2">
-                    <div
-                      className="w-4 h-4 rounded-full border shadow-sm"
-                      style={{ backgroundColor: item.color }}
-                    />
+                    <div className="w-4 h-4 rounded-full border shadow-sm" style={{ backgroundColor: item.color }} />
                     <span>{item.color}</span>
                   </div>
                 </SpecCard>
@@ -351,9 +321,7 @@ export default function CatalogDetail() {
             <Button
               size="lg"
               className="w-full gap-2 h-12 text-base font-semibold shadow-sm hover:shadow-md transition-shadow"
-              onClick={() =>
-                router.push(`/planner/studio?itemId=${encodeURIComponent(id)}`)
-              }
+              onClick={() => router.push(`/planner/studio?itemId=${encodeURIComponent(id)}`)}
             >
               <Plus className="w-5 h-5" />
               Add to Plan
@@ -371,43 +339,32 @@ export default function CatalogDetail() {
               <h2 className="text-lg font-semibold tracking-tight">
                 Related in <span className="capitalize">{item.category.replace('-', ' ')}</span>
               </h2>
-              <Link
-                href={`/catalog?category=${encodeURIComponent(item.category)}`}
-                className="text-xs text-primary hover:underline"
-              >
+              <Link href={`/catalog?category=${encodeURIComponent(item.category)}`} className="text-xs text-primary hover:underline">
                 View all →
               </Link>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
-              {filteredRelated.map((rel) => {
-                const relColor = getColorForCategory(rel.category);
-                return (
-                  <Link
-                    key={rel.id}
-                    href={`/catalog/${rel.id}`}
-                    className="group"
-                  >
-                    <div className="rounded-xl border bg-card overflow-hidden hover:shadow-md hover:border-primary/20 transition-all duration-300">
-                      <FurnitureVisual
-                        category={rel.category}
-                        name={rel.name}
-                        color={rel.color}
-                        widthCm={rel.widthCm}
-                        depthCm={rel.depthCm}
-                        size="sm"
-                      />
-                      <div className="p-3">
-                        <p className="text-sm font-medium line-clamp-1 group-hover:text-primary transition-colors">
-                          {rel.name}
-                        </p>
-                        <p className="text-xs text-muted-foreground/60 font-mono mt-1">
-                          {rel.price ? `₹${rel.price.toLocaleString()}` : "—"}
-                        </p>
-                      </div>
+              {filteredRelated.map((rel) => (
+                <Link key={rel.id} href={`/catalog/${rel.id}`} className="group">
+                  <div className="rounded-xl border bg-card overflow-hidden hover:shadow-md hover:border-primary/20 transition-all duration-300">
+                    <FurnitureVisual
+                      category={rel.category}
+                      name={rel.name}
+                      color={rel.color}
+                      widthCm={rel.widthCm}
+                      depthCm={rel.depthCm}
+                      imageUrl={rel.imageUrl}
+                      size="sm"
+                    />
+                    <div className="p-3">
+                      <p className="text-sm font-medium line-clamp-1 group-hover:text-primary transition-colors">{rel.name}</p>
+                      <p className="text-xs text-muted-foreground/60 font-mono mt-1">
+                        {rel.price ? `₹${rel.price.toLocaleString()}` : "—"}
+                      </p>
                     </div>
-                  </Link>
-                );
-              })}
+                  </div>
+                </Link>
+              ))}
             </div>
           </div>
         </>

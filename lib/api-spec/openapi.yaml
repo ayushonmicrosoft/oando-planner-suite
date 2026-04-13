@@ -108,6 +108,46 @@ paths:
                 items:
                   $ref: "#/components/schemas/CategorySummary"
 
+  /catalog/series:
+    get:
+      operationId: listSeries
+      tags: [catalog]
+      summary: List all product series with their items
+      responses:
+        "200":
+          description: List of series with nested items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SeriesWithItems"
+
+  /catalog/series/{id}:
+    get:
+      operationId: getSeriesDetail
+      tags: [catalog]
+      summary: Get a single series with its items
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: A series with items
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SeriesWithItems"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   /plans:
     get:
       operationId: listPlans
@@ -780,6 +820,49 @@ components:
       required:
         - error
 
+    Series:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        tier:
+          type: string
+          enum: [economy, medium, premium]
+        description:
+          type: ["string", "null"]
+        imageUrl:
+          type: ["string", "null"]
+      required:
+        - id
+        - name
+        - tier
+
+    SeriesWithItems:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        tier:
+          type: string
+          enum: [economy, medium, premium]
+        description:
+          type: ["string", "null"]
+        imageUrl:
+          type: ["string", "null"]
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/CatalogItem"
+      required:
+        - id
+        - name
+        - tier
+        - items
+
     CatalogItem:
       type: object
       properties:
@@ -809,6 +892,8 @@ components:
           type: ["integer", "null"]
         price:
           type: ["number", "null"]
+        seriesId:
+          type: ["string", "null"]
       required:
         - id
         - name
@@ -823,6 +908,7 @@ components:
         - shape
         - seatCount
         - price
+        - seriesId
 
     CategorySummary:
       type: object

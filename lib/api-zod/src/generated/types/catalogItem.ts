@@ -27,4 +27,6 @@ export interface CatalogItem {
   seatCount: number | null;
   /** @nullable */
   price: number | null;
+  /** @nullable */
+  seriesId: string | null;
 }

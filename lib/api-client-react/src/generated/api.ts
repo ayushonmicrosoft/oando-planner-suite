@@ -46,6 +46,7 @@ import type {
   Quote,
   QuotePreview,
   QuoteSummary,
+  SeriesWithItems,
   TemplateSummary,
   UpdateClientBody,
   UpdatePlanBody,
@@ -389,6 +390,168 @@ export function useListCategories<
   request?: SecondParameter<typeof customFetch>;
 }): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
   const queryOptions = getListCategoriesQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary List all product series with their items
+ */
+export const getListSeriesUrl = () => {
+  return `/api/catalog/series`;
+};
+
+export const listSeries = async (
+  options?: RequestInit,
+): Promise<SeriesWithItems[]> => {
+  return customFetch<SeriesWithItems[]>(getListSeriesUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListSeriesQueryKey = () => {
+  return [`/api/catalog/series`] as const;
+};
+
+export const getListSeriesQueryOptions = <
+  TData = Awaited<ReturnType<typeof listSeries>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listSeries>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListSeriesQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listSeries>>> = ({
+    signal,
+  }) => listSeries({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listSeries>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListSeriesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listSeries>>
+>;
+export type ListSeriesQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List all product series with their items
+ */
+
+export function useListSeries<
+  TData = Awaited<ReturnType<typeof listSeries>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listSeries>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListSeriesQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get a single series with its items
+ */
+export const getGetSeriesDetailUrl = (id: string) => {
+  return `/api/catalog/series/${id}`;
+};
+
+export const getSeriesDetail = async (
+  id: string,
+  options?: RequestInit,
+): Promise<SeriesWithItems> => {
+  return customFetch<SeriesWithItems>(getGetSeriesDetailUrl(id), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetSeriesDetailQueryKey = (id: string) => {
+  return [`/api/catalog/series/${id}`] as const;
+};
+
+export const getGetSeriesDetailQueryOptions = <
+  TData = Awaited<ReturnType<typeof getSeriesDetail>>,
+  TError = ErrorType<ErrorResponse>,
+>(
+  id: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getSeriesDetail>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetSeriesDetailQueryKey(id);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getSeriesDetail>>> = ({
+    signal,
+  }) => getSeriesDetail(id, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getSeriesDetail>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetSeriesDetailQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getSeriesDetail>>
+>;
+export type GetSeriesDetailQueryError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Get a single series with its items
+ */
+
+export function useGetSeriesDetail<
+  TData = Awaited<ReturnType<typeof getSeriesDetail>>,
+  TError = ErrorType<ErrorResponse>,
+>(
+  id: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getSeriesDetail>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetSeriesDetailQueryOptions(id, options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;

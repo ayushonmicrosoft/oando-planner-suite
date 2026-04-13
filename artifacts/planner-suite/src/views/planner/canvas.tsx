@@ -918,6 +918,8 @@ export default function CanvasPlanner() {
         price: catalogMatch?.price ?? null,
         description: catalogMatch?.description ?? null,
         imageUrl: catalogMatch?.imageUrl ?? null,
+        seriesId: (catalogMatch as any)?.seriesId ?? null,
+        subCategory: (catalogMatch as any)?.subCategory ?? null,
       };
       const instanceId = addItem(catalogItem, item.x, item.y);
       if (item.rotation && item.rotation !== 0 && instanceId) {

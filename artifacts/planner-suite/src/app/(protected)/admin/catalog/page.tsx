@@ -5,8 +5,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Search, Plus, Pencil, Trash2, Package, MoreHorizontal, Ruler } from "lucide-react";
-import { useListCatalogItems, getListCatalogItemsQueryKey } from "@workspace/api-client-react";
+import { Loader2, Search, Plus, Pencil, Trash2, Package, MoreHorizontal, Ruler, Crown, Star, Zap } from "lucide-react";
+import { useListCatalogItems, useListSeries, getListCatalogItemsQueryKey } from "@workspace/api-client-react";
 import { adminCreateCatalogItem, adminUpdateCatalogItem, adminDeleteCatalogItem } from "@/lib/admin-api";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
@@ -48,7 +48,15 @@ interface CatalogItem {
   shape: string | null;
   seatCount: number | null;
   price: number | null;
+  seriesId: string | null;
 }
+
+const TIER_ICONS: Record<string, typeof Crown> = { economy: Zap, medium: Star, premium: Crown };
+const TIER_BADGE_STYLES: Record<string, string> = {
+  economy: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  medium: "bg-blue-50 text-blue-700 border-blue-200",
+  premium: "bg-amber-50 text-amber-700 border-amber-200",
+};
 
 const emptyForm = {
   name: "",
@@ -63,6 +71,7 @@ const emptyForm = {
   shape: "",
   seatCount: "",
   price: "",
+  seriesId: "",
 };
 
 const categoryColors: Record<string, string> = {
@@ -87,6 +96,7 @@ function getCategoryStyle(cat: string) {
 
 export default function AdminCatalogPage() {
   const { data: items, isLoading } = useListCatalogItems();
+  const { data: seriesData } = useListSeries();
   const [search, setSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<CatalogItem | null>(null);
@@ -118,6 +128,7 @@ export default function AdminCatalogPage() {
       shape: item.shape || "",
       seatCount: item.seatCount != null ? String(item.seatCount) : "",
       price: item.price != null ? String(item.price) : "",
+      seriesId: item.seriesId || "",
     });
     setDialogOpen(true);
   };
@@ -142,6 +153,7 @@ export default function AdminCatalogPage() {
         shape: form.shape || null,
         seatCount: form.seatCount ? Number(form.seatCount) : null,
         price: form.price ? Number(form.price) : null,
+        seriesId: form.seriesId || null,
       };
 
       if (editingItem) {
@@ -236,6 +248,7 @@ export default function AdminCatalogPage() {
                 <tr className="border-b border-[var(--border-soft)] bg-[var(--surface-soft)]">
                   <th className="text-left px-5 py-3.5 text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Item</th>
                   <th className="text-left px-5 py-3.5 text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Category</th>
+                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Series</th>
                   <th className="text-left px-5 py-3.5 text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Dimensions</th>
                   <th className="text-left px-5 py-3.5 text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Price</th>
                   <th className="text-left px-5 py-3.5 text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Color</th>
@@ -269,6 +282,20 @@ export default function AdminCatalogPage() {
                       </div>
                     </td>
                     <td className="px-5 py-4">
+                      {(() => {
+                        const series = seriesData?.find((s: any) => s.id === (item as any).seriesId);
+                        if (!series) return <span className="text-sm text-[var(--text-subtle)]">&mdash;</span>;
+                        const TierIcon = TIER_ICONS[series.tier] || Star;
+                        const badgeStyle = TIER_BADGE_STYLES[series.tier] || "";
+                        return (
+                          <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium border ${badgeStyle}`}>
+                            <TierIcon className="w-3 h-3" />
+                            {series.tier.charAt(0).toUpperCase() + series.tier.slice(1)}
+                          </span>
+                        );
+                      })()}
+                    </td>
+                    <td className="px-5 py-4">
                       <div className="flex items-center gap-1.5 text-[var(--text-muted)]">
                         <Ruler className="w-3.5 h-3.5 text-[var(--text-subtle)]" />
                         <span className="text-sm">{item.widthCm} &times; {item.depthCm} &times; {item.heightCm}</span>
@@ -276,7 +303,7 @@ export default function AdminCatalogPage() {
                     </td>
                     <td className="px-5 py-4">
                       {item.price != null ? (
-                        <span className="text-sm font-medium text-[var(--text-strong)]">${item.price.toFixed(2)}</span>
+                        <span className="text-sm font-medium text-[var(--text-strong)]">₹{item.price.toLocaleString()}</span>
                       ) : (
                         <span className="text-sm text-[var(--text-subtle)]">&mdash;</span>
                       )}
@@ -323,7 +350,7 @@ export default function AdminCatalogPage() {
                 ))}
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="px-5 py-12 text-center">
+                    <td colSpan={7} className="px-5 py-12 text-center">
                       <Package className="w-8 h-8 mx-auto text-[var(--text-subtle)] mb-2" />
                       <p className="text-sm text-[var(--text-muted)]">No catalog items found.</p>
                     </td>
@@ -413,9 +440,24 @@ export default function AdminCatalogPage() {
               <Label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Description</Label>
               <Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="rounded-xl" />
             </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Image URL</Label>
-              <Input value={form.imageUrl} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} className="rounded-xl" />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Series</Label>
+                <select
+                  value={form.seriesId}
+                  onChange={(e) => setForm({ ...form, seriesId: e.target.value })}
+                  className="flex h-10 w-full rounded-xl border border-[var(--border-soft)] bg-white px-3 py-2 text-sm"
+                >
+                  <option value="">None (Standalone)</option>
+                  {seriesData?.map((s: any) => (
+                    <option key={s.id} value={s.id}>{s.tier.charAt(0).toUpperCase() + s.tier.slice(1)} — {s.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Image URL</Label>
+                <Input value={form.imageUrl} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} className="rounded-xl" />
+              </div>
             </div>
             <div className="flex justify-end gap-2 pt-2">
               <Button variant="outline" onClick={() => setDialogOpen(false)} className="rounded-xl">Cancel</Button>

@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { 
   useListCategories, 
-  useListCatalogItems, 
+  useListCatalogItems,
+  useListSeries,
   useCreatePlan,
   useUpdatePlan,
   useGetPlan,
@@ -20,7 +21,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { 
   CheckCircle2, ChevronRight, FileSignature, Box, Plus, Minus, Loader2, Sparkles, ArrowRight, Download, AlertCircle, RefreshCw, FileSpreadsheet,
-  Home
+  Home, Crown, Star, Zap
 } from 'lucide-react';
 import { PlannerBreadcrumb } from '@/components/planner/PlannerBreadcrumb';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -79,7 +80,9 @@ export default function BlueprintPlanner() {
 
   const { data: categories, isLoading: categoriesLoading, isError: categoriesError, refetch: refetchCategories } = useListCategories();
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedSeriesId, setSelectedSeriesId] = useState<string | null>(null);
 
+  const { data: seriesData, isLoading: seriesLoading } = useListSeries();
   const { data: catalogItems, isError: catalogError, refetch: refetchCatalog } = useListCatalogItems();
   const [placedItems, setPlacedItems] = useState<Array<{ item: any, count: number }>>([]);
   
@@ -121,9 +124,11 @@ export default function BlueprintPlanner() {
     }
   }, [existingPlan, catalogItems]);
 
-  const filteredItems = catalogItems?.filter(item => 
-    selectedCategories.length === 0 || selectedCategories.includes(item.category)
-  );
+  const filteredItems = catalogItems?.filter(item => {
+    const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(item.category);
+    const matchesSeries = !selectedSeriesId || (item as any).seriesId === selectedSeriesId || !(item as any).seriesId;
+    return matchesCategory && matchesSeries;
+  });
 
   useEffect(() => {
     if (Object.keys(setupTouched).length > 0) {
@@ -289,7 +294,7 @@ export default function BlueprintPlanner() {
 
   const steps = [
     { id: 'setup', title: 'Room Setup' },
-    { id: 'categories', title: 'Categories' },
+    { id: 'categories', title: 'Choose Series' },
     { id: 'arrange', title: 'Quantities' },
     { id: 'review', title: 'Review & BOQ' }
   ];
@@ -409,8 +414,8 @@ export default function BlueprintPlanner() {
             <div className="p-8 space-y-8 flex-1 flex flex-col">
               <div className="flex justify-between items-start">
                 <div>
-                  <h2 className="text-xl font-semibold">Select required categories</h2>
-                  <p className="text-muted-foreground">What type of furniture do you need for this {roomType.replace('-',' ')}?</p>
+                  <h2 className="text-xl font-semibold">Choose Your Series</h2>
+                  <p className="text-muted-foreground">Select a furniture series for your {roomType.replace('-',' ')}. Standalone items are always available.</p>
                 </div>
                 <Button variant="outline" size="sm" onClick={handleGetAdvice} disabled={getAiAdvice.isPending}>
                   {getAiAdvice.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2 text-primary" />}
@@ -425,6 +430,46 @@ export default function BlueprintPlanner() {
                 </div>
               )}
 
+              {seriesLoading ? (
+                <div className="flex-1 flex justify-center items-center"><Loader2 className="animate-spin text-primary" /></div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {seriesData?.map(series => {
+                    const tierIcons: Record<string, typeof Crown> = { economy: Zap, medium: Star, premium: Crown };
+                    const tierColors: Record<string, { border: string; bg: string; badge: string }> = {
+                      economy: { border: 'border-emerald-500', bg: 'bg-emerald-500/5', badge: 'bg-emerald-500/10 text-emerald-700 border-emerald-500/20' },
+                      medium: { border: 'border-blue-500', bg: 'bg-blue-500/5', badge: 'bg-blue-500/10 text-blue-700 border-blue-500/20' },
+                      premium: { border: 'border-amber-500', bg: 'bg-amber-500/5', badge: 'bg-amber-500/10 text-amber-700 border-amber-500/20' },
+                    };
+                    const TierIcon = tierIcons[series.tier] || Star;
+                    const colors = tierColors[series.tier] || tierColors.medium;
+                    const isSelected = selectedSeriesId === series.id;
+                    const itemCount = series.items?.length || 0;
+
+                    return (
+                      <div
+                        key={series.id}
+                        className={`p-5 rounded-xl border-2 cursor-pointer transition-all ${isSelected ? `${colors.border} ${colors.bg} ring-2 ring-offset-1 ring-${series.tier === 'economy' ? 'emerald' : series.tier === 'premium' ? 'amber' : 'blue'}-500/30` : 'border-border hover:border-primary/30'}`}
+                        onClick={() => setSelectedSeriesId(isSelected ? null : series.id)}
+                      >
+                        <div className="flex items-center gap-2 mb-2">
+                          <Badge className={`${colors.badge} border text-xs`}>
+                            <TierIcon className="w-3 h-3 mr-1" />
+                            {series.tier.charAt(0).toUpperCase() + series.tier.slice(1)}
+                          </Badge>
+                        </div>
+                        <h3 className="font-semibold text-base mb-1">{series.name}</h3>
+                        <p className="text-xs text-muted-foreground line-clamp-2 mb-3">{series.description}</p>
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] text-muted-foreground">{itemCount} products</span>
+                          {isSelected && <CheckCircle2 className="w-5 h-5 text-primary" />}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
               {categoriesError ? (
                 <div className="flex-1 flex flex-col items-center justify-center gap-3">
                   <AlertCircle className="w-8 h-8 text-destructive opacity-60" />
@@ -433,23 +478,21 @@ export default function BlueprintPlanner() {
                     <RefreshCw className="w-4 h-4" /> Retry
                   </Button>
                 </div>
-              ) : categoriesLoading ? (
-                <div className="flex-1 flex justify-center items-center"><Loader2 className="animate-spin text-primary" /></div>
-              ) : (
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {categories?.map(cat => (
-                    <div 
-                      key={cat.name}
-                      className={`flex items-center space-x-3 p-4 rounded-lg border cursor-pointer transition-colors ${selectedCategories.includes(cat.name) ? 'border-primary bg-primary/5' : 'hover:bg-muted/50'}`}
-                      onClick={() => handleToggleCategory(cat.name)}
-                    >
-                      <Checkbox checked={selectedCategories.includes(cat.name)} />
-                      <div className="flex-1">
-                        <Label className="cursor-pointer">{cat.name}</Label>
-                        <div className="text-xs text-muted-foreground">{cat.count} items available</div>
-                      </div>
-                    </div>
-                  ))}
+              ) : !categoriesLoading && categories && categories.length > 0 && (
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-3">Filter by Category (optional)</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {categories.map(cat => (
+                      <Badge
+                        key={cat.name}
+                        variant={selectedCategories.includes(cat.name) ? 'default' : 'outline'}
+                        className="cursor-pointer capitalize"
+                        onClick={() => handleToggleCategory(cat.name)}
+                      >
+                        {cat.name.replace('-', ' ')} ({cat.count})
+                      </Badge>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>

@@ -14,6 +14,33 @@ export interface ErrorResponse {
   status?: number;
 }
 
+export type SeriesTier = (typeof SeriesTier)[keyof typeof SeriesTier];
+
+export const SeriesTier = {
+  economy: "economy",
+  medium: "medium",
+  premium: "premium",
+} as const;
+
+export interface Series {
+  id: string;
+  name: string;
+  tier: SeriesTier;
+  /** @nullable */
+  description?: string | null;
+  /** @nullable */
+  imageUrl?: string | null;
+}
+
+export type SeriesWithItemsTier =
+  (typeof SeriesWithItemsTier)[keyof typeof SeriesWithItemsTier];
+
+export const SeriesWithItemsTier = {
+  economy: "economy",
+  medium: "medium",
+  premium: "premium",
+} as const;
+
 export interface CatalogItem {
   id: string;
   name: string;
@@ -35,6 +62,19 @@ export interface CatalogItem {
   seatCount: number | null;
   /** @nullable */
   price: number | null;
+  /** @nullable */
+  seriesId: string | null;
+}
+
+export interface SeriesWithItems {
+  id: string;
+  name: string;
+  tier: SeriesWithItemsTier;
+  /** @nullable */
+  description?: string | null;
+  /** @nullable */
+  imageUrl?: string | null;
+  items: CatalogItem[];
 }
 
 export interface CategorySummary {

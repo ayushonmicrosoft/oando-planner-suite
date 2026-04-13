@@ -24,6 +24,7 @@ export interface CatalogProduct {
   description?: string;
   price?: number;
   seatCount?: number;
+  seriesId?: string | null;
 }
 
 export type LabelUnit = "cm" | "m";

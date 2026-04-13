@@ -38,6 +38,7 @@ export const ListCatalogItemsResponseItem = zod.object({
   shape: zod.string().nullable(),
   seatCount: zod.number().nullable(),
   price: zod.number().nullable(),
+  seriesId: zod.string().nullable(),
 });
 export const ListCatalogItemsResponse = zod.array(ListCatalogItemsResponseItem);
 
@@ -62,6 +63,7 @@ export const GetCatalogItemResponse = zod.object({
   shape: zod.string().nullable(),
   seatCount: zod.number().nullable(),
   price: zod.number().nullable(),
+  seriesId: zod.string().nullable(),
 });
 
 /**
@@ -72,6 +74,67 @@ export const ListCategoriesResponseItem = zod.object({
   count: zod.number(),
 });
 export const ListCategoriesResponse = zod.array(ListCategoriesResponseItem);
+
+/**
+ * @summary List all product series with their items
+ */
+export const ListSeriesResponseItem = zod.object({
+  id: zod.string(),
+  name: zod.string(),
+  tier: zod.enum(["economy", "medium", "premium"]),
+  description: zod.string().nullish(),
+  imageUrl: zod.string().nullish(),
+  items: zod.array(
+    zod.object({
+      id: zod.string(),
+      name: zod.string(),
+      category: zod.string(),
+      widthCm: zod.number(),
+      depthCm: zod.number(),
+      heightCm: zod.number(),
+      color: zod.string().nullable(),
+      description: zod.string().nullable(),
+      imageUrl: zod.string().nullable(),
+      shape: zod.string().nullable(),
+      seatCount: zod.number().nullable(),
+      price: zod.number().nullable(),
+      seriesId: zod.string().nullable(),
+    }),
+  ),
+});
+export const ListSeriesResponse = zod.array(ListSeriesResponseItem);
+
+/**
+ * @summary Get a single series with its items
+ */
+export const GetSeriesDetailParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const GetSeriesDetailResponse = zod.object({
+  id: zod.string(),
+  name: zod.string(),
+  tier: zod.enum(["economy", "medium", "premium"]),
+  description: zod.string().nullish(),
+  imageUrl: zod.string().nullish(),
+  items: zod.array(
+    zod.object({
+      id: zod.string(),
+      name: zod.string(),
+      category: zod.string(),
+      widthCm: zod.number(),
+      depthCm: zod.number(),
+      heightCm: zod.number(),
+      color: zod.string().nullable(),
+      description: zod.string().nullable(),
+      imageUrl: zod.string().nullable(),
+      shape: zod.string().nullable(),
+      seatCount: zod.number().nullable(),
+      price: zod.number().nullable(),
+      seriesId: zod.string().nullable(),
+    }),
+  ),
+});
 
 /**
  * @summary List all saved floor plans

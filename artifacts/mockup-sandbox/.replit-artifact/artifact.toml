@@ -15,3 +15,13 @@ BASE_PATH = "/__mockup"
 
 [services.development]
 run = "pnpm --filter @workspace/mockup-sandbox run dev"
+
+[services.production]
+serve = "static"
+publicDir = "artifacts/mockup-sandbox/dist"
+
+[services.production.build]
+args = ["echo", "mockup-sandbox is dev-only, skipping"]
+
+[services.production.build.env]
+NODE_ENV = "production"

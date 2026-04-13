@@ -1,6 +1,5 @@
 import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
-  output: "standalone",
   transpilePackages: ["@workspace/api-client-react", "@workspace/api-zod", "@workspace/db"],
   images: { unoptimized: true },
   typescript: { ignoreBuildErrors: false },

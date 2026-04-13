@@ -13,6 +13,7 @@ import subscriptionsRouter from "./subscriptions";
 import webhooksRouter from "./webhooks";
 import publicSharesRouter from "./public-shares";
 import sharesRouter from "./shares";
+import uploadsRouter from "./uploads";
 import { requireAuth } from "../middlewares/require-auth";
 
 const router: IRouter = Router();
@@ -21,6 +22,7 @@ router.use(healthRouter);
 router.use(catalogRouter);
 router.use(webhooksRouter);
 router.use(publicSharesRouter);
+router.use(uploadsRouter);
 
 router.use(requireAuth);
 router.use(usersRouter);

@@ -4,13 +4,15 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { Stage, Layer, Rect, Line, Transformer } from "react-konva";
 import type Konva from "konva";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import SaveLoadToolbar from "@/components/save-load-toolbar";
 import AutoSaveIndicator from "@/components/auto-save-indicator";
 import { useAutoSave } from "@/hooks/useAutoSave";
 import { useSearchParams } from "next/navigation";
-import { useGetPlan, getGetPlanQueryKey } from "@workspace/api-client-react";
-import { RotateCw, Copy, Trash2, Undo2, XCircle, Map } from "lucide-react";
+import { useCreatePlan, useUpdatePlan, useGetPlan, getGetPlanQueryKey } from "@workspace/api-client-react";
+import { useUndoRedo } from "@/hooks/use-undo-redo";
+import { useToast } from "@/hooks/use-toast";
+import { RotateCw, Copy, Trash2, Undo2, Redo2, XCircle, Map, Save, Loader2 } from "lucide-react";
 import { PlannerBreadcrumb } from "@/components/planner/PlannerBreadcrumb";
 import { PlanBackgroundLayers } from "@/components/plan-background-layers";
 import {
@@ -92,36 +94,40 @@ function SiteShape({ item, isSelected, onSelect, onChange }: { item: SiteItem; i
 }
 
 export default function SitePlan() {
-  const [items, setItems] = useState<SiteItem[]>([]);
+  const searchParams = useSearchParams();
+  const planIdParam = searchParams.get("planId") || searchParams.get("id");
+  const initialPlanId = planIdParam ? Number(planIdParam) : null;
+  const [currentPlanId, setCurrentPlanId] = useState<number | null>(initialPlanId);
+  const planId = currentPlanId;
+
+  const { current: items, set: setItems, undo, redo, canUndo, canRedo, reset: resetItems } = useUndoRedo<SiteItem[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [currentPlanId, setCurrentPlanId] = useState<number | null>(null);
-  const [currentPlanName, setCurrentPlanName] = useState("");
-  const [initialLoaded, setInitialLoaded] = useState(false);
+  const [planName, setPlanName] = useState("New Site Plan");
   const [unifiedDoc, setUnifiedDoc] = useState<UnifiedDocument>(createEmptyDocument());
   const stageRef = useRef<Konva.Stage>(null);
 
-  const searchParams = useSearchParams();
-  const params = searchParams;
-  const planIdParam = params.get("planId") || params.get("id");
-  const planId = Number(planIdParam) || 0;
-  const { data: loadedPlan } = useGetPlan(planId, { query: { queryKey: getGetPlanQueryKey(planId), enabled: !!planIdParam && !initialLoaded } });
+  const { data: existingPlan } = useGetPlan(planId || 0, { query: { queryKey: getGetPlanQueryKey(planId || 0), enabled: !!planId } });
+  const createPlan = useCreatePlan();
+  const updatePlan = useUpdatePlan();
+  const { toast } = useToast();
+
   useEffect(() => {
-    if (loadedPlan && !initialLoaded) {
-      const doc = migrateDocument(loadedPlan.documentJson || "{}");
-      setUnifiedDoc(doc);
-      if (doc.site.length > 0) {
-        setItems(doc.site as SiteItem[]);
-      } else {
-        try {
-          const raw = typeof loadedPlan.documentJson === "string" ? JSON.parse(loadedPlan.documentJson) : loadedPlan.documentJson;
-          if (raw?.items) setItems(raw.items);
-        } catch {}
+    if (existingPlan) {
+      setPlanName(existingPlan.name);
+      if (existingPlan.documentJson) {
+        const doc = migrateDocument(existingPlan.documentJson);
+        setUnifiedDoc(doc);
+        if (doc.site.length > 0) {
+          resetItems(doc.site as SiteItem[]);
+        } else {
+          try {
+            const raw = typeof existingPlan.documentJson === "string" ? JSON.parse(existingPlan.documentJson) : existingPlan.documentJson;
+            if (raw?.items) resetItems(raw.items);
+          } catch {}
+        }
       }
-      setCurrentPlanId(loadedPlan.id);
-      setCurrentPlanName(loadedPlan.name);
-      setInitialLoaded(true);
     }
-  }, [loadedPlan, initialLoaded]);
+  }, [existingPlan, resetItems]);
 
   const getCanvasState = useCallback(() => {
     const updatedDoc = { ...unifiedDoc, site: items };
@@ -129,28 +135,74 @@ export default function SitePlan() {
   }, [items, unifiedDoc]);
   const loadCanvasState = useCallback((state: Record<string, unknown>) => {
     if (Array.isArray(state.site)) {
-      setItems(state.site as SiteItem[]);
+      resetItems(state.site as SiteItem[]);
     } else if (Array.isArray(state.items)) {
-      setItems(state.items as SiteItem[]);
+      resetItems(state.items as SiteItem[]);
     }
-  }, []);
-  const autoSave = useAutoSave("site-plan", getCanvasState, loadCanvasState, () => items.length > 0, !!planIdParam && !initialLoaded);
+  }, [resetItems]);
+  const autoSave = useAutoSave("site-plan", getCanvasState, loadCanvasState, () => items.length > 0, !!planIdParam && !existingPlan);
 
   const addItem = (def: SiteDef) => { const id = `sp_${_uid++}`; setItems((p) => [...p, { id, label: def.label, kind: def.kind, x: W / 2 - def.w / 2 + (Math.random() - 0.5) * 40, y: H / 2 - def.h / 2 + (Math.random() - 0.5) * 40, width: def.w, height: def.h, fill: def.fill, rotation: 0 }]); setSelectedId(id); };
   const updateItem = (id: string, a: Partial<SiteItem>) => setItems((p) => p.map((it) => (it.id === id ? { ...it, ...a } : it)));
-  const deleteSelected = () => { setItems((p) => p.filter((it) => it.id !== selectedId)); setSelectedId(null); };
-  const duplicateSelected = () => { const s = items.find((i) => i.id === selectedId); if (!s) return; const id = `sp_${_uid++}`; setItems((p) => [...p, { ...s, id, x: s.x + 20, y: s.y + 20 }]); setSelectedId(id); };
-  const rotateSelected = () => { const s = items.find((i) => i.id === selectedId); if (s) updateItem(s.id, { rotation: (s.rotation + 90) % 360 }); };
+
+  const deleteSelected = useCallback(() => {
+    setItems((p) => p.filter((it) => it.id !== selectedId));
+    setSelectedId(null);
+  }, [selectedId, setItems]);
+
+  const duplicateSelected = useCallback(() => {
+    setItems((prev) => {
+      const s = prev.find((i) => i.id === selectedId);
+      if (!s) return prev;
+      const id = `sp_${_uid++}`;
+      setSelectedId(id);
+      return [...prev, { ...s, id, x: s.x + 20, y: s.y + 20 }];
+    });
+  }, [selectedId, setItems]);
+
+  const rotateSelected = useCallback(() => {
+    setItems((prev) => prev.map((it) => it.id === selectedId ? { ...it, rotation: (it.rotation + 90) % 360 } : it));
+  }, [selectedId, setItems]);
+
   const deselectAll = (e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => { if (e.target === e.target.getStage()) setSelectedId(null); };
-  const undo = () => { setItems((p) => p.slice(0, -1)); setSelectedId(null); };
+
+  const handleSave = () => {
+    const updatedDoc: UnifiedDocument = { ...unifiedDoc, site: items };
+    const documentJson = JSON.stringify(updatedDoc);
+    const payload = {
+      name: planName,
+      roomWidthCm: W,
+      roomDepthCm: H,
+      plannerType: "oando-site-plan" as const,
+      documentJson,
+    };
+
+    if (planId) {
+      updatePlan.mutate({ id: planId, data: payload }, {
+        onSuccess: () => { toast({ title: "Site plan updated" }); autoSave.clearAutoSave(); },
+      });
+    } else {
+      createPlan.mutate({ data: payload }, {
+        onSuccess: (data) => {
+          toast({ title: "Site plan saved" });
+          setCurrentPlanId(data.id);
+          window.history.replaceState(null, "", `?id=${data.id}`);
+          autoSave.clearAutoSave();
+        },
+      });
+    }
+  };
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (e.key === "z" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); undo(); return; }
+    const target = e.target as HTMLElement;
+    if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.tagName === "SELECT") return;
+    if (e.key === "z" && (e.ctrlKey || e.metaKey) && !e.shiftKey) { e.preventDefault(); undo(); return; }
+    if ((e.key === "y" && (e.ctrlKey || e.metaKey)) || (e.key === "z" && (e.ctrlKey || e.metaKey) && e.shiftKey)) { e.preventDefault(); redo(); return; }
     if (!selectedId) return;
     if (e.key === "Delete" || e.key === "Backspace") { e.preventDefault(); deleteSelected(); }
     if (e.key === "d" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); duplicateSelected(); }
     if (e.key === "r") rotateSelected();
-  }, [selectedId, items]);
+  }, [selectedId, deleteSelected, duplicateSelected, rotateSelected, undo, redo]);
   useEffect(() => { window.addEventListener("keydown", handleKeyDown); return () => window.removeEventListener("keydown", handleKeyDown); }, [handleKeyDown]);
 
   const gridLines: React.ReactElement[] = [];
@@ -165,8 +217,8 @@ export default function SitePlan() {
     <div className="h-full flex flex-col bg-background">
       <PlannerBreadcrumb
         items={[{ label: "Site Plan" }]}
-        planId={currentPlanId}
-        planName={currentPlanName || "Site Plan"}
+        planId={planId}
+        planName={planName}
         completedSteps={completedSteps}
         icon={<Map className="w-3 h-3" />}
       />
@@ -177,7 +229,11 @@ export default function SitePlan() {
           </div>
           <div className="flex flex-col">
             <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-muted-foreground/50 leading-none">Drawing Tools</p>
-            <h1 className="text-sm font-semibold tracking-[-0.01em]">Site Plan</h1>
+            <Input
+              value={planName}
+              onChange={(e) => setPlanName(e.target.value)}
+              className="w-56 h-7 font-semibold text-sm border-transparent hover:border-input focus:border-input bg-transparent px-0 tracking-[-0.01em]"
+            />
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -187,7 +243,10 @@ export default function SitePlan() {
             <span className="tabular-nums">{items.length} elements</span>
           </div>
           <AutoSaveIndicator lastSaved={autoSave.lastSaved} showRecovery={autoSave.showRecovery} onAcceptRecovery={autoSave.acceptRecovery} onDismissRecovery={autoSave.dismissRecovery} />
-          <SaveLoadToolbar plannerType="oando-site-plan" moduleName="Site Plan" getCanvasState={getCanvasState} loadCanvasState={loadCanvasState} onNew={() => { setItems([]); setSelectedId(null); }} hasUnsavedChanges={() => items.length > 0} currentPlanId={currentPlanId} setCurrentPlanId={setCurrentPlanId} currentPlanName={currentPlanName} setCurrentPlanName={setCurrentPlanName} clearAutoSave={autoSave.clearAutoSave} />
+          <Button size="sm" onClick={handleSave} disabled={createPlan.isPending || updatePlan.isPending} className="shadow-sm">
+            {(createPlan.isPending || updatePlan.isPending) ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+            Save Plan
+          </Button>
         </div>
       </header>
 
@@ -210,6 +269,7 @@ export default function SitePlan() {
           </ScrollArea>
 
           <div className="p-2.5 border-t space-y-1">
+            <h3 className="font-medium text-[10px] uppercase tracking-[0.12em] text-muted-foreground/50 mb-2.5">Actions</h3>
             {sel && (
               <>
                 <div className="text-[10px] text-muted-foreground/50 px-2 py-1 font-medium uppercase tracking-wider">{sel.label}</div>
@@ -224,10 +284,13 @@ export default function SitePlan() {
                 </Button>
               </>
             )}
-            <Button variant="outline" size="sm" className="w-full justify-start gap-2.5 border-border/50 shadow-sm" onClick={undo}>
+            <Button variant="outline" size="sm" className="w-full justify-start gap-2.5 border-border/50 shadow-sm" onClick={undo} disabled={!canUndo}>
               <Undo2 className="w-3.5 h-3.5" /> Undo
             </Button>
-            <Button variant="outline" size="sm" className="w-full justify-start gap-2.5 border-border/50 shadow-sm" onClick={() => { setItems([]); setSelectedId(null); }}>
+            <Button variant="outline" size="sm" className="w-full justify-start gap-2.5 border-border/50 shadow-sm" onClick={redo} disabled={!canRedo}>
+              <Redo2 className="w-3.5 h-3.5" /> Redo
+            </Button>
+            <Button variant="outline" size="sm" className="w-full justify-start gap-2.5 border-border/50 shadow-sm" onClick={() => { resetItems([]); setSelectedId(null); }}>
               <XCircle className="w-3.5 h-3.5" /> Clear All
             </Button>
           </div>

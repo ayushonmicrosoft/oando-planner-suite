@@ -76,3 +76,26 @@ export async function adminDeleteTemplate(id: string) {
   });
   return handleResponse(res);
 }
+
+export async function adminUploadFile(
+  file: File,
+  uploadType: "image" | "model"
+): Promise<{ url: string; fileName: string; originalName: string; size: number; type: string }> {
+  const buffer = await file.arrayBuffer();
+  const base64 = btoa(
+    new Uint8Array(buffer).reduce((data, byte) => data + String.fromCharCode(byte), "")
+  );
+
+  const res = await fetch(`${apiBase()}/admin/upload`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({
+      fileName: file.name,
+      fileData: base64,
+      fileType: file.type,
+      uploadType,
+    }),
+  });
+  return handleResponse(res);
+}

@@ -26,6 +26,7 @@ const CreateCatalogItemBody = z.object({
   color: z.string().trim().max(50).nullish(),
   description: z.string().trim().max(5000).nullish(),
   imageUrl: z.string().url().max(2000).nullish(),
+  modelUrl: z.string().url().max(2000).nullish(),
   shape: z.string().trim().max(50).nullish(),
   seatCount: z.number().int().min(0).max(10000).nullish(),
   price: z.number().min(0).max(100000000).nullish(),
@@ -42,6 +43,7 @@ const UpdateCatalogItemBody = z.object({
   color: z.string().trim().max(50).nullish(),
   description: z.string().trim().max(5000).nullish(),
   imageUrl: z.string().url().max(2000).nullish(),
+  modelUrl: z.string().url().max(2000).nullish(),
   shape: z.string().trim().max(50).nullish(),
   seatCount: z.number().int().min(0).max(10000).nullish(),
   price: z.number().min(0).max(100000000).nullish(),
@@ -200,6 +202,7 @@ router.post(
         color: parsed.data.color ?? null,
         description: parsed.data.description ?? null,
         imageUrl: parsed.data.imageUrl ?? null,
+        modelUrl: parsed.data.modelUrl ?? null,
         shape: parsed.data.shape ?? null,
         seatCount: parsed.data.seatCount ?? null,
         price: parsed.data.price ?? null,
@@ -234,6 +237,7 @@ router.patch(
     if (data.color !== undefined) updates.color = data.color ?? null;
     if (data.description !== undefined) updates.description = data.description ?? null;
     if (data.imageUrl !== undefined) updates.imageUrl = data.imageUrl ?? null;
+    if (data.modelUrl !== undefined) updates.modelUrl = data.modelUrl ?? null;
     if (data.shape !== undefined) updates.shape = data.shape ?? null;
     if (data.seatCount !== undefined) updates.seatCount = data.seatCount ?? null;
     if (data.price !== undefined) updates.price = data.price ?? null;

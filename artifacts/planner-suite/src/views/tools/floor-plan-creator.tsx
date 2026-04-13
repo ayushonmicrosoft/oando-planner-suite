@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { useUndoRedo } from "@/hooks/use-undo-redo";
+import { useAutoSave } from "@/hooks/useAutoSave";
+import AutoSaveIndicator from "@/components/auto-save-indicator";
 import { Save, Loader2, Undo2, Redo2, Trash2, Copy, XCircle, LayoutGrid } from "lucide-react";
 import { PlannerBreadcrumb } from "@/components/planner/PlannerBreadcrumb";
 import {
@@ -173,6 +175,16 @@ export default function FloorPlanCreator() {
     }
   }, [existingPlan, resetRooms]);
 
+  const getCanvasState = useCallback(() => {
+    return { ...unifiedDoc, rooms };
+  }, [rooms, unifiedDoc]);
+  const loadCanvasState = useCallback((state: Record<string, unknown>) => {
+    if ("rooms" in state && Array.isArray(state.rooms)) {
+      resetRooms(state.rooms as UnifiedRoomItem[]);
+    }
+  }, [resetRooms]);
+  const autoSave = useAutoSave("floor-plan", getCanvasState, loadCanvasState, () => rooms.length > 0, !!planId && !existingPlan);
+
   const totalSqFt = rooms.reduce((s, r) => s + Math.round(r.width / GRID) * Math.round(r.height / GRID), 0);
 
   const addRoom = (preset: RoomPreset) => {
@@ -228,13 +240,13 @@ export default function FloorPlanCreator() {
       name: planName,
       roomWidthCm: W,
       roomDepthCm: H,
-      plannerType: "floorplan" as any,
+      plannerType: "floorplan" as const,
       documentJson,
     };
 
     if (planId) {
       updatePlan.mutate({ id: planId, data: payload }, {
-        onSuccess: () => toast({ title: "Floor plan updated" }),
+        onSuccess: () => { toast({ title: "Floor plan updated" }); autoSave.clearAutoSave(); },
       });
     } else {
       createPlan.mutate({ data: payload }, {
@@ -242,6 +254,7 @@ export default function FloorPlanCreator() {
           toast({ title: "Floor plan saved" });
           setCurrentPlanId(data.id);
           window.history.replaceState(null, "", `?id=${data.id}`);
+          autoSave.clearAutoSave();
         },
       });
     }
@@ -293,6 +306,7 @@ export default function FloorPlanCreator() {
             <input type="checkbox" checked={showDims} onChange={(e) => setShowDims(e.target.checked)} className="rounded border-border/50" />
             Dimensions
           </label>
+          <AutoSaveIndicator lastSaved={autoSave.lastSaved} showRecovery={autoSave.showRecovery} onAcceptRecovery={autoSave.acceptRecovery} onDismissRecovery={autoSave.dismissRecovery} />
           <Button size="sm" onClick={handleSave} disabled={createPlan.isPending || updatePlan.isPending} className="shadow-sm">
             {(createPlan.isPending || updatePlan.isPending) ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
             Save Plan

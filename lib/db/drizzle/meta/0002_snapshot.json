@@ -1,6 +1,6 @@
 {
-  "id": "9b57bcfc-9058-4ac4-8daf-e0d66e70101c",
-  "prevId": "fee849eb-8251-4ed5-bd24-e8c60a5bbc9a",
+  "id": "add_model_url_0002",
+  "prevId": "9b57bcfc-9058-4ac4-8daf-e0d66e70101c",
   "version": "7",
   "dialect": "postgresql",
   "tables": {

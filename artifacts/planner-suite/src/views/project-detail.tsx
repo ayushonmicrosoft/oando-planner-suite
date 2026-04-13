@@ -5,6 +5,7 @@ import {
   useGetProject,
   useUpdateProject,
   useUpdatePlan,
+  useCreatePlan,
   useListPlans,
   getGetProjectQueryKey,
   getListProjectsQueryKey,
@@ -33,8 +34,9 @@ import {
 } from '@/components/ui/select';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  ArrowLeft, Mail, Phone, Building2, MapPin, Clock, FileText, Box, Loader2, AlertCircle, RefreshCw, Plus, Grid3X3, FileSignature, LayoutGrid, Shapes, ImagePlus, CalendarDays, Hash, X
+  ArrowLeft, Mail, Phone, Building2, MapPin, Clock, FileText, Box, Loader2, AlertCircle, RefreshCw, Plus, Grid3X3, FileSignature, LayoutGrid, Shapes, ImagePlus, CalendarDays, Hash, X, Map
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useQueryClient } from '@tanstack/react-query';
@@ -77,19 +79,37 @@ const statusConfig: Record<string, { label: string; className: string; dot: stri
   on_hold: { label: 'On Hold', className: 'bg-amber-500/[0.08] text-amber-700 dark:text-amber-400 border-amber-500/20', dot: 'bg-amber-500' },
 };
 
+const PLANNER_TYPES = [
+  { value: 'canvas', label: '2D Canvas', icon: <Grid3X3 className="w-4 h-4" /> },
+  { value: 'blueprint', label: 'Blueprint', icon: <FileSignature className="w-4 h-4" /> },
+  { value: 'floorplan', label: 'Floor Plan', icon: <LayoutGrid className="w-4 h-4" /> },
+  { value: 'shapes', label: 'Custom Shapes', icon: <Shapes className="w-4 h-4" /> },
+  { value: 'oando-site-plan', label: 'Site Plan', icon: <Map className="w-4 h-4" /> },
+];
+
 export default function ProjectDetail({ projectId }: { projectId: number }) {
   const router = useRouter();
   const { data: project, isLoading, isError, refetch } = useGetProject(projectId);
   const { data: allPlans } = useListPlans();
   const updateProject = useUpdateProject();
   const updatePlan = useUpdatePlan();
+  const createPlan = useCreatePlan();
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
   const [moveDialogOpen, setMoveDialogOpen] = useState(false);
   const [selectedPlanId, setSelectedPlanId] = useState<string>('');
+  const [dialogTab, setDialogTab] = useState<string>('create');
+  const [newPlanName, setNewPlanName] = useState('');
+  const [newPlanType, setNewPlanType] = useState('canvas');
 
   const unassignedPlans = (allPlans || []).filter((p) => !p.projectId || p.projectId !== projectId);
+
+  const invalidateAll = () => {
+    queryClient.invalidateQueries({ queryKey: getGetProjectQueryKey(projectId) });
+    queryClient.invalidateQueries({ queryKey: getListPlansQueryKey() });
+    queryClient.invalidateQueries({ queryKey: getListProjectsQueryKey() });
+  };
 
   const handleAddPlan = () => {
     if (!selectedPlanId) return;
@@ -99,14 +119,42 @@ export default function ProjectDetail({ projectId }: { projectId: number }) {
       {
         onSuccess: () => {
           toast({ title: "Plan added", description: "Plan has been assigned to this project." });
-          queryClient.invalidateQueries({ queryKey: getGetProjectQueryKey(projectId) });
-          queryClient.invalidateQueries({ queryKey: getListPlansQueryKey() });
-          queryClient.invalidateQueries({ queryKey: getListProjectsQueryKey() });
+          invalidateAll();
           setMoveDialogOpen(false);
           setSelectedPlanId('');
         },
         onError: () => {
           toast({ title: "Error", description: "Failed to add plan.", variant: "destructive" });
+        },
+      }
+    );
+  };
+
+  const handleCreatePlan = () => {
+    const name = newPlanName.trim() || `New ${plannerTypeLabels[newPlanType] || 'Plan'}`;
+    createPlan.mutate(
+      {
+        data: {
+          name,
+          plannerType: newPlanType as "canvas" | "shapes" | "import" | "floorplan" | "oando-site-plan" | "oando-floor-plan-creator" | "oando-custom-shapes" | "oando-import-scale",
+          roomWidthCm: 900,
+          roomDepthCm: 650,
+          projectId,
+          documentJson: JSON.stringify({ version: 3, rooms: [], structure: [], furniture: [], annotations: [], site: [], importLayer: null }),
+        },
+      },
+      {
+        onSuccess: (data) => {
+          toast({ title: "Plan created", description: `"${name}" has been created and linked to this project.` });
+          invalidateAll();
+          setMoveDialogOpen(false);
+          setNewPlanName('');
+          setNewPlanType('canvas');
+          const route = plannerTypeRoutes[newPlanType] || '/planner/canvas';
+          router.push(`${route}?id=${data.id}`);
+        },
+        onError: () => {
+          toast({ title: "Error", description: "Failed to create plan.", variant: "destructive" });
         },
       }
     );
@@ -179,32 +227,83 @@ export default function ProjectDetail({ projectId }: { projectId: number }) {
               <Plus className="w-4 h-4" /> Add Plan
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="sm:max-w-md">
             <DialogHeader>
               <DialogTitle>Add Plan to Project</DialogTitle>
-              <DialogDescription>Select a plan to assign to this project.</DialogDescription>
+              <DialogDescription>Create a new plan or assign an existing one.</DialogDescription>
             </DialogHeader>
-            <div className="space-y-4">
-              <Select value={selectedPlanId} onValueChange={setSelectedPlanId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a plan..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {unassignedPlans.map((p) => (
-                    <SelectItem key={p.id} value={String(p.id)}>
-                      {p.name} ({plannerTypeLabels[p.plannerType] || p.plannerType})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setMoveDialogOpen(false)}>Cancel</Button>
-              <Button onClick={handleAddPlan} disabled={!selectedPlanId || updatePlan.isPending}>
-                {updatePlan.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                Add Plan
-              </Button>
-            </DialogFooter>
+            <Tabs value={dialogTab} onValueChange={setDialogTab}>
+              <TabsList className="w-full">
+                <TabsTrigger value="create" className="flex-1">Create New</TabsTrigger>
+                <TabsTrigger value="existing" className="flex-1">Assign Existing</TabsTrigger>
+              </TabsList>
+              <TabsContent value="create" className="space-y-4 mt-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Plan Name</label>
+                  <Input
+                    value={newPlanName}
+                    onChange={(e) => setNewPlanName(e.target.value)}
+                    placeholder="e.g. Ground Floor Layout"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Plan Type</label>
+                  <div className="grid grid-cols-1 gap-2">
+                    {PLANNER_TYPES.map((pt) => (
+                      <button
+                        key={pt.value}
+                        type="button"
+                        onClick={() => setNewPlanType(pt.value)}
+                        className={`flex items-center gap-3 p-3 rounded-lg border text-left transition-all ${
+                          newPlanType === pt.value
+                            ? 'border-primary bg-primary/[0.05] shadow-sm'
+                            : 'border-border/60 hover:border-border hover:bg-muted/40'
+                        }`}
+                      >
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                          newPlanType === pt.value ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
+                        }`}>
+                          {pt.icon}
+                        </div>
+                        <span className="text-sm font-medium">{pt.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setMoveDialogOpen(false)}>Cancel</Button>
+                  <Button onClick={handleCreatePlan} disabled={createPlan.isPending}>
+                    {createPlan.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                    Create Plan
+                  </Button>
+                </DialogFooter>
+              </TabsContent>
+              <TabsContent value="existing" className="space-y-4 mt-4">
+                <Select value={selectedPlanId} onValueChange={setSelectedPlanId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a plan..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {unassignedPlans.length === 0 ? (
+                      <div className="px-3 py-4 text-sm text-muted-foreground text-center">No unassigned plans available</div>
+                    ) : (
+                      unassignedPlans.map((p) => (
+                        <SelectItem key={p.id} value={String(p.id)}>
+                          {p.name} ({plannerTypeLabels[p.plannerType] || p.plannerType})
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setMoveDialogOpen(false)}>Cancel</Button>
+                  <Button onClick={handleAddPlan} disabled={!selectedPlanId || updatePlan.isPending}>
+                    {updatePlan.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                    Assign Plan
+                  </Button>
+                </DialogFooter>
+              </TabsContent>
+            </Tabs>
           </DialogContent>
         </Dialog>
       </div>

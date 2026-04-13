@@ -10,6 +10,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { useUndoRedo } from "@/hooks/use-undo-redo";
 import { Save, Loader2, Undo2, Redo2, Trash2, Copy, XCircle, Shapes } from "lucide-react";
+import { useAutoSave } from "@/hooks/useAutoSave";
+import AutoSaveIndicator from "@/components/auto-save-indicator";
 import { PlannerBreadcrumb } from "@/components/planner/PlannerBreadcrumb";
 import { PlanBackgroundLayers } from "@/components/plan-background-layers";
 import {
@@ -345,13 +347,23 @@ export default function CustomShapes() {
           setUnifiedDoc(doc);
           if (doc.structure && doc.structure.length > 0) {
             resetItems(doc.structure as unknown as CanvasItem[]);
-          } else if ((raw as any).items) {
-            resetItems((raw as any).items);
+          } else if ("items" in raw && Array.isArray(raw.items)) {
+            resetItems(raw.items as CanvasItem[]);
           }
         } catch { /* ignore parse errors */ }
       }
     }
   }, [existingPlan, resetItems]);
+
+  const getCanvasState = useCallback(() => {
+    return { ...unifiedDoc, structure: items };
+  }, [items, unifiedDoc]);
+  const loadCanvasState = useCallback((state: Record<string, unknown>) => {
+    if ("structure" in state && Array.isArray(state.structure)) {
+      resetItems(state.structure as CanvasItem[]);
+    }
+  }, [resetItems]);
+  const autoSave = useAutoSave("custom-shapes", getCanvasState, loadCanvasState, () => items.length > 0, !!planId && !existingPlan);
 
   const addShape = (def: ShapeDef) => {
     const id = `item_${_uid++}`;
@@ -419,7 +431,7 @@ export default function CustomShapes() {
       name: planName,
       roomWidthCm: W,
       roomDepthCm: H,
-      plannerType: "shapes" as any,
+      plannerType: "shapes" as const,
       documentJson,
     };
 
@@ -471,6 +483,7 @@ export default function CustomShapes() {
           </div>
         </div>
         <div className="flex items-center gap-3">
+          <AutoSaveIndicator lastSaved={autoSave.lastSaved} showRecovery={autoSave.showRecovery} onAcceptRecovery={autoSave.acceptRecovery} onDismissRecovery={autoSave.dismissRecovery} />
           <span className="text-xs text-muted-foreground/50 tabular-nums">{items.length} on canvas</span>
           <Button size="sm" onClick={handleSave} disabled={createPlan.isPending || updatePlan.isPending} className="shadow-sm">
             {(createPlan.isPending || updatePlan.isPending) ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}

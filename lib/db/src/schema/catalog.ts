@@ -25,6 +25,7 @@ export const catalogItemsTable = pgTable("catalog_items", {
   color: text("color"),
   description: text("description"),
   imageUrl: text("image_url"),
+  modelUrl: text("model_url"),
   shape: text("shape"),
   seatCount: integer("seat_count"),
   price: real("price"),

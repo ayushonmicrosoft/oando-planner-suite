@@ -58,6 +58,7 @@ app.use("/api/webhooks/razorpay", express.json({
     req.rawBody = buf.toString();
   },
 }));
+app.use("/api/admin/upload", express.json({ limit: "30mb" }));
 app.use(express.json({ limit: "2mb" }));
 app.use(express.urlencoded({ extended: true }));
 

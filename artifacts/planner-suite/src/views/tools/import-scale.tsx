@@ -14,11 +14,15 @@ import {
   Save, Loader2, MousePointer2, Minus, Square, CircleIcon, Type,
   Ruler, Undo2, Redo2, Trash2, XCircle, Upload, Import, RefreshCw, Crosshair
 } from "lucide-react";
+import { useAutoSave } from "@/hooks/useAutoSave";
+import AutoSaveIndicator from "@/components/auto-save-indicator";
 import { PlannerBreadcrumb } from "@/components/planner/PlannerBreadcrumb";
 import {
   migrateDocument,
   createEmptyDocument,
   type UnifiedDocument,
+  type UnifiedAnnotation,
+  type UnifiedImportLayer,
   getCompletedSteps,
 } from "@/lib/unified-document";
 
@@ -169,6 +173,23 @@ export default function ImportScale() {
   const createPlan = useCreatePlan();
   const updatePlan = useUpdatePlan();
   const { toast } = useToast();
+
+  const getCanvasState = useCallback(() => {
+    return {
+      ...unifiedDoc,
+      importLayer: { annotations: annotations as unknown as UnifiedAnnotation[], scale, unit, calibrated, imageDataUrl: file || undefined, fileName: fileName || undefined },
+    };
+  }, [annotations, scale, unit, calibrated, file, fileName, unifiedDoc]);
+  const loadCanvasState = useCallback((state: Record<string, unknown>) => {
+    const il = "importLayer" in state ? (state.importLayer as UnifiedImportLayer | null) : null;
+    if (il) {
+      if (Array.isArray(il.annotations)) resetAnnotations(il.annotations);
+      if (il.scale) setScale(il.scale);
+      if (il.unit) setUnit(il.unit);
+      if (il.calibrated != null) setCalibrated(il.calibrated);
+    }
+  }, [resetAnnotations]);
+  const autoSave = useAutoSave("import-scale", getCanvasState, loadCanvasState, () => annotations.length > 0 || !!file, !!planId && !existingPlan);
 
   useEffect(() => {
     if (existingPlan) {
@@ -331,7 +352,7 @@ export default function ImportScale() {
     const updatedDoc: UnifiedDocument = {
       ...unifiedDoc,
       importLayer: {
-        annotations: annotations as any,
+        annotations: annotations as unknown as UnifiedAnnotation[],
         scale,
         unit,
         calibrated,
@@ -344,7 +365,7 @@ export default function ImportScale() {
       name: planName,
       roomWidthCm: imgSize.w,
       roomDepthCm: imgSize.h,
-      plannerType: "import" as any,
+      plannerType: "import" as const,
       documentJson,
     };
 
@@ -461,6 +482,7 @@ export default function ImportScale() {
           <span className="text-[11px] text-muted-foreground/40 bg-muted/40 px-2 py-0.5 rounded-md">{fileName}</span>
         </div>
         <div className="flex items-center gap-3">
+          <AutoSaveIndicator lastSaved={autoSave.lastSaved} showRecovery={autoSave.showRecovery} onAcceptRecovery={autoSave.acceptRecovery} onDismissRecovery={autoSave.dismissRecovery} />
           <span className="text-xs text-muted-foreground/50 tabular-nums">{annotations.length} annotations</span>
           <Button size="sm" onClick={handleSave} disabled={createPlan.isPending || updatePlan.isPending} className="shadow-sm">
             {(createPlan.isPending || updatePlan.isPending) ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}

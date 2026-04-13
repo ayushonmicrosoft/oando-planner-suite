@@ -26,7 +26,7 @@ args = ["pnpm", "--filter", "@workspace/planner-suite", "run", "build"]
 NODE_ENV = "production"
 
 [services.production.run]
-args = ["pnpm", "--filter", "@workspace/planner-suite", "run", "start"]
+args = ["bash", "artifacts/planner-suite/start-production.sh"]
 
 [services.production.run.env]
 PORT = "24140"
